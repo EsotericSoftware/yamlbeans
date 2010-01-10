@@ -1,0 +1,10 @@
+
+CREDITS
+-------
+
+Kirill Simonov <xi@resolvent.net>
+For writing the PyYAML3000 YAML parser.
+
+Ola Bini <ola@ologix.com>
+For porting PyYAML3000 to RbYAML and RbYAML to JvYAML.
+The yamlbeans project is based on the JvYAML tokenizer, parser, and emitter.
