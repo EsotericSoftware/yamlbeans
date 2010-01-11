@@ -19,9 +19,6 @@ package com.esotericsoftware.yamlbeans;
 import java.util.List;
 import java.util.Map;
 
-import com.esotericsoftware.yamlbeans.YamlConfig;
-import com.esotericsoftware.yamlbeans.YamlReader;
-
 import junit.framework.TestCase;
 
 /**
@@ -37,6 +34,7 @@ public class YamlReaderTest extends TestCase {
 			"longValue: 999999\n" + //
 			"shortValue: 125\n" + //
 			"charValue: j\n" + //
+			"testEnum: b\n" + //
 			"byteValue: 14" //
 		);
 
@@ -48,6 +46,7 @@ public class YamlReaderTest extends TestCase {
 		assertEquals(125, test.shortValue);
 		assertEquals('j', test.charValue);
 		assertEquals(14, test.byteValue);
+		assertEquals(TestEnum.b, test.testEnum);
 
 		assertEquals(true, read("booleanValue: true").booleanValue);
 		assertEquals(false, read("booleanValue: 123").booleanValue);
@@ -155,6 +154,11 @@ public class YamlReaderTest extends TestCase {
 		public int[] arrayInts;
 		public Test child1;
 		public Test child2;
+		public TestEnum testEnum;
+	}
+
+	static public enum TestEnum {
+		a, b, c
 	}
 
 	public void testPropertyElementType () throws Exception {
