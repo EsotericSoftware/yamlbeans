@@ -16,7 +16,6 @@
 
 package com.esotericsoftware.yamlbeans;
 
-import java.io.FileWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Date;
@@ -24,10 +23,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-
-import com.esotericsoftware.yamlbeans.YamlConfig;
-import com.esotericsoftware.yamlbeans.YamlReader;
-import com.esotericsoftware.yamlbeans.YamlWriter;
 
 import junit.framework.TestCase;
 
@@ -159,6 +154,28 @@ public class YamlWriterTest extends TestCase {
 		assertEquals("XYZ", roundTrip.value);
 	}
 
+	public void testRootList () throws Exception {
+		ArrayList list = new ArrayList();
+		list.add(new PhoneNumber("206-555-1234"));
+		list.add(new PhoneNumber("206-555-4321"));
+		list.add(new PhoneNumber("206-555-6789"));
+		list.add(new PhoneNumber("206-555-9876"));
+		List roundTrip = roundTrip(list, ArrayList.class, new YamlConfig());
+		assertEquals("206-555-1234", ((PhoneNumber)roundTrip.get(0)).number);
+		assertEquals("206-555-4321", ((PhoneNumber)roundTrip.get(1)).number);
+		assertEquals("206-555-6789", ((PhoneNumber)roundTrip.get(2)).number);
+		assertEquals("206-555-9876", ((PhoneNumber)roundTrip.get(3)).number);
+
+		Contact contact = new Contact();
+		contact.name = "Bill";
+		contact.phoneNumbers = list;
+		roundTrip = roundTrip(contact, Contact.class, new YamlConfig()).phoneNumbers;
+		assertEquals("206-555-1234", ((PhoneNumber)roundTrip.get(0)).number);
+		assertEquals("206-555-4321", ((PhoneNumber)roundTrip.get(1)).number);
+		assertEquals("206-555-6789", ((PhoneNumber)roundTrip.get(2)).number);
+		assertEquals("206-555-9876", ((PhoneNumber)roundTrip.get(3)).number);
+	}
+
 	private Object roundTrip (Object object) throws Exception {
 		return roundTrip(object, null, new YamlConfig());
 	}
@@ -228,5 +245,21 @@ public class YamlWriterTest extends TestCase {
 
 	static public class ValueHolder<T> {
 		public Object value;
+	}
+
+	static public class Contact {
+		public String name;
+		public List phoneNumbers;
+	}
+
+	static public class PhoneNumber {
+		public String number;
+
+		public PhoneNumber () {
+		}
+
+		public PhoneNumber (String number) {
+			this.number = number;
+		}
 	}
 }

@@ -148,7 +148,7 @@ public class YamlConfig {
 		boolean explicitFirstDocument = false;
 		boolean writeDefaultValues = false;
 		boolean writeRootTags = true;
-		boolean writeRootElementTags;
+		boolean writeRootElementTags = true;
 		boolean autoAnchor = true;
 		boolean alwaysWriteClassName = false;
 		EmitterConfig emitterConfig = new EmitterConfig();
