@@ -152,6 +152,13 @@ public class YamlWriterTest extends TestCase {
 		roundTrip(test);
 	}
 
+	public void testObjectField () throws Exception {
+		ValueHolder object = new ValueHolder();
+		object.value = "XYZ";
+		ValueHolder roundTrip = (ValueHolder)roundTrip(object);
+		assertEquals("XYZ", roundTrip.value);
+	}
+
 	private Object roundTrip (Object object) throws Exception {
 		return roundTrip(object, null, new YamlConfig());
 	}
@@ -217,5 +224,9 @@ public class YamlWriterTest extends TestCase {
 
 	static public enum Value {
 		a, b, c, d;
+	}
+
+	static public class ValueHolder<T> {
+		public Object value;
 	}
 }

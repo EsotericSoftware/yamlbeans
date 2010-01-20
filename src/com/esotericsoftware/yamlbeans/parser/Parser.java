@@ -332,6 +332,7 @@ public class Parser {
 						parseStack.add(0, table[P_BLOCK_MAPPING_ENTRY]);
 						parseStack.add(0, table[P_BLOCK_MAPPING_ENTRY_VALUE]);
 						parseStack.add(0, table[P_BLOCK_NODE_OR_INDENTLESS_SEQUENCE]);
+						parseStack.add(0, table[P_PROPERTIES]);
 					}
 				} else if (type == VALUE) {
 					parseStack.add(0, table[P_BLOCK_MAPPING_ENTRY]);
@@ -351,6 +352,7 @@ public class Parser {
 						parseStack.add(0, table[P_EMPTY_SCALAR]);
 					else {
 						parseStack.add(0, table[P_BLOCK_NODE_OR_INDENTLESS_SEQUENCE]);
+						parseStack.add(0, table[P_PROPERTIES]);
 					}
 				} else if (type == KEY) parseStack.add(0, table[P_EMPTY_SCALAR]);
 				return null;
@@ -363,10 +365,8 @@ public class Parser {
 					parseStack.add(0, table[P_ALIAS]);
 				else if (type == BLOCK_ENTRY) {
 					parseStack.add(0, table[P_INDENTLESS_BLOCK_SEQUENCE]);
-					parseStack.add(0, table[P_PROPERTIES]);
 				} else {
 					parseStack.add(0, table[P_BLOCK_CONTENT]);
-					parseStack.add(0, table[P_PROPERTIES]);
 				}
 				return null;
 			}

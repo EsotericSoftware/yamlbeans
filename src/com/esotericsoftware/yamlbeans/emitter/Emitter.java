@@ -42,7 +42,6 @@ import com.esotericsoftware.yamlbeans.parser.Parser;
 import com.esotericsoftware.yamlbeans.parser.ScalarEvent;
 import com.esotericsoftware.yamlbeans.parser.SequenceStartEvent;
 
-
 /**
  * Converts events into YAML output.
  * @author <a href="mailto:misc@n4te.com">Nathan Sweet</a>

@@ -45,7 +45,6 @@ import com.esotericsoftware.yamlbeans.parser.ScalarEvent;
 import com.esotericsoftware.yamlbeans.parser.SequenceStartEvent;
 import com.esotericsoftware.yamlbeans.scalar.ScalarSerializer;
 
-
 /**
  * Serializes Java objects as YAML.
  * @author <a href="mailto:misc@n4te.com">Nathan Sweet</a>
@@ -152,7 +151,7 @@ public class YamlWriter {
 		boolean unknownType = fieldClass == null;
 		if (unknownType) fieldClass = valueClass;
 
-		if (Beans.isScalar(fieldClass)) {
+		if (Beans.isScalar(valueClass)) {
 			emitter.emit(new ScalarEvent(null, null, new boolean[] {true, true}, String.valueOf(object), (char)0));
 			return;
 		}
