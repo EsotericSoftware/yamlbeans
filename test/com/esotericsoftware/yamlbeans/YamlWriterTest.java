@@ -16,6 +16,7 @@
 
 package com.esotericsoftware.yamlbeans;
 
+import java.beans.ConstructorProperties;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Date;
@@ -176,6 +177,14 @@ public class YamlWriterTest extends TestCase {
 		assertEquals("206-555-9876", ((PhoneNumber)roundTrip.get(3)).number);
 	}
 
+	public void testConstructorProperties () throws Exception {
+		ConstructorPropertiesSample object = new ConstructorPropertiesSample(1, 2, 3);
+		ConstructorPropertiesSample roundTrip = (ConstructorPropertiesSample)roundTrip(object);
+		assertEquals(1, roundTrip.getX());
+		assertEquals(2, roundTrip.getY());
+		assertEquals(3, roundTrip.getZ());
+	}
+
 	private Object roundTrip (Object object) throws Exception {
 		return roundTrip(object, null, new YamlConfig());
 	}
@@ -260,6 +269,29 @@ public class YamlWriterTest extends TestCase {
 
 		public PhoneNumber (String number) {
 			this.number = number;
+		}
+	}
+
+	static public class ConstructorPropertiesSample {
+		private int x, y, z;
+
+		@ConstructorProperties( {"x", "y", "z"})
+		public ConstructorPropertiesSample (int x, int y, int z) {
+			this.x = x;
+			this.y = y;
+			this.z = z;
+		}
+
+		public int getX () {
+			return x;
+		}
+
+		public int getY () {
+			return y;
+		}
+
+		public int getZ () {
+			return z;
 		}
 	}
 }

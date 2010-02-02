@@ -245,7 +245,7 @@ public class YamlWriter {
 
 		Set<Property> properties;
 		try {
-			properties = Beans.getProperties(valueClass, config.beanProperties, config.privateFields);
+			properties = Beans.getProperties(valueClass, config.beanProperties, config.privateFields, config);
 		} catch (IntrospectionException ex) {
 			throw new YamlException("Error inspecting class: " + valueClass.getName(), ex);
 		}
@@ -255,7 +255,16 @@ public class YamlWriter {
 				Object propertyValue = property.get(object);
 				if (prototype != null) {
 					// Don't output properties that have the default value for the prototype.
-					Object prototypeValue = property.get(prototype);
+					// The default value is either defined by a prototype object,
+					// or the parameter value in a DeferredConstruction object.
+					String propertyName = property.getName();
+					Object prototypeValue;
+
+					if (prototype instanceof DeferredConstruction && ((DeferredConstruction)prototype).hasParameter(propertyName))
+						prototypeValue = ((DeferredConstruction)prototype).getParameterValue(propertyName);
+					else
+						prototypeValue = property.get(prototype);
+
 					if (propertyValue == null && prototypeValue == null) continue;
 					if (propertyValue != null && prototypeValue != null && prototypeValue.equals(propertyValue)) continue;
 				}
@@ -299,7 +308,7 @@ public class YamlWriter {
 
 		Set<Property> properties;
 		try {
-			properties = Beans.getProperties(object.getClass(), config.beanProperties, config.privateFields);
+			properties = Beans.getProperties(object.getClass(), config.beanProperties, config.privateFields, config);
 		} catch (IntrospectionException ex) {
 			throw new YamlException("Error inspecting class: " + object.getClass().getName(), ex);
 		}

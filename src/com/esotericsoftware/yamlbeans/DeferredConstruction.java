@@ -19,10 +19,10 @@ package com.esotericsoftware.yamlbeans;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import com.esotericsoftware.yamlbeans.Beans.Property;
-
 
 /**
  * Stores a constructor, parameters names, and property values so construction can be deferred until all property values are
@@ -67,6 +67,27 @@ class DeferredConstruction {
 		propertyValue.property = property;
 		propertyValue.value = value;
 		propertyValues.add(propertyValue);
+	}
+
+	public String[] getParameterNames () {
+		return parameterNames;
+	}
+
+	public boolean hasParameter (String name) {
+		for (String s : getParameterNames())
+			if (s.equals(name)) return true;
+		return false;
+	}
+
+	public Object getParameterValue (String propertyName) {
+		int index = 0;
+		for (String name : parameterNames) {
+			if (propertyName.equals(name)) {
+				return parameterValues[index];
+			}
+			index++;
+		}
+		return null;
 	}
 
 	static private class PropertyValue {

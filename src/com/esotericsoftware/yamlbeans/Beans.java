@@ -35,7 +35,6 @@ import java.util.TreeSet;
 
 import com.esotericsoftware.yamlbeans.YamlConfig.ConstructorParameters;
 
-
 /**
  * Utility for dealing with beans and public fields.
  * @author <a href="mailto:misc@n4te.com">Nathan Sweet</a>
@@ -49,30 +48,43 @@ class Beans {
 			|| c == Long.class || c == Double.class || c == Short.class || c == Byte.class || c == Character.class;
 	}
 
+	static private DeferredConstruction getDeferredConstruction (Class type, YamlConfig config) {
+		ConstructorParameters parameters = config.readConfig.constructorParameters.get(type);
+		if (parameters != null) return new DeferredConstruction(parameters.constructor, parameters.parameterNames);
+		try {
+			Class c = Class.forName("java.beans.ConstructorProperties");
+			for (Constructor typeConstructor : type.getConstructors()) {
+				Annotation annotation = typeConstructor.getAnnotation(c);
+				if (annotation == null) continue;
+				String[] parameterNames = (String[])c.getMethod("value").invoke(annotation, (Object[])null);
+				return new DeferredConstruction(typeConstructor, parameterNames);
+			}
+		} catch (Exception ignored) {
+		}
+		return null;
+	}
+
+	static private boolean canInitializeProperty (Class type, PropertyDescriptor property, YamlConfig config) {
+		// The simple case: there is a setter/write method for the property.
+		if (property.getWriteMethod() != null) return true;
+
+		// Check if the property can be initialized through the constructor.
+		DeferredConstruction deferredConstruction = getDeferredConstruction(type, config);
+		if (deferredConstruction != null && deferredConstruction.hasParameter(property.getName())) return true;
+		return false;
+	}
+
 	static public Object createObject (Class type, YamlConfig config) throws InvocationTargetException {
-		Constructor constructor = null;
+		// Use deferred construction if a non-zero-arg constructor is available.
+		DeferredConstruction deferredConstruction = getDeferredConstruction(type, config);
+		if (deferredConstruction != null) return deferredConstruction;
 
 		// Use no-arg constructor.
+		Constructor constructor = null;
 		for (Constructor typeConstructor : type.getConstructors()) {
 			if (typeConstructor.getParameterTypes().length == 0) {
 				constructor = typeConstructor;
 				break;
-			}
-		}
-
-		// Use deferred construction if a non-no-arg constructor is available.
-		if (constructor == null) {
-			ConstructorParameters parameters = config.readConfig.constructorParameters.get(type);
-			if (parameters != null) return new DeferredConstruction(parameters.constructor, parameters.parameterNames);
-			try {
-				Class c = Class.forName("java.beans.ConstructorProperties");
-				for (Constructor typeConstructor : type.getConstructors()) {
-					Annotation annotation = typeConstructor.getAnnotation(c);
-					if (annotation == null) continue;
-					String[] parameterNames = (String[])c.getMethod("value").invoke(annotation, (Object[])null);
-					return new DeferredConstruction(typeConstructor, parameterNames);
-				}
-			} catch (Exception ignored) {
 			}
 		}
 
@@ -101,13 +113,13 @@ class Beans {
 		}
 	}
 
-	static public Set<Property> getProperties (Class type, boolean beanProperties, boolean privateFields)
+	static public Set<Property> getProperties (Class type, boolean beanProperties, boolean privateFields, YamlConfig config)
 		throws IntrospectionException {
 		if (type == null) throw new IllegalArgumentException("type cannot be null.");
 		Set<Property> properties = new TreeSet();
 		if (beanProperties) {
 			for (PropertyDescriptor property : Introspector.getBeanInfo(type).getPropertyDescriptors())
-				if (property.getReadMethod() != null && property.getWriteMethod() != null)
+				if (property.getReadMethod() != null && canInitializeProperty(type, property, config))
 					properties.add(new MethodProperty(type, property));
 		}
 		for (Field field : getAllFields(type)) {
@@ -122,14 +134,14 @@ class Beans {
 		return properties;
 	}
 
-	static public Property getProperty (Class type, String name, boolean beanProperties, boolean privateFields)
+	static public Property getProperty (Class type, String name, boolean beanProperties, boolean privateFields, YamlConfig config)
 		throws IntrospectionException {
 		if (type == null) throw new IllegalArgumentException("type cannot be null.");
 		if (name == null || name.length() == 0) throw new IllegalArgumentException("name cannot be null or empty.");
 		if (beanProperties) {
 			for (PropertyDescriptor property : Introspector.getBeanInfo(type).getPropertyDescriptors()) {
 				if (property.getName().equals(name)) {
-					if (property.getReadMethod() != null && property.getWriteMethod() != null)
+					if (property.getReadMethod() != null && canInitializeProperty(type, property, config))
 						return new MethodProperty(type, property);
 					break;
 				}

@@ -30,7 +30,6 @@ import com.esotericsoftware.yamlbeans.emitter.EmitterConfig;
 import com.esotericsoftware.yamlbeans.scalar.DateSerializer;
 import com.esotericsoftware.yamlbeans.scalar.ScalarSerializer;
 
-
 /**
  * Stores configuration for reading and writing YAML.
  * @author <a href="mailto:misc@n4te.com">Nathan Sweet</a>
@@ -94,7 +93,7 @@ public class YamlConfig {
 		Property property = null;
 		Exception cause = null;
 		try {
-			property = Beans.getProperty(type, propertyName, beanProperties, privateFields);
+			property = Beans.getProperty(type, propertyName, beanProperties, privateFields, this);
 		} catch (IntrospectionException ex) {
 			cause = ex;
 		}
@@ -119,7 +118,7 @@ public class YamlConfig {
 		Property property = null;
 		Exception cause = null;
 		try {
-			property = Beans.getProperty(type, propertyName, beanProperties, privateFields);
+			property = Beans.getProperty(type, propertyName, beanProperties, privateFields, this);
 		} catch (IntrospectionException ex) {
 			cause = ex;
 		}
