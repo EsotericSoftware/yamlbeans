@@ -255,9 +255,6 @@ public class YamlWriter {
 				Object propertyValue = property.get(object);
 				if (prototype != null) {
 					// Don't output properties that have the default value for the prototype.
-					// The default value is either defined by a prototype object,
-					// or the parameter value in a DeferredConstruction object.
-					String propertyName = property.getName();
 					Object prototypeValue = property.get(prototype);
 					if (propertyValue == null && prototypeValue == null) continue;
 					if (propertyValue != null && prototypeValue != null && prototypeValue.equals(propertyValue)) continue;
