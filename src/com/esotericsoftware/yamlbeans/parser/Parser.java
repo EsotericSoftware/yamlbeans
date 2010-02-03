@@ -37,7 +37,6 @@ import com.esotericsoftware.yamlbeans.tokenizer.TokenType;
 import com.esotericsoftware.yamlbeans.tokenizer.Tokenizer;
 import com.esotericsoftware.yamlbeans.tokenizer.Tokenizer.TokenizerException;
 
-
 /**
  * Parses a stream of tokens into events.
  * @author <a href="mailto:misc@n4te.com">Nathan Sweet</a>

@@ -19,7 +19,6 @@ package com.esotericsoftware.yamlbeans;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import com.esotericsoftware.yamlbeans.Beans.Property;
@@ -69,29 +68,14 @@ class DeferredConstruction {
 		propertyValues.add(propertyValue);
 	}
 
-	public String[] getParameterNames () {
-		return parameterNames;
-	}
-
 	public boolean hasParameter (String name) {
-		for (String s : getParameterNames())
+		for (String s : parameterNames)
 			if (s.equals(name)) return true;
 		return false;
 	}
 
-	public Object getParameterValue (String propertyName) {
-		int index = 0;
-		for (String name : parameterNames) {
-			if (propertyName.equals(name)) {
-				return parameterValues[index];
-			}
-			index++;
-		}
-		return null;
-	}
-
-	static private class PropertyValue {
-		private Property property;
-		private Object value;
+	static class PropertyValue {
+		Property property;
+		Object value;
 	}
 }

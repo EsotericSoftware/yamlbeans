@@ -40,14 +40,13 @@ import com.esotericsoftware.yamlbeans.parser.Parser.ParserException;
 import com.esotericsoftware.yamlbeans.scalar.ScalarSerializer;
 import com.esotericsoftware.yamlbeans.tokenizer.Tokenizer.TokenizerException;
 
-
 /**
  * Deserializes Java objects from YAML.
  * @author <a href="mailto:misc@n4te.com">Nathan Sweet</a>
  */
 public class YamlReader {
 	private final YamlConfig config;
-	private Parser parser;
+	Parser parser;
 	private final Map<String, Object> anchors = new HashMap();
 
 	public YamlReader (Reader reader) {
@@ -286,7 +285,7 @@ public class YamlReader {
 			Collection collection;
 			if (Collection.class.isAssignableFrom(type)) {
 				try {
-					collection = (Collection)Beans.createObject(type, config);
+					collection = (Collection)Beans.createObject(type);
 				} catch (InvocationTargetException ex) {
 					throw new YamlReaderException("Error creating object.", ex);
 				}
@@ -326,7 +325,10 @@ public class YamlReader {
 	 * Returns a new object of the requested type.
 	 */
 	protected Object createObject (Class type) throws InvocationTargetException {
-		return Beans.createObject(type, config);
+		// Use deferred construction if a non-zero-arg constructor is available.
+		DeferredConstruction deferredConstruction = Beans.getDeferredConstruction(type, config);
+		if (deferredConstruction != null) return deferredConstruction;
+		return Beans.createObject(type);
 	}
 
 	public class YamlReaderException extends YamlException {

@@ -175,7 +175,8 @@ public class YamlReaderTest extends TestCase {
 
 	public void testConstructorArgs () throws Exception {
 		YamlConfig config = new YamlConfig();
-		config.readConfig.setConstructorParameters(ConstructorArgs.class.getConstructors()[0], new String[] {"x", "y"});
+		config.readConfig.setConstructorParameters(ConstructorArgs.class, new Class[] {int.class, int.class}, new String[] {"x",
+			"y"});
 		ConstructorArgs object = new YamlReader("x: 1\ny: 2", config).read(ConstructorArgs.class);
 		assertEquals(1, object.getX());
 		assertEquals(2, object.getY());

@@ -233,9 +233,9 @@ public class YamlWriter {
 		Object prototype = null;
 		if (!config.writeConfig.writeDefaultValues) {
 			prototype = defaultValuePrototypes.get(valueClass);
-			if (prototype == null) {
+			if (prototype == null && Beans.getDeferredConstruction(valueClass, config) == null) {
 				try {
-					prototype = Beans.createObject(valueClass, config);
+					prototype = Beans.createObject(valueClass);
 				} catch (InvocationTargetException ex) {
 					throw new YamlException("Error creating object prototype to determine default values.", ex);
 				}
@@ -258,13 +258,7 @@ public class YamlWriter {
 					// The default value is either defined by a prototype object,
 					// or the parameter value in a DeferredConstruction object.
 					String propertyName = property.getName();
-					Object prototypeValue;
-
-					if (prototype instanceof DeferredConstruction && ((DeferredConstruction)prototype).hasParameter(propertyName))
-						prototypeValue = ((DeferredConstruction)prototype).getParameterValue(propertyName);
-					else
-						prototypeValue = property.get(prototype);
-
+					Object prototypeValue = property.get(prototype);
 					if (propertyValue == null && prototypeValue == null) continue;
 					if (propertyValue != null && prototypeValue != null && prototypeValue.equals(propertyValue)) continue;
 				}

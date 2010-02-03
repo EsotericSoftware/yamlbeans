@@ -19,6 +19,7 @@ package com.esotericsoftware.yamlbeans;
 import java.beans.IntrospectionException;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -277,13 +278,19 @@ public class YamlConfig {
 		 * Sets the names of the constructor parameters so classes without no-arg constructors can be instantiated. The Java 6+
 		 * annotation java.beans.ConstructorProperties can be used instead of this method.
 		 */
-		public void setConstructorParameters (Constructor constructor, String[] parameterNames) {
-			if (constructor == null) throw new IllegalArgumentException("constructor cannot be null.");
+		public void setConstructorParameters (Class type, Class[] parameterTypes, String[] parameterNames) {
+			if (type == null) throw new IllegalArgumentException("type cannot be null.");
+			if (parameterTypes == null) throw new IllegalArgumentException("parameterTypes cannot be null.");
 			if (parameterNames == null) throw new IllegalArgumentException("parameterNames cannot be null.");
 			ConstructorParameters parameters = new ConstructorParameters();
-			parameters.constructor = constructor;
+			try {
+				parameters.constructor = type.getConstructor(parameterTypes);
+			} catch (Exception ex) {
+				throw new IllegalArgumentException("Unable to find constructor: " + type.getName() + "("
+					+ Arrays.toString(parameterTypes) + ")", ex);
+			}
 			parameters.parameterNames = parameterNames;
-			constructorParameters.put(constructor.getDeclaringClass(), parameters);
+			constructorParameters.put(type, parameters);
 		}
 	}
 

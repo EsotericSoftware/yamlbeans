@@ -48,15 +48,15 @@ class Beans {
 			|| c == Long.class || c == Double.class || c == Short.class || c == Byte.class || c == Character.class;
 	}
 
-	static private DeferredConstruction getDeferredConstruction (Class type, YamlConfig config) {
+	static public DeferredConstruction getDeferredConstruction (Class type, YamlConfig config) {
 		ConstructorParameters parameters = config.readConfig.constructorParameters.get(type);
 		if (parameters != null) return new DeferredConstruction(parameters.constructor, parameters.parameterNames);
 		try {
-			Class c = Class.forName("java.beans.ConstructorProperties");
+			Class constructoProperties = Class.forName("java.beans.ConstructorProperties");
 			for (Constructor typeConstructor : type.getConstructors()) {
-				Annotation annotation = typeConstructor.getAnnotation(c);
+				Annotation annotation = typeConstructor.getAnnotation(constructoProperties);
 				if (annotation == null) continue;
-				String[] parameterNames = (String[])c.getMethod("value").invoke(annotation, (Object[])null);
+				String[] parameterNames = (String[])constructoProperties.getMethod("value").invoke(annotation, (Object[])null);
 				return new DeferredConstruction(typeConstructor, parameterNames);
 			}
 		} catch (Exception ignored) {
@@ -65,20 +65,16 @@ class Beans {
 	}
 
 	static private boolean canInitializeProperty (Class type, PropertyDescriptor property, YamlConfig config) {
-		// The simple case: there is a setter/write method for the property.
 		if (property.getWriteMethod() != null) return true;
 
 		// Check if the property can be initialized through the constructor.
 		DeferredConstruction deferredConstruction = getDeferredConstruction(type, config);
 		if (deferredConstruction != null && deferredConstruction.hasParameter(property.getName())) return true;
+
 		return false;
 	}
 
-	static public Object createObject (Class type, YamlConfig config) throws InvocationTargetException {
-		// Use deferred construction if a non-zero-arg constructor is available.
-		DeferredConstruction deferredConstruction = getDeferredConstruction(type, config);
-		if (deferredConstruction != null) return deferredConstruction;
-
+	static public Object createObject (Class type) throws InvocationTargetException {
 		// Use no-arg constructor.
 		Constructor constructor = null;
 		for (Constructor typeConstructor : type.getConstructors()) {

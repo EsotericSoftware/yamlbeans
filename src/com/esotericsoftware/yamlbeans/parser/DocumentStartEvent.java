@@ -20,7 +20,6 @@ import java.util.Map;
 
 import com.esotericsoftware.yamlbeans.Version;
 
-
 /**
  * @author <a href="mailto:misc@n4te.com">Nathan Sweet</a>
  * @author <a href="mailto:ola.bini@ki.se">Ola Bini</a>

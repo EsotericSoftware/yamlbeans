@@ -21,7 +21,6 @@ import java.util.Date;
 
 import com.esotericsoftware.yamlbeans.YamlException;
 
-
 /**
  * @author <a href="mailto:misc@n4te.com">Nathan Sweet</a>
  */

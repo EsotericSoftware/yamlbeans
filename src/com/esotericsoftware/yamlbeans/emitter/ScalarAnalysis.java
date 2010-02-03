@@ -109,8 +109,7 @@ class ScalarAnalysis {
 			}
 			if (ceh == '\n' || '\u0085' == ceh) lineBreaks = true;
 			if (escapeUnicode) {
-				if (ceh != '\n' && ceh != '\t' && !('\u0020' <= ceh && ceh <= '\u007E')) 
-					specialCharacters = true;
+				if (ceh != '\n' && ceh != '\t' && !('\u0020' <= ceh && ceh <= '\u007E')) specialCharacters = true;
 			}
 			if (' ' == ceh || '\n' == ceh || '\u0085' == ceh) {
 				if (spaces && breaks) {

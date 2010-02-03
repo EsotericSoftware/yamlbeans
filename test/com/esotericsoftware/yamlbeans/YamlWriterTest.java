@@ -185,6 +185,15 @@ public class YamlWriterTest extends TestCase {
 		assertEquals(3, roundTrip.getZ());
 	}
 
+	public void testConstructorPropertiesMixed () throws Exception {
+		ConstructorPropertiesSampleMixed object = new ConstructorPropertiesSampleMixed(1, 2);
+		object.setZ(3);
+		ConstructorPropertiesSampleMixed roundTrip = (ConstructorPropertiesSampleMixed)roundTrip(object);
+		assertEquals(1, roundTrip.getX());
+		assertEquals(2, roundTrip.getY());
+		assertEquals(3, roundTrip.getZ());
+	}
+
 	private Object roundTrip (Object object) throws Exception {
 		return roundTrip(object, null, new YamlConfig());
 	}
@@ -292,6 +301,32 @@ public class YamlWriterTest extends TestCase {
 
 		public int getZ () {
 			return z;
+		}
+	}
+
+	static public class ConstructorPropertiesSampleMixed {
+		private int x, y, z;
+
+		@ConstructorProperties( {"x", "y"})
+		public ConstructorPropertiesSampleMixed (int x, int y) {
+			this.x = x;
+			this.y = y;
+		}
+
+		public int getX () {
+			return x;
+		}
+
+		public int getY () {
+			return y;
+		}
+
+		public int getZ () {
+			return z;
+		}
+
+		public void setZ (int z) {
+			this.z = z;
 		}
 	}
 }
