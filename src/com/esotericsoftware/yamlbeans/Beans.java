@@ -52,11 +52,11 @@ class Beans {
 		ConstructorParameters parameters = config.readConfig.constructorParameters.get(type);
 		if (parameters != null) return new DeferredConstruction(parameters.constructor, parameters.parameterNames);
 		try {
-			Class constructoProperties = Class.forName("java.beans.ConstructorProperties");
+			Class constructorProperties = Class.forName("java.beans.ConstructorProperties");
 			for (Constructor typeConstructor : type.getConstructors()) {
-				Annotation annotation = typeConstructor.getAnnotation(constructoProperties);
+				Annotation annotation = typeConstructor.getAnnotation(constructorProperties);
 				if (annotation == null) continue;
-				String[] parameterNames = (String[])constructoProperties.getMethod("value").invoke(annotation, (Object[])null);
+				String[] parameterNames = (String[])constructorProperties.getMethod("value").invoke(annotation, (Object[])null);
 				return new DeferredConstruction(typeConstructor, parameterNames);
 			}
 		} catch (Exception ignored) {
