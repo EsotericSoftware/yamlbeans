@@ -17,6 +17,7 @@
 package com.esotericsoftware.yamlbeans;
 
 import java.beans.ConstructorProperties;
+import java.io.File;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Date;
@@ -26,6 +27,8 @@ import java.util.List;
 import java.util.Map;
 
 import junit.framework.TestCase;
+
+import com.esotericsoftware.yamlbeans.scalar.ScalarSerializer;
 
 /**
  * @author <a href="mailto:misc@n4te.com">Nathan Sweet</a>
@@ -194,6 +197,23 @@ public class YamlWriterTest extends TestCase {
 		assertEquals(3, roundTrip.getZ());
 	}
 
+	public void testScalarSerializer () throws Exception {
+		YamlConfig config = new YamlConfig();
+		config.setScalarSerializer(File.class, new ScalarSerializer<File>() {
+			public File read (String value) throws YamlException {
+				return new File(value);
+			}
+
+			public String write (File file) throws YamlException {
+				return file.toString();
+			}
+		});
+		ClassWithFile object = new ClassWithFile();
+		object.file = new File("some/path/andFile.txt");
+		ClassWithFile roundTrip = roundTrip(object, ClassWithFile.class, config);
+		assertEquals(object.file, roundTrip.file);
+	}
+
 	private Object roundTrip (Object object) throws Exception {
 		return roundTrip(object, null, new YamlConfig());
 	}
@@ -328,5 +348,9 @@ public class YamlWriterTest extends TestCase {
 		public void setZ (int z) {
 			this.z = z;
 		}
+	}
+
+	static public class ClassWithFile {
+		public File file;
 	}
 }
