@@ -273,9 +273,13 @@ public class YamlWriter {
 	private void countObjectReferences (Object object) throws YamlException {
 		if (object == null || Beans.isScalar(object.getClass())) return;
 
+		// Count every reference to the object, but follow its own references the first time it is encountered.
 		Integer count = referenceCount.get(object);
-		if (count == null) count = 0;
-		referenceCount.put(object, count + 1);
+		if (count != null) {
+			referenceCount.put(object, count + 1);
+			return;
+		}
+		referenceCount.put(object, 1);
 
 		if (object instanceof Collection) {
 			for (Object item : (Collection)object)
