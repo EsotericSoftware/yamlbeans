@@ -127,6 +127,36 @@ public class YamlReaderTest extends TestCase {
 		System.out.println(new YamlReader(value).read());
 	}
 
+	static public class Node {
+		public Node left, right, parent;
+		public String value;
+	}
+
+	public void testCyclicReferences () throws Exception {
+		String yaml = "" + //
+			"&1 !node\n" + //
+			"left: !node\n" + //
+			"   parent: *1\n" + //
+			"   value: Left Node\n" + //
+			"right: !node\n" + //
+			"   parent: *1\n" + //
+			"   value: Right Node\n" + //
+			"value: The Root\n";
+
+		YamlReader reader = new YamlReader(yaml);
+		reader.getConfig().setClassTag("node", Node.class);
+		Node root = (Node)reader.read();
+		assertEquals("The Root", root.value);
+		assertEquals("Left Node", root.left.value);
+		assertEquals("Right Node", root.right.value);
+		assertTrue(root.left.parent == root);
+		assertTrue(root.left.left == null);
+		assertTrue(root.left.right == null);
+		assertTrue(root.right.parent == root);
+		assertTrue(root.right.left == null);
+		assertTrue(root.right.right == null);
+	}
+
 	private Test read (String yaml) throws Exception {
 		if (true) {
 			System.out.println(yaml);

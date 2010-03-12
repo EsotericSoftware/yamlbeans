@@ -150,12 +150,11 @@ public class YamlReader {
 			type = defaultType;
 		}
 
-		Object value = readValueInternal(type, elementType);
-		if (anchor != null) anchors.put(anchor, value);
-		return value;
+		return readValueInternal(type, elementType, anchor);
 	}
 
-	private Object readValueInternal (Class type, Class elementType) throws YamlException, ParserException, TokenizerException {
+	private Object readValueInternal (Class type, Class elementType, String anchor) throws YamlException, ParserException,
+		TokenizerException {
 		if (type == null || type == Object.class) {
 			Event event = parser.peekNextEvent();
 			switch (event.type) {
@@ -176,7 +175,9 @@ public class YamlReader {
 		if (type == String.class) {
 			Event event = parser.getNextEvent();
 			if (event.type != SCALAR) throw new YamlReaderException("Expected scalar for String type but found: " + event.type);
-			return ((ScalarEvent)event).value;
+			String value = ((ScalarEvent)event).value;
+			if (anchor != null) anchors.put(anchor, value);
+			return value;
 		}
 
 		if (Beans.isScalar(type)) {
@@ -206,6 +207,7 @@ public class YamlReader {
 					convertedValue = Byte.valueOf(value);
 				} else
 					throw new YamlException("Unknown field type.");
+				if (anchor != null) anchors.put(anchor, convertedValue);
 				return convertedValue;
 			} catch (Exception ex) {
 				throw new YamlReaderException("Unable to convert value to required type \"" + type + "\": " + value, ex);
@@ -231,7 +233,9 @@ public class YamlReader {
 				if (event.type != SCALAR)
 					throw new YamlReaderException("Expected scalar for type '" + type + "' to be deserialized by scalar serializer '"
 						+ serializer.getClass().getName() + "' but found: " + event.type);
-				return serializer.read(((ScalarEvent)event).value);
+				Object value = serializer.read(((ScalarEvent)event).value);
+				if (anchor != null) anchors.put(anchor, value);
+				return value;
 			}
 		}
 
@@ -246,6 +250,7 @@ public class YamlReader {
 			} catch (InvocationTargetException ex) {
 				throw new YamlReaderException("Error creating object.", ex);
 			}
+			if (anchor != null) anchors.put(anchor, object);
 			while (true) {
 				if (parser.peekNextEvent().type == MAPPING_END) {
 					parser.getNextEvent();
@@ -294,6 +299,7 @@ public class YamlReader {
 				elementType = type.getComponentType();
 			} else
 				throw new YamlReaderException("A sequence is not a valid value for the type: " + type.getName());
+			if (!type.isArray() && anchor != null) anchors.put(anchor, collection);
 			while (true) {
 				event = parser.peekNextEvent();
 				if (event.type == SEQUENCE_END) {
@@ -307,6 +313,7 @@ public class YamlReader {
 			int i = 0;
 			for (Object object : collection)
 				Array.set(array, i++, object);
+			if (anchor != null) anchors.put(anchor, array);
 			return array;
 		}
 		case SCALAR:
