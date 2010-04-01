@@ -27,7 +27,8 @@ public class YamlException extends IOException {
 	}
 
 	public YamlException (String message, Throwable cause) {
-		super(message, cause);
+		super(message);
+		initCause(cause);
 	}
 
 	public YamlException (String message) {
@@ -35,6 +36,6 @@ public class YamlException extends IOException {
 	}
 
 	public YamlException (Throwable cause) {
-		super(cause);
+		initCause(cause);
 	}
 }
