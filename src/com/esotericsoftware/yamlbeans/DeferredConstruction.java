@@ -31,18 +31,25 @@ import com.esotericsoftware.yamlbeans.Beans.Property;
 class DeferredConstruction {
 	private final Constructor constructor;
 	private final String[] parameterNames;
-	private final Object[] parameterValues;
+	private final ParameterValue[] parameterValues;
 	private final List<PropertyValue> propertyValues = new ArrayList(16);
 
 	public DeferredConstruction (Constructor constructor, String[] parameterNames) {
 		this.constructor = constructor;
 		this.parameterNames = parameterNames;
-		parameterValues = new Object[parameterNames.length];
+		parameterValues = new ParameterValue[parameterNames.length];
 	}
 
 	public Object construct () throws InvocationTargetException {
 		try {
-			Object object = constructor.newInstance(parameterValues);
+			Object[] parameters = new Object[parameterValues.length];
+			int i = 0;
+			for (ParameterValue parameter : parameterValues) {
+				if (parameter == null)
+					throw new InvocationTargetException(new YamlException("Missing constructor property: " + parameterNames[i]));
+				parameters[i++] = parameter.value;
+			}
+			Object object = constructor.newInstance(parameters);
 			for (PropertyValue propertyValue : propertyValues)
 				propertyValue.property.set(object, propertyValue.value);
 			return object;
@@ -56,7 +63,9 @@ class DeferredConstruction {
 		int index = 0;
 		for (String name : parameterNames) {
 			if (property.getName().equals(name)) {
-				parameterValues[index] = value;
+				ParameterValue parameterValue = new ParameterValue();
+				parameterValue.value = value;
+				parameterValues[index] = parameterValue;
 				return;
 			}
 			index++;
@@ -76,6 +85,10 @@ class DeferredConstruction {
 
 	static class PropertyValue {
 		Property property;
+		Object value;
+	}
+
+	static class ParameterValue {
 		Object value;
 	}
 }
