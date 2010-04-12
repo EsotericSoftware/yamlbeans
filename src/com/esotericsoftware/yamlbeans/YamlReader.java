@@ -189,22 +189,38 @@ public class YamlReader {
 				Object convertedValue;
 				if (type == String.class) {
 					convertedValue = value;
-				} else if (type == Integer.TYPE || type == Integer.class) {
+				} else if (type == Integer.TYPE) {
 					convertedValue = Integer.valueOf(value);
-				} else if (type == Boolean.TYPE || type == Boolean.class) {
+				} else if (type == Integer.class) {
+					convertedValue = value.length() == 0 ? null : Integer.valueOf(value);
+				} else if (type == Boolean.TYPE) {
 					convertedValue = Boolean.valueOf(value);
-				} else if (type == Float.TYPE || type == Float.class) {
+				} else if (type == Boolean.class) {
+					convertedValue = value.length() == 0 ? null : Boolean.valueOf(value);
+				} else if (type == Float.TYPE) {
 					convertedValue = Float.valueOf(value);
-				} else if (type == Double.TYPE || type == Double.class) {
+				} else if (type == Float.class) {
+					convertedValue = value.length() == 0 ? null : Float.valueOf(value);
+				} else if (type == Double.TYPE) {
 					convertedValue = Double.valueOf(value);
-				} else if (type == Long.TYPE || type == Long.class) {
+				} else if (type == Double.class) {
+					convertedValue = value.length() == 0 ? null : Double.valueOf(value);
+				} else if (type == Long.TYPE) {
 					convertedValue = Long.valueOf(value);
-				} else if (type == Short.TYPE || type == Short.class) {
+				} else if (type == Long.class) {
+					convertedValue = value.length() == 0 ? null : Long.valueOf(value);
+				} else if (type == Short.TYPE) {
 					convertedValue = Short.valueOf(value);
-				} else if (type == Character.TYPE || type == Character.class) {
+				} else if (type == Short.class) {
+					convertedValue = value.length() == 0 ? null : Short.valueOf(value);
+				} else if (type == Character.TYPE) {
 					convertedValue = value.charAt(0);
-				} else if (type == Byte.TYPE || type == Byte.class) {
+				} else if (type == Character.class) {
+					convertedValue = value.length() == 0 ? null : value.charAt(0);
+				} else if (type == Byte.TYPE) {
 					convertedValue = Byte.valueOf(value);
+				} else if (type == Byte.class) {
+					convertedValue = value.length() == 0 ? null : Byte.valueOf(value);
 				} else
 					throw new YamlException("Unknown field type.");
 				if (anchor != null) anchors.put(anchor, convertedValue);
