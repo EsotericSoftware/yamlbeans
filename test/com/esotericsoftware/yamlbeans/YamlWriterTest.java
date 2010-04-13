@@ -141,6 +141,16 @@ public class YamlWriterTest extends TestCase {
 		roundTrip(test, Test.class, config);
 	}
 
+	public void testLongMapKey () throws Exception {
+		StringBuffer longKey = new StringBuffer();
+		for (int i = 0; i < 128; i++)
+			longKey.append("A");
+		Map<String, String> map = new HashMap();
+		map.put(longKey.toString(), "X");
+		Map copy = (Map)roundTrip(map);
+		assertEquals("X", copy.get(longKey.toString()));
+	}
+
 	public void testSingleQuotes () throws Exception {
 		Test test = new Test();
 		test.stringValue = "" + //

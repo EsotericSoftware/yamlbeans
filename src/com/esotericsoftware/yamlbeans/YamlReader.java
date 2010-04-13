@@ -273,9 +273,18 @@ public class YamlReader {
 					break;
 				}
 				Object key = readValue(null, null, null);
+				// Explicit key/value pairs (using "? key\n: value\n") will come back as a map.
+				boolean isExplicitKey = key instanceof Map;
+				Object value = null;
+				if (isExplicitKey) {
+					Entry nameValuePair = (Entry)((Map)key).entrySet().iterator().next();
+					key = nameValuePair.getKey();
+					value = nameValuePair.getValue();
+				}
 				if (object instanceof Map) {
 					// Add to map.
-					((Map)object).put(key, readValue(elementType, null, null));
+					if (!isExplicitKey) value = readValue(elementType, null, null);
+					((Map)object).put(key, value);
 				} else {
 					// Set field on object.
 					try {
@@ -284,7 +293,8 @@ public class YamlReader {
 							throw new YamlReaderException("Unable to find property '" + key + "' on class: " + type.getName());
 						Class propertyElementType = config.propertyToElementType.get(property);
 						Class propertyDefaultType = config.propertyToDefaultType.get(property);
-						property.set(object, readValue(property.getType(), propertyElementType, propertyDefaultType));
+						if (!isExplicitKey) value = readValue(property.getType(), propertyElementType, propertyDefaultType);
+						property.set(object, value);
 					} catch (Exception ex) {
 						if (ex instanceof YamlReaderException) throw (YamlReaderException)ex;
 						throw new YamlReaderException("Error setting property '" + key + "' on class: " + type.getName(), ex);
