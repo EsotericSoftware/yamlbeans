@@ -303,7 +303,8 @@ public class YamlReader {
 			}
 			if (object instanceof DeferredConstruction) {
 				try {
-					return ((DeferredConstruction)object).construct();
+					object = ((DeferredConstruction)object).construct();
+					if (anchor != null) anchors.put(anchor, object); // Update anchor with real object.
 				} catch (InvocationTargetException ex) {
 					throw new YamlReaderException("Error creating object.", ex);
 				}
