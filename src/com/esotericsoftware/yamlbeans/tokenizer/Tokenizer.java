@@ -97,7 +97,8 @@ public class Tokenizer {
 	private int lineNumber = 0;
 	private int column = 0;
 	private int pointer = 0;
-	private final StringBuilder buffer;
+	private final StringBuilder buffer = new StringBuilder();
+	private final StringBuilder documentBuffer = new StringBuilder(1024);
 	private final Reader reader;
 	private final List<Token> tokens = new LinkedList();
 	private final List<Integer> indents = new LinkedList();
@@ -108,7 +109,6 @@ public class Tokenizer {
 		if (reader == null) throw new IllegalArgumentException("reader cannot be null.");
 		if (!(reader instanceof BufferedReader)) reader = new BufferedReader(reader);
 		this.reader = reader;
-		buffer = new StringBuilder();
 		eof = false;
 		fetchStreamStart();
 	}
@@ -136,6 +136,7 @@ public class Tokenizer {
 			tokensTaken++;
 			Token token = tokens.remove(0);
 			// System.out.println("Tokenizer: " + token);
+			if (token == Token.DOCUMENT_START) documentBuffer.setLength(0);
 			return token;
 		}
 		return null;
@@ -195,6 +196,7 @@ public class Tokenizer {
 		char ch = 0;
 		for (int i = 0, j = buff.length(); i < j; i++) {
 			ch = buff.charAt(i);
+			documentBuffer.append(ch);
 			pointer++;
 			if (LINEBR.indexOf(ch) != -1 || ch == '\r' && buff.charAt(i + 1) != '\n') {
 				column = 0;
@@ -207,6 +209,7 @@ public class Tokenizer {
 	private void forward () {
 		if (pointer + 2 >= buffer.length()) update(2);
 		char ch1 = buffer.charAt(pointer);
+		documentBuffer.append(ch1);
 		pointer++;
 		if (ch1 == '\n' || ch1 == '\u0085' || ch1 == '\r' && buffer.charAt(pointer) != '\n') {
 			column = 0;
@@ -220,6 +223,7 @@ public class Tokenizer {
 		char ch = 0;
 		for (int i = 0; i < length; i++) {
 			ch = buffer.charAt(pointer);
+			documentBuffer.append(ch);
 			pointer++;
 			if (LINEBR.indexOf(ch) != -1 || ch == '\r' && buffer.charAt(pointer) != '\n') {
 				column = 0;
@@ -930,7 +934,7 @@ public class Tokenizer {
 		int ind = indent + 1;
 		String spaces = "";
 		boolean f_nzero = true;
-		Pattern r_check = R_FLOWNONZERO;
+		Pattern r_check = R_FLOWNONZERO; // BOZO - A document that contains only a string should preserve newlines.
 		if (flowLevel == 0) {
 			f_nzero = false;
 			r_check = R_FLOWZERO;
@@ -1066,6 +1070,10 @@ public class Tokenizer {
 
 	private String ch (char ch) {
 		return "'" + ch + "' (" + (int)ch + ")";
+	}
+
+	public String getDocument () {
+		return documentBuffer.toString().trim();
 	}
 
 	public class TokenizerException extends RuntimeException {

@@ -102,6 +102,10 @@ public class Parser {
 		return tokenizer.getColumn();
 	}
 
+	public String getDocument () {
+		return tokenizer.getDocument();
+	}
+
 	public void close () throws IOException {
 		tokenizer.close();
 	}

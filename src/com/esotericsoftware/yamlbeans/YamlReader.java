@@ -76,6 +76,25 @@ public class YamlReader {
 	}
 
 	/**
+	 * Returns the YAML text of the next YAML document.
+	 */
+	public String readDocument () throws YamlException {
+		while (true) {
+			Event event = parser.getNextEvent();
+			if (event == null) return null;
+			if (event.type == STREAM_END) break;
+			if (event.type == DOCUMENT_START) break;
+		}
+		while (true) {
+			Event event = parser.getNextEvent();
+			if (event == null) return null;
+			if (event.type == STREAM_END) break;
+			if (event.type == DOCUMENT_END) break;
+		}
+		return parser.getDocument();
+	}
+
+	/**
 	 * Reads the next YAML document and deserializes it into an object. The type of object is defined by the YAML tag. If there is
 	 * no YAML tag, the object will be an {@link ArrayList}, {@link HashMap}, or String.
 	 */
