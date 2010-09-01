@@ -1,0 +1,1 @@
+classpath: lib|*.jar|!junit*.jar
