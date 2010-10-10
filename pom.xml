@@ -5,7 +5,7 @@
 
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>com.googlecode.yamlbeans</groupId>
+  <groupId>com.esotericsoftware.yamlbeans</groupId>
   <artifactId>yamlbeans</artifactId>
   <version>1.04</version>
 
