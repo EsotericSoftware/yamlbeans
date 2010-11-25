@@ -34,7 +34,7 @@ import java.util.Date;
  * @author Steve Leach
  */
 class DateTimeParser extends DateFormat {
-	private static final String DATEFORMAT_YAML = "yyyy-MM-dd hh:mm:ss";
+	private static final String DATEFORMAT_YAML = "yyyy-MM-dd HH:mm:ss";
 	private static final int FORMAT_NONE = -1;
 
 	private SimpleDateFormat outputFormat;
