@@ -111,7 +111,10 @@ public class YamlReader {
 		}
 	}
 
-	private Object readValue (Class type, Class elementType, Class defaultType) throws YamlException, ParserException,
+	/**
+	 * Reads an object from the YAML. Can be overidden to take some action for any of the objects returned.
+	 */
+	protected Object readValue (Class type, Class elementType, Class defaultType) throws YamlException, ParserException,
 		TokenizerException {
 		String tag = null, anchor = null;
 		Event event = parser.peekNextEvent();
