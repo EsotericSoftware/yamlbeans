@@ -34,6 +34,13 @@ import com.esotericsoftware.yamlbeans.scalar.ScalarSerializer;
  * @author <a href="mailto:misc@n4te.com">Nathan Sweet</a>
  */
 public class YamlWriterTest extends TestCase {
+	public void testPrivateFields () throws Exception {
+		ArrayList list = new ArrayList();
+		list.add("abc");
+		list.add("123");
+		roundTrip(new PrivateFields(list, 123l));
+	}
+
 	public void testSimpleTypes () throws Exception {
 		String string = "simple string";
 		assertEquals(string, roundTrip(string));
@@ -314,8 +321,7 @@ public class YamlWriterTest extends TestCase {
 	static public class ConstructorPropertiesSample {
 		private int x, y, z;
 
-		@ConstructorProperties( {"x", "y", "z"})
-		public ConstructorPropertiesSample (int x, int y, int z) {
+		@ConstructorProperties({"x", "y", "z"}) public ConstructorPropertiesSample (int x, int y, int z) {
 			this.x = x;
 			this.y = y;
 			this.z = z;
@@ -337,8 +343,7 @@ public class YamlWriterTest extends TestCase {
 	static public class ConstructorPropertiesSampleMixed {
 		private int x, y, z;
 
-		@ConstructorProperties( {"x", "y"})
-		public ConstructorPropertiesSampleMixed (int x, int y) {
+		@ConstructorProperties({"x", "y"}) public ConstructorPropertiesSampleMixed (int x, int y) {
 			this.x = x;
 			this.y = y;
 		}
@@ -362,5 +367,38 @@ public class YamlWriterTest extends TestCase {
 
 	static public class ClassWithFile {
 		public File file;
+	}
+
+	static public class PrivateFields {
+		private Long QTime = null;
+		private List<String> result;
+
+		@ConstructorProperties({"result", "QTime"})
+		public PrivateFields (List<String> result, Long QTime) {
+			this.result = result;
+			this.QTime = QTime;
+		}
+
+		public List<String> getResult () {
+			return result;
+		}
+
+		public Long getQTime () {
+			return QTime;
+		}
+
+		public boolean equals (Object obj) {
+			if (this == obj) return true;
+			if (obj == null) return false;
+			if (getClass() != obj.getClass()) return false;
+			PrivateFields other = (PrivateFields)obj;
+			if (QTime == null) {
+				if (other.QTime != null) return false;
+			} else if (!QTime.equals(other.QTime)) return false;
+			if (result == null) {
+				if (other.result != null) return false;
+			} else if (!result.equals(other.result)) return false;
+			return true;
+		}
 	}
 }
