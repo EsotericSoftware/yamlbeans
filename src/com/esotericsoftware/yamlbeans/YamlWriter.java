@@ -231,7 +231,7 @@ public class YamlWriter {
 		// Value must be a bean.
 
 		Object prototype = null;
-		if (!config.writeConfig.writeDefaultValues) {
+		if (!config.writeConfig.writeDefaultValues && valueClass != Class.class) {
 			prototype = defaultValuePrototypes.get(valueClass);
 			if (prototype == null && Beans.getDeferredConstruction(valueClass, config) == null) {
 				try {
