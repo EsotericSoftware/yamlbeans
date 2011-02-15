@@ -53,6 +53,7 @@ public class YamlConfig {
 	final Map<Property, Class> propertyToDefaultType = new HashMap();
 	boolean beanProperties = true;
 	boolean privateFields;
+	boolean privateConstructors = true;
 
 	public YamlConfig () {
 		scalarSerializers.put(Date.class, new DateSerializer());
@@ -142,6 +143,13 @@ public class YamlConfig {
 	 */
 	public void setPrivateFields (boolean privateFields) {
 		this.privateFields = privateFields;
+	}
+
+	/**
+	 * If true, private no-arg constructors will be used. Default is true.
+	 */
+	public void setPrivateConstructors (boolean privateConstructors) {
+		this.privateConstructors = privateConstructors;
 	}
 
 	static public class WriteConfig {

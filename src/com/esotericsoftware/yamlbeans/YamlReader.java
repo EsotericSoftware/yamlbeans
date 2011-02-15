@@ -320,7 +320,7 @@ public class YamlReader {
 			Collection collection;
 			if (Collection.class.isAssignableFrom(type)) {
 				try {
-					collection = (Collection)Beans.createObject(type);
+					collection = (Collection)Beans.createObject(type, config.privateConstructors);
 				} catch (InvocationTargetException ex) {
 					throw new YamlReaderException("Error creating object.", ex);
 				}
@@ -365,7 +365,7 @@ public class YamlReader {
 		// Use deferred construction if a non-zero-arg constructor is available.
 		DeferredConstruction deferredConstruction = Beans.getDeferredConstruction(type, config);
 		if (deferredConstruction != null) return deferredConstruction;
-		return Beans.createObject(type);
+		return Beans.createObject(type, config.privateConstructors);
 	}
 
 	public class YamlReaderException extends YamlException {

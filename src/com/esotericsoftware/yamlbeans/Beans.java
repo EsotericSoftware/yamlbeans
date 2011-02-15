@@ -74,7 +74,7 @@ class Beans {
 		return false;
 	}
 
-	static public Object createObject (Class type) throws InvocationTargetException {
+	static public Object createObject (Class type, boolean privateConstructors) throws InvocationTargetException {
 		// Use no-arg constructor.
 		Constructor constructor = null;
 		for (Constructor typeConstructor : type.getConstructors()) {
@@ -84,9 +84,19 @@ class Beans {
 			}
 		}
 
+		if (constructor == null && privateConstructors) {
+			// Try a private constructor.
+			try {
+				constructor = type.getDeclaredConstructor();
+				constructor.setAccessible(true);
+			} catch (SecurityException ignored) {
+			} catch (NoSuchMethodException ignored) {
+			}
+		}
+
 		// Otherwise try to use a common implementation.
-		try {
-			if (constructor == null) {
+		if (constructor == null) {
+			try {
 				if (List.class.isAssignableFrom(type)) {
 					constructor = ArrayList.class.getConstructor(new Class[0]);
 				} else if (Set.class.isAssignableFrom(type)) {
@@ -94,9 +104,9 @@ class Beans {
 				} else if (Map.class.isAssignableFrom(type)) {
 					constructor = HashMap.class.getConstructor(new Class[0]);
 				}
+			} catch (Exception ex) {
+				throw new InvocationTargetException(ex, "Error getting constructor for class: " + type.getName());
 			}
-		} catch (Exception ex) {
-			throw new InvocationTargetException(ex, "Error getting constructor for class: " + type.getName());
 		}
 
 		if (constructor == null)

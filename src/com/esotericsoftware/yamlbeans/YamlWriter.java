@@ -235,7 +235,7 @@ public class YamlWriter {
 			prototype = defaultValuePrototypes.get(valueClass);
 			if (prototype == null && Beans.getDeferredConstruction(valueClass, config) == null) {
 				try {
-					prototype = Beans.createObject(valueClass);
+					prototype = Beans.createObject(valueClass, config.privateConstructors);
 				} catch (InvocationTargetException ex) {
 					throw new YamlException("Error creating object prototype to determine default values.", ex);
 				}
