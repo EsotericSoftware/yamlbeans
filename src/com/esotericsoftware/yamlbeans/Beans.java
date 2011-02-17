@@ -178,8 +178,8 @@ class Beans {
 	static public class MethodProperty extends Property {
 		private final PropertyDescriptor property;
 
-		public MethodProperty (Class declaringClass, PropertyDescriptor property) {
-			super(declaringClass, property.getName(), property.getPropertyType());
+		public MethodProperty (Class declaringClass, PropertyDescriptor property) throws IntrospectionException {
+			super(declaringClass, property);
 			this.property = property;
 		}
 
@@ -222,10 +222,25 @@ class Beans {
 		private final String name;
 		private final Class type;
 
-		public Property (Class declaringClass, String name, Class type) {
+		Property (Class declaringClass, String name, Class type) {
 			this.declaringClass = declaringClass;
 			this.name = name;
 			this.type = type;
+		}
+
+		Property (Class declaringClass, PropertyDescriptor property) throws IntrospectionException {
+			this.declaringClass = declaringClass;
+			this.name = property.getName();
+			try {
+				// The PropertyDescriptor returns the wrong type if the getter is an implementation of a interface method with a
+				// generic return value.
+				type = property.getReadMethod().getDeclaringClass()
+					.getDeclaredMethod(property.getReadMethod().getName(), new Class[0]).getReturnType();
+			} catch (Exception ex) {
+				IntrospectionException introspectionEx = new IntrospectionException("Error getting ");
+				introspectionEx.initCause(ex);
+				throw introspectionEx;
+			}
 		}
 
 		public int hashCode () {

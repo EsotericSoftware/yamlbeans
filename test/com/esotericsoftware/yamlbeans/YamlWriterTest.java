@@ -41,6 +41,44 @@ public class YamlWriterTest extends TestCase {
 		roundTrip(new PrivateFields(list, 123l));
 	}
 
+	static public interface Key<ID> {
+		ID getId ();
+
+		void setId (ID id);
+	}
+
+	static public class Obj implements Key<Long> {
+		public Obj () {
+		}
+
+		public Obj (Long id) {
+			this.id = id;
+		}
+
+		Long id;
+
+		public Long getId () {
+			return id;
+		}
+
+		public void setId (Long id) {
+			this.id = id;
+		}
+	}
+
+	public void testYamlLong () throws Exception {
+		StringWriter stringWriter = new StringWriter();
+		YamlWriter writer = new YamlWriter(stringWriter);
+		writer.getConfig().setClassTag("obj", Obj.class);
+		writer.write(new Obj(1l));
+		writer.close();
+
+		YamlReader reader = new YamlReader(stringWriter.toString());
+		reader.getConfig().setClassTag("obj", Obj.class);
+		Obj obj = reader.read(Obj.class);
+		System.out.println(obj.getId());
+	}
+
 	public void testSimpleTypes () throws Exception {
 		String string = "simple string";
 		assertEquals(string, roundTrip(string));
@@ -373,8 +411,7 @@ public class YamlWriterTest extends TestCase {
 		private Long QTime = null;
 		private List<String> result;
 
-		@ConstructorProperties({"result", "QTime"})
-		public PrivateFields (List<String> result, Long QTime) {
+		@ConstructorProperties({"result", "QTime"}) public PrivateFields (List<String> result, Long QTime) {
 			this.result = result;
 			this.QTime = QTime;
 		}
