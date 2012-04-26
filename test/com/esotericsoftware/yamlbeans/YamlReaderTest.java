@@ -28,7 +28,7 @@ public class YamlReaderTest extends TestCase {
 	public void testSimpleFields () throws Exception {
 		Test test = read( //
 		"stringValue: moo\ufec9moo\n" + //
-			"intValue: 123\n" + //
+			"intValue: !!int 123\n" + //
 			"floatValue: 0.3\n" + //
 			"doubleValue: 0.0002\n" + //
 			"longValue: 999999\n" + //

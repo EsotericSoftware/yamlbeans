@@ -201,12 +201,12 @@ class EmitterWriter {
 					writer.write(data);
 					start = ending;
 				}
-				if (ceh == '\'') {
+			}
+			if (ceh == '\'') {
 					data = "''";
 					column += 2;
 					writer.write(data);
 					start = ending + 1;
-				}
 			}
 			if (ceh != 0) {
 				spaces = ceh == ' ';
