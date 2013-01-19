@@ -16,23 +16,6 @@
 
 package com.esotericsoftware.yamlbeans;
 
-import java.beans.IntrospectionException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.lang.reflect.Array;
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Map.Entry;
-
 import com.esotericsoftware.yamlbeans.Beans.Property;
 import com.esotericsoftware.yamlbeans.YamlConfig.WriteConfig;
 import com.esotericsoftware.yamlbeans.emitter.Emitter;
@@ -45,10 +28,24 @@ import com.esotericsoftware.yamlbeans.parser.ScalarEvent;
 import com.esotericsoftware.yamlbeans.parser.SequenceStartEvent;
 import com.esotericsoftware.yamlbeans.scalar.ScalarSerializer;
 
-/**
- * Serializes Java objects as YAML.
- * @author <a href="mailto:misc@n4te.com">Nathan Sweet</a>
- */
+import java.beans.IntrospectionException;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.lang.reflect.Array;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
+/** Serializes Java objects as YAML.
+ * @author <a href="mailto:misc@n4te.com">Nathan Sweet</a> */
 public class YamlWriter {
 	private final YamlConfig config;
 	private final Emitter emitter;
@@ -69,6 +66,10 @@ public class YamlWriter {
 	public YamlWriter (Writer writer, YamlConfig config) {
 		this.config = config;
 		emitter = new Emitter(writer, config.writeConfig.emitterConfig);
+	}
+
+	public void setAlias (Object object, String alias) {
+		anchoredObjects.put(object, alias);
 	}
 
 	public void write (Object object) throws YamlException {
@@ -101,17 +102,13 @@ public class YamlWriter {
 		}
 	}
 
-	/**
-	 * Returns the YAML emitter, which allows the YAML output to be configured.
-	 */
+	/** Returns the YAML emitter, which allows the YAML output to be configured. */
 	public Emitter getEmitter () {
 		return emitter;
 	}
 
-	/**
-	 * Writes any buffered objects, then resets the list of anchored objects.
-	 * @see WriteConfig#setAutoAnchor(boolean)
-	 */
+	/** Writes any buffered objects, then resets the list of anchored objects.
+	 * @see WriteConfig#setAutoAnchor(boolean) */
 	public void clearAnchors () throws YamlException {
 		for (Object object : queuedObjects)
 			writeInternal(object);
@@ -120,10 +117,8 @@ public class YamlWriter {
 		nextAnchor = 1;
 	}
 
-	/**
-	 * Finishes writing any buffered output and releases all resources.
-	 * @throws YamlException If the buffered output could not be written or the writer could not be closed.
-	 */
+	/** Finishes writing any buffered output and releases all resources.
+	 * @throws YamlException If the buffered output could not be written or the writer could not be closed. */
 	public void close () throws YamlException {
 		clearAnchors();
 		defaultValuePrototypes.clear();
@@ -161,7 +156,7 @@ public class YamlWriter {
 			return;
 		}
 
-		String anchor = null;
+		String anchor = anchoredObjects.get(object);
 		if (config.writeConfig.autoAnchor) {
 			Integer count = referenceCount.get(object);
 			if (count == null) {
@@ -170,8 +165,10 @@ public class YamlWriter {
 			}
 			if (count > 1) {
 				referenceCount.remove(object);
-				anchor = String.valueOf(nextAnchor++);
-				anchoredObjects.put(object, anchor);
+				if (anchor == null) {
+					anchor = String.valueOf(nextAnchor++);
+					anchoredObjects.put(object, anchor);
+				}
 			}
 		}
 
@@ -317,14 +314,5 @@ public class YamlWriter {
 			}
 			countObjectReferences(propertyValue);
 		}
-	}
-
-	public static void main (String[] args) throws Exception {
-		YamlConfig config = new YamlConfig();
-		config.writeConfig.setAutoAnchor(true);
-
-		YamlReader reader = new YamlReader(new FileReader("test/test.yml"));
-		YamlWriter writer = new YamlWriter(new OutputStreamWriter(System.out));
-		writer.write(reader.read());
 	}
 }

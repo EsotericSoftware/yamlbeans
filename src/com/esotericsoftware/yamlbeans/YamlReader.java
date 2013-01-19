@@ -40,10 +40,8 @@ import com.esotericsoftware.yamlbeans.parser.Parser.ParserException;
 import com.esotericsoftware.yamlbeans.scalar.ScalarSerializer;
 import com.esotericsoftware.yamlbeans.tokenizer.Tokenizer.TokenizerException;
 
-/**
- * Deserializes Java objects from YAML.
- * @author <a href="mailto:misc@n4te.com">Nathan Sweet</a>
- */
+/** Deserializes Java objects from YAML.
+ * @author <a href="mailto:misc@n4te.com">Nathan Sweet</a> */
 public class YamlReader {
 	private final YamlConfig config;
 	Parser parser;
@@ -70,31 +68,30 @@ public class YamlReader {
 		return config;
 	}
 
+	/** Return the object with the given alias, or null. This is only valid after objects have been read and before {@link #close()} */
+	public Object get (String alias) {
+		return anchors.get(alias);
+	}
+
 	public void close () throws IOException {
 		parser.close();
 		anchors.clear();
 	}
 
-	/**
-	 * Reads the next YAML document and deserializes it into an object. The type of object is defined by the YAML tag. If there is
-	 * no YAML tag, the object will be an {@link ArrayList}, {@link HashMap}, or String.
-	 */
+	/** Reads the next YAML document and deserializes it into an object. The type of object is defined by the YAML tag. If there is
+	 * no YAML tag, the object will be an {@link ArrayList}, {@link HashMap}, or String. */
 	public Object read () throws YamlException {
 		return read(null);
 	}
 
-	/**
-	 * Reads an object of the specified type from YAML.
-	 * @param type The type of object to read. If null, behaves the same as {{@link #read()}.
-	 */
+	/** Reads an object of the specified type from YAML.
+	 * @param type The type of object to read. If null, behaves the same as {{@link #read()}. */
 	public <T> T read (Class<T> type) throws YamlException {
 		return read(type, null);
 	}
 
-	/**
-	 * Reads an array, Map, List, or Collection object of the specified type from YAML, using the specified element type.
-	 * @param type The type of object to read. If null, behaves the same as {{@link #read()}.
-	 */
+	/** Reads an array, Map, List, or Collection object of the specified type from YAML, using the specified element type.
+	 * @param type The type of object to read. If null, behaves the same as {{@link #read()}. */
 	public <T> T read (Class<T> type, Class elementType) throws YamlException {
 		try {
 			while (true) {
@@ -111,9 +108,7 @@ public class YamlReader {
 		}
 	}
 
-	/**
-	 * Reads an object from the YAML. Can be overidden to take some action for any of the objects returned.
-	 */
+	/** Reads an object from the YAML. Can be overidden to take some action for any of the objects returned. */
 	protected Object readValue (Class type, Class elementType, Class defaultType) throws YamlException, ParserException,
 		TokenizerException {
 		String tag = null, anchor = null;
@@ -135,6 +130,7 @@ public class YamlReader {
 			tag = ((ScalarEvent)event).tag;
 			anchor = ((ScalarEvent)event).anchor;
 			break;
+		default:
 		}
 
 		if (tag != null) {
@@ -358,9 +354,7 @@ public class YamlReader {
 		}
 	}
 
-	/**
-	 * Returns a new object of the requested type.
-	 */
+	/** Returns a new object of the requested type. */
 	protected Object createObject (Class type) throws InvocationTargetException {
 		// Use deferred construction if a non-zero-arg constructor is available.
 		DeferredConstruction deferredConstruction = Beans.getDeferredConstruction(type, config);
