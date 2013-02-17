@@ -146,28 +146,26 @@ public class YamlWriter {
 		boolean unknownType = fieldClass == null;
 		if (unknownType) fieldClass = valueClass;
 
-		if (Beans.isScalar(valueClass)) {
-			emitter.emit(new ScalarEvent(null, null, new boolean[] {true, true}, String.valueOf(object), (char)0));
-			return;
-		}
-
 		if (object instanceof Enum) {
 			emitter.emit(new ScalarEvent(null, null, new boolean[] {true, true}, ((Enum)object).name(), (char)0));
 			return;
 		}
 
-		String anchor = anchoredObjects.get(object);
-		if (config.writeConfig.autoAnchor) {
-			Integer count = referenceCount.get(object);
-			if (count == null) {
-				emitter.emit(new AliasEvent(anchoredObjects.get(object)));
-				return;
-			}
-			if (count > 1) {
-				referenceCount.remove(object);
-				if (anchor == null) {
-					anchor = String.valueOf(nextAnchor++);
-					anchoredObjects.put(object, anchor);
+		String anchor = null;
+		if (!Beans.isScalar(valueClass)) {
+			anchor = anchoredObjects.get(object);
+			if (config.writeConfig.autoAnchor) {
+				Integer count = referenceCount.get(object);
+				if (count == null) {
+					emitter.emit(new AliasEvent(anchoredObjects.get(object)));
+					return;
+				}
+				if (count > 1) {
+					referenceCount.remove(object);
+					if (anchor == null) {
+						anchor = String.valueOf(nextAnchor++);
+						anchoredObjects.put(object, anchor);
+					}
 				}
 			}
 		}
@@ -192,6 +190,11 @@ public class YamlWriter {
 				emitter.emit(new ScalarEvent(null, tag, new boolean[] {tag == null, tag == null}, serializer.write(object), (char)0));
 				return;
 			}
+		}
+
+		if (Beans.isScalar(valueClass)) {
+			emitter.emit(new ScalarEvent(null, null, new boolean[] {true, true}, String.valueOf(object), (char)0));
+			return;
 		}
 
 		if (object instanceof Collection) {
