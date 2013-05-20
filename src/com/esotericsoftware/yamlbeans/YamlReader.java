@@ -189,9 +189,9 @@ public class YamlReader {
 				if (type == String.class) {
 					convertedValue = value;
 				} else if (type == Integer.TYPE) {
-					convertedValue = Integer.valueOf(value);
+					convertedValue = Integer.decode(value);
 				} else if (type == Integer.class) {
-					convertedValue = value.length() == 0 ? null : Integer.valueOf(value);
+					convertedValue = value.length() == 0 ? null : Integer.decode(value);
 				} else if (type == Boolean.TYPE) {
 					convertedValue = Boolean.valueOf(value);
 				} else if (type == Boolean.class) {
@@ -205,21 +205,21 @@ public class YamlReader {
 				} else if (type == Double.class) {
 					convertedValue = value.length() == 0 ? null : Double.valueOf(value);
 				} else if (type == Long.TYPE) {
-					convertedValue = Long.valueOf(value);
+					convertedValue = Long.decode(value);
 				} else if (type == Long.class) {
-					convertedValue = value.length() == 0 ? null : Long.valueOf(value);
+					convertedValue = value.length() == 0 ? null : Long.decode(value);
 				} else if (type == Short.TYPE) {
-					convertedValue = Short.valueOf(value);
+					convertedValue = Short.decode(value);
 				} else if (type == Short.class) {
-					convertedValue = value.length() == 0 ? null : Short.valueOf(value);
+					convertedValue = value.length() == 0 ? null : Short.decode(value);
 				} else if (type == Character.TYPE) {
 					convertedValue = value.charAt(0);
 				} else if (type == Character.class) {
 					convertedValue = value.length() == 0 ? null : value.charAt(0);
 				} else if (type == Byte.TYPE) {
-					convertedValue = Byte.valueOf(value);
+					convertedValue = Byte.decode(value);
 				} else if (type == Byte.class) {
-					convertedValue = value.length() == 0 ? null : Byte.valueOf(value);
+					convertedValue = value.length() == 0 ? null : Byte.decode(value);
 				} else
 					throw new YamlException("Unknown field type.");
 				if (anchor != null) anchors.put(anchor, convertedValue);
