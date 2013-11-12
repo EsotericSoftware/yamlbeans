@@ -1,13 +1,13 @@
 ## Overview
 
-!YamlBeans makes it easy to serialize and deserialize Java object graphs to and from YAML, a human-friendly data format. Replace XML and properties files with YAML for more expressive power (lists, maps, anchors, etc) and easier hand-editing.
+YamlBeans makes it easy to serialize and deserialize Java object graphs to and from YAML, a human-friendly data format. Replace XML and properties files with YAML for more expressive power (lists, maps, anchors, etc) and easier hand-editing.
 
 Maven Central:
 http://repo1.maven.org/maven2/com/esotericsoftware/yamlbeans/yamlbeans/
 
 ## Basic deserialization
 
-The !YamlReader class is used to deserialize YAML to Java objects. The following YAML defines a Map with four entries. The "phone numbers" entry is a List of two items, each of which is a Map.
+The YamlReader class is used to deserialize YAML to Java objects. The following YAML defines a Map with four entries. The "phone numbers" entry is a List of two items, each of which is a Map.
 
 ```yaml
     name: Nathan Sweet
@@ -20,7 +20,7 @@ The !YamlReader class is used to deserialize YAML to Java objects. The following
        number: 425-555-2306
 ```
 
-The "read" method reads the next YAML document and deserializes it into !HashMaps, !ArrayLists, and Strings. Since we know the root object defined in the YAML of our example is a Map, we can cast the object and make use of it.
+The "read" method reads the next YAML document and deserializes it into HashMaps, ArrayLists, and Strings. Since we know the root object defined in the YAML of our example is a Map, we can cast the object and make use of it.
 
 ```java
     YamlReader reader = new YamlReader(new FileReader("contact.yml"));
@@ -32,7 +32,7 @@ The "read" method reads the next YAML document and deserializes it into !HashMap
 
 ## Multiple objects
 
-A stream of YAML can contain more than one YAML document. Each call to !YamlReader#read() deserializes the next document into an object. YAML documents are delimited by "---" (this is optional for the first document).
+A stream of YAML can contain more than one YAML document. Each call to YamlReader#read() deserializes the next document into an object. YAML documents are delimited by "---" (this is optional for the first document).
 
 ```yaml
     name: Nathan Sweet
@@ -55,7 +55,7 @@ This prints the String "28" then "25":
 
 ## Deserializing other classes
 
-There are two ways to deserialize something other than !HashMaps, !ArrayLists, and Strings. Imagine this YAML document and Java class:
+There are two ways to deserialize something other than HashMaps, ArrayLists, and Strings. Imagine this YAML document and Java class:
 
 ```yaml
     name: Nathan Sweet
@@ -68,7 +68,7 @@ There are two ways to deserialize something other than !HashMaps, !ArrayLists, a
     }
 ```
 
-The "read" method can be passed a class, so the !YamlReader knows what it is deserializing:
+The "read" method can be passed a class, so the YamlReader knows what it is deserializing:
 
 ```java
     YamlReader reader = new YamlReader(new FileReader("contact.yml"));
@@ -76,9 +76,9 @@ The "read" method can be passed a class, so the !YamlReader knows what it is des
     System.out.println(contact.age);
 ```
 
-The !YamlReader creates an instance of the Contact class and sets the "name" and "age" fields. The !YamlReader determines the "age" value in the YAML needs to be converted into a int. Deserialization would have failed if the age was not a valid int. The !YamlReader can set public fields and bean setter methods.
+The YamlReader creates an instance of the Contact class and sets the "name" and "age" fields. The YamlReader determines the "age" value in the YAML needs to be converted into a int. Deserialization would have failed if the age was not a valid int. The YamlReader can set public fields and bean setter methods.
 
-Instead of telling the !YamlReader what type to deserialize, the type can alternatively be specified in the YAML using a tag:
+Instead of telling the YamlReader what type to deserialize, the type can alternatively be specified in the YAML using a tag:
 
 ```yaml
     !com.example.Contact
@@ -88,7 +88,7 @@ Instead of telling the !YamlReader what type to deserialize, the type can altern
 
 ## Serializing objects
 
-The !YamlWriter class is used to serialize Java objects to YAML. The "write" method automatically handles this by recognizing public fields and bean getter methods.
+The YamlWriter class is used to serialize Java objects to YAML. The "write" method automatically handles this by recognizing public fields and bean getter methods.
 
 ```java
     Contact contact = new Contact();
@@ -107,7 +107,7 @@ This outputs:
     age: 28
 ```
 
-The tags are automatically output as needed so that the !YamlReader class will be able to reconstruct the object graph. For example, serializing this !ArrayList does not output any tag for the list because !YamlReader uses an !ArrayList by default.
+The tags are automatically output as needed so that the YamlReader class will be able to reconstruct the object graph. For example, serializing this ArrayList does not output any tag for the list because YamlReader uses an ArrayList by default.
 
 ```java
     List list = new ArrayList();
@@ -119,7 +119,7 @@ The tags are automatically output as needed so that the !YamlReader class will b
     - cow
 ```
 
-If the list was a !LinkedList, then !YamlWriter knows that a tag is needed and outputs:
+If the list was a LinkedList, then YamlWriter knows that a tag is needed and outputs:
 
 ```java
     List list = new LinkedList();
@@ -132,11 +132,11 @@ If the list was a !LinkedList, then !YamlWriter knows that a tag is needed and o
     - cow
 ```
 
-Note that it is not advisable to subclass Collection or Map. !YamlBeans will only serialize the collection or map and its elements, not any additional fields.
+Note that it is not advisable to subclass Collection or Map. YamlBeans will only serialize the collection or map and its elements, not any additional fields.
 
 ## Complex graphs
 
-!YamlBeans can serialize any object graph.
+YamlBeans can serialize any object graph.
 
 ```java
     public class Contact {
@@ -200,7 +200,7 @@ The output no longer contains the full classname for the Contact class.
 
 ## Lists and maps
 
-When reading or writing a List or Map, !YamlBeans cannot know what type of objects are supposed to be in the List or Map, so it will write out a tag.
+When reading or writing a List or Map, YamlBeans cannot know what type of objects are supposed to be in the List or Map, so it will write out a tag.
 
 ```yaml
     !com.example.Contact
@@ -223,7 +223,7 @@ This can make the YAML less readable. To improve this, you may define what eleme
     writer.close();
 ```
 
-Now !YamlBeans knows what to expect for elements of the "phoneNumbers" field, so extra tags will not be output.
+Now YamlBeans knows what to expect for elements of the "phoneNumbers" field, so extra tags will not be output.
 
 ```yaml
     !com.example.Contact
@@ -234,7 +234,7 @@ Now !YamlBeans knows what to expect for elements of the "phoneNumbers" field, so
             - number: 206-555-7654
 ```
 
-Setting the element type for a Map field tells !YamlBeans what to expect for values in the Map. Keys in a Map are always Strings.
+Setting the element type for a Map field tells YamlBeans what to expect for values in the Map. Keys in a Map are always Strings.
 
 ## Anchors
 
@@ -248,7 +248,7 @@ When an object graph contains multiple references to the same object, an anchor 
     best friend: *1
 ```
 
-In this map, the "oldest friend" and "best friend" keys reference the same object. The !YamlReader automatically handles the anchors in the YAML when rebuilding the object graph. By default, the !YamlWriter automatically outputs anchors when writing objects.
+In this map, the "oldest friend" and "best friend" keys reference the same object. The YamlReader automatically handles the anchors in the YAML when rebuilding the object graph. By default, the YamlWriter automatically outputs anchors when writing objects.
 
 ```java
     Contact contact = new Contact();
@@ -261,10 +261,10 @@ In this map, the "oldest friend" and "best friend" keys reference the same objec
 
 ## Architecture
 
-The YAML tokenizer, parser, and emitter are based on those from the JvYAML project. They have been heavily refactored, bugs fixed, etc. The rest of the JvYAML project was not used because of its complexity. !YamlBeans strives for the simplest possible thing that works, with the goal being to make it easy to use the YAML data format with Java.
+The YAML tokenizer, parser, and emitter are based on those from the JvYAML project. They have been heavily refactored, bugs fixed, etc. The rest of the JvYAML project was not used because of its complexity. YamlBeans strives for the simplest possible thing that works, with the goal being to make it easy to use the YAML data format with Java.
 
-!YamlBeans supports YAML version 1.0 and 1.1.
+YamlBeans supports YAML version 1.0 and 1.1.
 
 ## More info
 
-See the javadocs for various other features available on the !YamlConfig class.
+See the javadocs for various other features available on the YamlConfig class.
