@@ -18,6 +18,16 @@ package com.esotericsoftware.yamlbeans;
 
 import static com.esotericsoftware.yamlbeans.parser.EventType.*;
 
+import com.esotericsoftware.yamlbeans.Beans.Property;
+import com.esotericsoftware.yamlbeans.parser.AliasEvent;
+import com.esotericsoftware.yamlbeans.parser.CollectionStartEvent;
+import com.esotericsoftware.yamlbeans.parser.Event;
+import com.esotericsoftware.yamlbeans.parser.Parser;
+import com.esotericsoftware.yamlbeans.parser.Parser.ParserException;
+import com.esotericsoftware.yamlbeans.parser.ScalarEvent;
+import com.esotericsoftware.yamlbeans.scalar.ScalarSerializer;
+import com.esotericsoftware.yamlbeans.tokenizer.Tokenizer.TokenizerException;
+
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
@@ -29,16 +39,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import com.esotericsoftware.yamlbeans.Beans.Property;
-import com.esotericsoftware.yamlbeans.parser.AliasEvent;
-import com.esotericsoftware.yamlbeans.parser.CollectionStartEvent;
-import com.esotericsoftware.yamlbeans.parser.Event;
-import com.esotericsoftware.yamlbeans.parser.Parser;
-import com.esotericsoftware.yamlbeans.parser.ScalarEvent;
-import com.esotericsoftware.yamlbeans.parser.Parser.ParserException;
-import com.esotericsoftware.yamlbeans.scalar.ScalarSerializer;
-import com.esotericsoftware.yamlbeans.tokenizer.Tokenizer.TokenizerException;
 
 /** Deserializes Java objects from YAML.
  * @author <a href="mailto:misc@n4te.com">Nathan Sweet</a> */
@@ -189,35 +189,35 @@ public class YamlReader {
 				if (type == String.class) {
 					convertedValue = value;
 				} else if (type == Integer.TYPE) {
-					convertedValue = Integer.decode(value);
+					convertedValue = value.length() == 0 ? 0 : Integer.decode(value);
 				} else if (type == Integer.class) {
 					convertedValue = value.length() == 0 ? null : Integer.decode(value);
 				} else if (type == Boolean.TYPE) {
-					convertedValue = Boolean.valueOf(value);
+					convertedValue = value.length() == 0 ? false : Boolean.valueOf(value);
 				} else if (type == Boolean.class) {
 					convertedValue = value.length() == 0 ? null : Boolean.valueOf(value);
 				} else if (type == Float.TYPE) {
-					convertedValue = Float.valueOf(value);
+					convertedValue = value.length() == 0 ? 0 : Float.valueOf(value);
 				} else if (type == Float.class) {
 					convertedValue = value.length() == 0 ? null : Float.valueOf(value);
 				} else if (type == Double.TYPE) {
-					convertedValue = Double.valueOf(value);
+					convertedValue = value.length() == 0 ? 0 : Double.valueOf(value);
 				} else if (type == Double.class) {
 					convertedValue = value.length() == 0 ? null : Double.valueOf(value);
 				} else if (type == Long.TYPE) {
-					convertedValue = Long.decode(value);
+					convertedValue = value.length() == 0 ? 0 : Long.decode(value);
 				} else if (type == Long.class) {
 					convertedValue = value.length() == 0 ? null : Long.decode(value);
 				} else if (type == Short.TYPE) {
-					convertedValue = Short.decode(value);
+					convertedValue = value.length() == 0 ? 0 : Short.decode(value);
 				} else if (type == Short.class) {
 					convertedValue = value.length() == 0 ? null : Short.decode(value);
 				} else if (type == Character.TYPE) {
-					convertedValue = value.charAt(0);
+					convertedValue = value.length() == 0 ? 0 : value.charAt(0);
 				} else if (type == Character.class) {
 					convertedValue = value.length() == 0 ? null : value.charAt(0);
 				} else if (type == Byte.TYPE) {
-					convertedValue = Byte.decode(value);
+					convertedValue = value.length() == 0 ? 0 : Byte.decode(value);
 				} else if (type == Byte.class) {
 					convertedValue = value.length() == 0 ? null : Byte.decode(value);
 				} else
@@ -344,6 +344,7 @@ public class YamlReader {
 		}
 		case SCALAR:
 			// Interpret an empty scalar as null.
+			System.out.println(((ScalarEvent)event).value);
 			if (((ScalarEvent)event).value.length() == 0) {
 				event = parser.getNextEvent();
 				return null;
