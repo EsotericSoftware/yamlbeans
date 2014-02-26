@@ -16,6 +16,8 @@
 
 package com.esotericsoftware.yamlbeans;
 
+import com.esotericsoftware.yamlbeans.scalar.ScalarSerializer;
+
 import java.beans.ConstructorProperties;
 import java.io.File;
 import java.io.StringWriter;
@@ -28,11 +30,7 @@ import java.util.Map;
 
 import junit.framework.TestCase;
 
-import com.esotericsoftware.yamlbeans.scalar.ScalarSerializer;
-
-/**
- * @author <a href="mailto:misc@n4te.com">Nathan Sweet</a>
- */
+/** @author <a href="mailto:misc@n4te.com">Nathan Sweet</a> */
 public class YamlWriterTest extends TestCase {
 	public void testPrivateFields () throws Exception {
 		ArrayList list = new ArrayList();
@@ -206,7 +204,7 @@ public class YamlWriterTest extends TestCase {
 		roundTrip(test);
 	}
 
-	public void testExplicitDocumentEnd() throws Exception {
+	public void testExplicitDocumentEnd () throws Exception {
 		YamlConfig config = new YamlConfig();
 		config.writeConfig.explicitEndDocument = true;
 
@@ -224,7 +222,7 @@ public class YamlWriterTest extends TestCase {
 		assertEquals("test\n...\n--- test\n...\n", buffer.toString());
 	}
 
-	void checkWriterOutput(String example, String expected) throws Exception {
+	void checkWriterOutput (String example, String expected) throws Exception {
 		StringWriter buffer = new StringWriter();
 		YamlWriter writer = new YamlWriter(buffer, new YamlConfig());
 		writer.write(example);
@@ -242,7 +240,6 @@ public class YamlWriterTest extends TestCase {
 		// That was the initial bug:
 		checkWriterOutput("A: 'X'", "'A: ''X'''\n");
 	}
-
 
 	public void testObjectField () throws Exception {
 		ValueHolder object = new ValueHolder();
@@ -397,7 +394,8 @@ public class YamlWriterTest extends TestCase {
 	static public class ConstructorPropertiesSample {
 		private int x, y, z;
 
-		@ConstructorProperties({"x", "y", "z"}) public ConstructorPropertiesSample (int x, int y, int z) {
+		@ConstructorProperties({"x", "y", "z"})
+		public ConstructorPropertiesSample (int x, int y, int z) {
 			this.x = x;
 			this.y = y;
 			this.z = z;
@@ -419,7 +417,8 @@ public class YamlWriterTest extends TestCase {
 	static public class ConstructorPropertiesSampleMixed {
 		private int x, y, z;
 
-		@ConstructorProperties({"x", "y"}) public ConstructorPropertiesSampleMixed (int x, int y) {
+		@ConstructorProperties({"x", "y"})
+		public ConstructorPropertiesSampleMixed (int x, int y) {
 			this.x = x;
 			this.y = y;
 		}
@@ -449,7 +448,8 @@ public class YamlWriterTest extends TestCase {
 		private Long QTime = null;
 		private List<String> result;
 
-		@ConstructorProperties({"result", "QTime"}) public PrivateFields (List<String> result, Long QTime) {
+		@ConstructorProperties({"result", "QTime"})
+		public PrivateFields (List<String> result, Long QTime) {
 			this.result = result;
 			this.QTime = QTime;
 		}

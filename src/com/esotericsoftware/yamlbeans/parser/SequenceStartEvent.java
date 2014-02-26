@@ -16,10 +16,8 @@
 
 package com.esotericsoftware.yamlbeans.parser;
 
-/**
- * @author <a href="mailto:misc@n4te.com">Nathan Sweet</a>
- * @author <a href="mailto:ola.bini@ki.se">Ola Bini</a>
- */
+/** @author <a href="mailto:misc@n4te.com">Nathan Sweet</a>
+ * @author <a href="mailto:ola.bini@ki.se">Ola Bini</a> */
 public class SequenceStartEvent extends CollectionStartEvent {
 	public SequenceStartEvent (String anchor, String tag, boolean implicit, boolean flowStyle) {
 		super(EventType.SEQUENCE_START, anchor, tag, implicit, flowStyle);

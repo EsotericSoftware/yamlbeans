@@ -21,9 +21,7 @@ import java.util.Map;
 
 import junit.framework.TestCase;
 
-/**
- * @author <a href="mailto:misc@n4te.com">Nathan Sweet</a>
- */
+/** @author <a href="mailto:misc@n4te.com">Nathan Sweet</a> */
 public class YamlReaderTest extends TestCase {
 	public void testSimpleFields () throws Exception {
 		Test test = read( //

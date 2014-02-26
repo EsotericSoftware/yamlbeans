@@ -16,9 +16,7 @@
 
 package com.esotericsoftware.yamlbeans.tokenizer;
 
-/**
- * @author <a href="mailto:misc@n4te.com">Nathan Sweet</a>
- */
+/** @author <a href="mailto:misc@n4te.com">Nathan Sweet</a> */
 public class AliasToken extends Token {
 	private String instanceName;
 

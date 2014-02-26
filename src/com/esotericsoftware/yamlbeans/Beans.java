@@ -16,6 +16,8 @@
 
 package com.esotericsoftware.yamlbeans;
 
+import com.esotericsoftware.yamlbeans.YamlConfig.ConstructorParameters;
+
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
@@ -33,12 +35,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import com.esotericsoftware.yamlbeans.YamlConfig.ConstructorParameters;
-
-/**
- * Utility for dealing with beans and public fields.
- * @author <a href="mailto:misc@n4te.com">Nathan Sweet</a>
- */
+/** Utility for dealing with beans and public fields.
+ * @author <a href="mailto:misc@n4te.com">Nathan Sweet</a> */
 class Beans {
 	private Beans () {
 	}

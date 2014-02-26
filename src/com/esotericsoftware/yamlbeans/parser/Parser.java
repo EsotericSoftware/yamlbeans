@@ -18,14 +18,6 @@ package com.esotericsoftware.yamlbeans.parser;
 
 import static com.esotericsoftware.yamlbeans.tokenizer.TokenType.*;
 
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.Reader;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-
 import com.esotericsoftware.yamlbeans.Version;
 import com.esotericsoftware.yamlbeans.tokenizer.AliasToken;
 import com.esotericsoftware.yamlbeans.tokenizer.AnchorToken;
@@ -37,11 +29,17 @@ import com.esotericsoftware.yamlbeans.tokenizer.TokenType;
 import com.esotericsoftware.yamlbeans.tokenizer.Tokenizer;
 import com.esotericsoftware.yamlbeans.tokenizer.Tokenizer.TokenizerException;
 
-/**
- * Parses a stream of tokens into events.
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.Reader;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
+/** Parses a stream of tokens into events.
  * @author <a href="mailto:misc@n4te.com">Nathan Sweet</a>
- * @author <a href="mailto:ola.bini@ki.se">Ola Bini</a>
- */
+ * @author <a href="mailto:ola.bini@ki.se">Ola Bini</a> */
 public class Parser {
 	Tokenizer tokenizer = null;
 	List<Production> parseStack = null;

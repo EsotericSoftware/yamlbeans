@@ -16,10 +16,8 @@
 
 package com.esotericsoftware.yamlbeans;
 
-/**
- * Represents the version of a YAML document.
- * @author <a href="mailto:misc@n4te.com">Nathan Sweet</a>
- */
+/** Represents the version of a YAML document.
+ * @author <a href="mailto:misc@n4te.com">Nathan Sweet</a> */
 public class Version {
 	public final int major;
 	public final int minor;

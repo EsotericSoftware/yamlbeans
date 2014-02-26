@@ -16,10 +16,8 @@
 
 package com.esotericsoftware.yamlbeans.parser;
 
-/**
- * @author <a href="mailto:misc@n4te.com">Nathan Sweet</a>
- * @author <a href="mailto:ola.bini@ki.se">Ola Bini</a>
- */
+/** @author <a href="mailto:misc@n4te.com">Nathan Sweet</a>
+ * @author <a href="mailto:ola.bini@ki.se">Ola Bini</a> */
 public class MappingStartEvent extends CollectionStartEvent {
 	public MappingStartEvent (String anchor, String tag, boolean implicit, boolean flowStyle) {
 		super(EventType.MAPPING_START, anchor, tag, implicit, flowStyle);

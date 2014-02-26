@@ -18,6 +18,16 @@ package com.esotericsoftware.yamlbeans.emitter;
 
 import static com.esotericsoftware.yamlbeans.parser.EventType.*;
 
+import com.esotericsoftware.yamlbeans.parser.CollectionStartEvent;
+import com.esotericsoftware.yamlbeans.parser.DocumentEndEvent;
+import com.esotericsoftware.yamlbeans.parser.DocumentStartEvent;
+import com.esotericsoftware.yamlbeans.parser.Event;
+import com.esotericsoftware.yamlbeans.parser.MappingStartEvent;
+import com.esotericsoftware.yamlbeans.parser.NodeEvent;
+import com.esotericsoftware.yamlbeans.parser.Parser;
+import com.esotericsoftware.yamlbeans.parser.ScalarEvent;
+import com.esotericsoftware.yamlbeans.parser.SequenceStartEvent;
+
 import java.io.BufferedWriter;
 import java.io.FileReader;
 import java.io.IOException;
@@ -32,21 +42,9 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 
-import com.esotericsoftware.yamlbeans.parser.CollectionStartEvent;
-import com.esotericsoftware.yamlbeans.parser.DocumentEndEvent;
-import com.esotericsoftware.yamlbeans.parser.DocumentStartEvent;
-import com.esotericsoftware.yamlbeans.parser.Event;
-import com.esotericsoftware.yamlbeans.parser.MappingStartEvent;
-import com.esotericsoftware.yamlbeans.parser.NodeEvent;
-import com.esotericsoftware.yamlbeans.parser.Parser;
-import com.esotericsoftware.yamlbeans.parser.ScalarEvent;
-import com.esotericsoftware.yamlbeans.parser.SequenceStartEvent;
-
-/**
- * Converts events into YAML output.
+/** Converts events into YAML output.
  * @author <a href="mailto:misc@n4te.com">Nathan Sweet</a>
- * @author <a href="mailto:ola.bini@ki.se">Ola Bini</a>
- */
+ * @author <a href="mailto:ola.bini@ki.se">Ola Bini</a> */
 public class Emitter {
 	static private final Pattern HANDLE_FORMAT = Pattern.compile("^![-\\w]*!$");
 	static private final Pattern ANCHOR_FORMAT = Pattern.compile("^[-\\w]*$");

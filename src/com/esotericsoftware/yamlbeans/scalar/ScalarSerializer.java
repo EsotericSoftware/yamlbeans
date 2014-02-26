@@ -18,9 +18,7 @@ package com.esotericsoftware.yamlbeans.scalar;
 
 import com.esotericsoftware.yamlbeans.YamlException;
 
-/**
- * @author <a href="mailto:misc@n4te.com">Nathan Sweet</a>
- */
+/** @author <a href="mailto:misc@n4te.com">Nathan Sweet</a> */
 public interface ScalarSerializer<T> {
 	abstract public String write (T object) throws YamlException;
 

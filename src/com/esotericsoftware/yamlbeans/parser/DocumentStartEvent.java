@@ -16,14 +16,12 @@
 
 package com.esotericsoftware.yamlbeans.parser;
 
-import java.util.Map;
-
 import com.esotericsoftware.yamlbeans.Version;
 
-/**
- * @author <a href="mailto:misc@n4te.com">Nathan Sweet</a>
- * @author <a href="mailto:ola.bini@ki.se">Ola Bini</a>
- */
+import java.util.Map;
+
+/** @author <a href="mailto:misc@n4te.com">Nathan Sweet</a>
+ * @author <a href="mailto:ola.bini@ki.se">Ola Bini</a> */
 public class DocumentStartEvent extends Event {
 	public final boolean isExplicit;
 	public final Version version;

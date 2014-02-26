@@ -18,9 +18,7 @@ package com.esotericsoftware.yamlbeans;
 
 import java.io.IOException;
 
-/**
- * @author <a href="mailto:misc@n4te.com">Nathan Sweet</a>
- */
+/** @author <a href="mailto:misc@n4te.com">Nathan Sweet</a> */
 public class YamlException extends IOException {
 	public YamlException () {
 		super();

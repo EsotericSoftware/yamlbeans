@@ -18,10 +18,8 @@ package com.esotericsoftware.yamlbeans.emitter;
 
 import java.util.regex.Pattern;
 
-/**
- * @author <a href="mailto:misc@n4te.com">Nathan Sweet</a>
- * @author <a href="mailto:ola.bini@ki.se">Ola Bini</a>
- */
+/** @author <a href="mailto:misc@n4te.com">Nathan Sweet</a>
+ * @author <a href="mailto:ola.bini@ki.se">Ola Bini</a> */
 class ScalarAnalysis {
 	static private final Pattern DOCUMENT_INDICATOR = Pattern.compile("^(---|\\.\\.\\.)");
 	static private final String NULL_BL_T_LINEBR = "\0 \t\r\n\u0085";

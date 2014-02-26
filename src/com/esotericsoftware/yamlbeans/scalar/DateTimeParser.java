@@ -24,15 +24,13 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
-/**
- * A flexible date/time parser.
+/** A flexible date/time parser.
  * <p>
  * Attempts to interpret whatever text it is given as a date and/or time.
  * <p>
  * Implemented as a DateFormat subclass, so can also be used to format dates as strings.
  * 
- * @author Steve Leach
- */
+ * @author Steve Leach */
 class DateTimeParser extends DateFormat {
 	private static final String DATEFORMAT_YAML = "yyyy-MM-dd HH:mm:ss";
 	private static final int FORMAT_NONE = -1;
@@ -108,18 +106,14 @@ class DateTimeParser extends DateFormat {
 		return outputFormat.format(date, buf, pos);
 	}
 
-	/**
-	 * Interface for parsers
-	 */
+	/** Interface for parsers */
 	static protected interface Parser {
 		public Date parse (String s) throws ParseException;
 	}
 
-	/**
-	 * Basic, flexible, parser implementation
+	/** Basic, flexible, parser implementation
 	 * <p>
-	 * A wrapper around DateFormat and SimpleDateFormat classes.
-	 */
+	 * A wrapper around DateFormat and SimpleDateFormat classes. */
 	static protected class SimpleParser implements Parser {
 		private DateFormat format;
 

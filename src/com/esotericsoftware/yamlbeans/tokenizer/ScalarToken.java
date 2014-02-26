@@ -16,9 +16,7 @@
 
 package com.esotericsoftware.yamlbeans.tokenizer;
 
-/**
- * @author <a href="mailto:misc@n4te.com">Nathan Sweet</a>
- */
+/** @author <a href="mailto:misc@n4te.com">Nathan Sweet</a> */
 public class ScalarToken extends Token {
 	private String value;
 	private boolean plain;

@@ -29,11 +29,9 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * Interprets a YAML document as a stream of tokens.
+/** Interprets a YAML document as a stream of tokens.
  * @author <a href="mailto:misc@n4te.com">Nathan Sweet</a>
- * @author <a href="mailto:ola.bini@ki.se">Ola Bini</a>
- */
+ * @author <a href="mailto:ola.bini@ki.se">Ola Bini</a> */
 public class Tokenizer {
 	private final static String LINEBR = "\n\u0085\u2028\u2029";
 	private final static String NULL_BL_LINEBR = "\0 \r\n\u0085";

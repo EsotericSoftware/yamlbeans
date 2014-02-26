@@ -16,9 +16,7 @@
 
 package com.esotericsoftware.yamlbeans.parser;
 
-/**
- * @author <a href="mailto:misc@n4te.com">Nathan Sweet</a>
- */
+/** @author <a href="mailto:misc@n4te.com">Nathan Sweet</a> */
 public class Event {
 	public static final Event MAPPING_END = new Event(EventType.MAPPING_END);
 	public static final Event SEQUENCE_END = new Event(EventType.SEQUENCE_END);

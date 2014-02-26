@@ -16,9 +16,7 @@
 
 package com.esotericsoftware.yamlbeans.tokenizer;
 
-/**
- * @author <a href="mailto:misc@n4te.com">Nathan Sweet</a>
- */
+/** @author <a href="mailto:misc@n4te.com">Nathan Sweet</a> */
 public class Token {
 	final static Token DOCUMENT_START = new Token(TokenType.DOCUMENT_START);
 	final static Token DOCUMENT_END = new Token(TokenType.DOCUMENT_END);

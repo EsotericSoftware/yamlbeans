@@ -18,10 +18,8 @@ package com.esotericsoftware.yamlbeans.parser;
 
 import java.util.Arrays;
 
-/**
- * @author <a href="mailto:misc@n4te.com">Nathan Sweet</a>
- * @author <a href="mailto:ola.bini@ki.se">Ola Bini</a>
- */
+/** @author <a href="mailto:misc@n4te.com">Nathan Sweet</a>
+ * @author <a href="mailto:ola.bini@ki.se">Ola Bini</a> */
 public class ScalarEvent extends NodeEvent {
 	public final String tag;
 	public final boolean[] implicit;

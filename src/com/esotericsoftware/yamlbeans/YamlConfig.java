@@ -16,6 +16,11 @@
 
 package com.esotericsoftware.yamlbeans;
 
+import com.esotericsoftware.yamlbeans.Beans.Property;
+import com.esotericsoftware.yamlbeans.emitter.EmitterConfig;
+import com.esotericsoftware.yamlbeans.scalar.DateSerializer;
+import com.esotericsoftware.yamlbeans.scalar.ScalarSerializer;
+
 import java.beans.IntrospectionException;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
@@ -26,24 +31,13 @@ import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
-import com.esotericsoftware.yamlbeans.Beans.Property;
-import com.esotericsoftware.yamlbeans.emitter.EmitterConfig;
-import com.esotericsoftware.yamlbeans.scalar.DateSerializer;
-import com.esotericsoftware.yamlbeans.scalar.ScalarSerializer;
-
-/**
- * Stores configuration for reading and writing YAML.
- * @author <a href="mailto:misc@n4te.com">Nathan Sweet</a>
- */
+/** Stores configuration for reading and writing YAML.
+ * @author <a href="mailto:misc@n4te.com">Nathan Sweet</a> */
 public class YamlConfig {
-	/**
-	 * Configuration for writing YAML.
-	 */
+	/** Configuration for writing YAML. */
 	public final WriteConfig writeConfig = new WriteConfig();
 
-	/**
-	 * Configuration for reading YAML.
-	 */
+	/** Configuration for reading YAML. */
 	public final ReadConfig readConfig = new ReadConfig();
 
 	final Map<String, String> classNameToTag = new HashMap();
@@ -65,9 +59,7 @@ public class YamlConfig {
 		tagToClass.put("tag:yaml.org,2002:float", Float.class);
 	}
 
-	/**
-	 * Allows the specified tag to be used in YAML instead of the full class name.
-	 */
+	/** Allows the specified tag to be used in YAML instead of the full class name. */
 	public void setClassTag (String tag, Class type) {
 		if (tag == null) throw new IllegalArgumentException("tag cannot be null.");
 		if (type == null) throw new IllegalArgumentException("type cannot be null.");
@@ -75,19 +67,15 @@ public class YamlConfig {
 		tagToClass.put(tag, type);
 	}
 
-	/**
-	 * Adds a serializer for the specified scalar type.
-	 */
+	/** Adds a serializer for the specified scalar type. */
 	public void setScalarSerializer (Class type, ScalarSerializer serializer) {
 		if (type == null) throw new IllegalArgumentException("type cannot be null.");
 		if (serializer == null) throw new IllegalArgumentException("serializer cannot be null.");
 		scalarSerializers.put(type, serializer);
 	}
 
-	/**
-	 * Sets the default type of elements in a Collection or Map property. No tag will be output for elements of this type. This
-	 * type will be used for each element if no tag is found.
-	 */
+	/** Sets the default type of elements in a Collection or Map property. No tag will be output for elements of this type. This
+	 * type will be used for each element if no tag is found. */
 	public void setPropertyElementType (Class type, String propertyName, Class elementType) {
 		if (type == null) throw new IllegalArgumentException("type cannot be null.");
 		if (propertyName == null) throw new IllegalArgumentException("propertyName cannot be null.");
@@ -109,10 +97,8 @@ public class YamlConfig {
 		propertyToElementType.put(property, elementType);
 	}
 
-	/**
-	 * Sets the default type of a property. No tag will be output for values of this type. This type will be used if no tag is
-	 * found.
-	 */
+	/** Sets the default type of a property. No tag will be output for values of this type. This type will be used if no tag is
+	 * found. */
 	public void setPropertyDefaultType (Class type, String propertyName, Class defaultType) {
 		if (type == null) throw new IllegalArgumentException("type cannot be null.");
 		if (propertyName == null) throw new IllegalArgumentException("propertyName cannot be null.");
@@ -131,23 +117,17 @@ public class YamlConfig {
 		propertyToDefaultType.put(property, defaultType);
 	}
 
-	/**
-	 * If true, bean properties with both a getter and setter will be used. Default is true.
-	 */
+	/** If true, bean properties with both a getter and setter will be used. Default is true. */
 	public void setBeanProperties (boolean beanProperties) {
 		this.beanProperties = beanProperties;
 	}
 
-	/**
-	 * If true, private non-transient fields will be used. Default is false.
-	 */
+	/** If true, private non-transient fields will be used. Default is false. */
 	public void setPrivateFields (boolean privateFields) {
 		this.privateFields = privateFields;
 	}
 
-	/**
-	 * If true, private no-arg constructors will be used. Default is true.
-	 */
+	/** If true, private no-arg constructors will be used. Default is true. */
 	public void setPrivateConstructors (boolean privateConstructors) {
 		this.privateConstructors = privateConstructors;
 	}
@@ -166,102 +146,76 @@ public class YamlConfig {
 			emitterConfig.setUseVerbatimTags(false);
 		}
 
-		/**
-		 * If true, the first document will have a document start token (---). Default is false.
-		 */
+		/** If true, the first document will have a document start token (---). Default is false. */
 		public void setExplicitFirstDocument (boolean explicitFirstDocument) {
 			this.explicitFirstDocument = explicitFirstDocument;
 		}
 
-		/**
-		 * If true, the every document will have a document end token (...). Default is false.
-		 */
+		/** If true, the every document will have a document end token (...). Default is false. */
 		public void setExplicitEndDocument (boolean explicitEndDocument) {
 			this.explicitEndDocument = explicitEndDocument;
 		}
 
-		/**
-		 * If true, the root of each YAML document will have a tag defining the class that was written, if necessary. Tags are not
+		/** If true, the root of each YAML document will have a tag defining the class that was written, if necessary. Tags are not
 		 * necessary for primitive types, Strings, {@link ArrayList}, or {@link HashMap}. It is useful to set this to false when
-		 * planning to read the object with the {@link YamlReader#read(Class)} method. Default is true.
-		 */
+		 * planning to read the object with the {@link YamlReader#read(Class)} method. Default is true. */
 		public void setWriteRootTags (boolean writeRootTags) {
 			this.writeRootTags = writeRootTags;
 		}
 
-		/**
-		 * If true, the elements of a Collection or Map root for each YAML document will have a tag defining the class that was
+		/** If true, the elements of a Collection or Map root for each YAML document will have a tag defining the class that was
 		 * written, if necessary. Tags are not necessary for primitive types, Strings, {@link ArrayList}, or {@link HashMap}. It is
 		 * useful to set this to false when planning to read the object with the {@link YamlReader#read(Class, Class)} method.
-		 * Default is true.
-		 */
+		 * Default is true. */
 		public void setWriteRootElementTags (boolean writeRootElementTags) {
 			this.writeRootElementTags = writeRootElementTags;
 		}
 
-		/**
-		 * If false, object fields with default values will not be written. A prototype object is created to determine the default
-		 * value for each field on the object. Default is false.
-		 */
+		/** If false, object fields with default values will not be written. A prototype object is created to determine the default
+		 * value for each field on the object. Default is false. */
 		public void setWriteDefaultValues (boolean writeDefaultValues) {
 			this.writeDefaultValues = writeDefaultValues;
 		}
 
-		/**
-		 * If true, values that are referenced multiple times will use an anchor. This works across YAML documents (ie multiple
+		/** If true, values that are referenced multiple times will use an anchor. This works across YAML documents (ie multiple
 		 * calls to {@link YamlWriter#write(Object)}). When true, objects are not actually written until
 		 * {@link YamlWriter#clearAnchors()} or {@link YamlWriter#close()} is called. If changing auto anchor to false,
-		 * {@link YamlWriter#clearAnchors()} should be called first to output any buffered objects. Default is true.
-		 */
+		 * {@link YamlWriter#clearAnchors()} should be called first to output any buffered objects. Default is true. */
 		public void setAutoAnchor (boolean autoAnchor) {
 			this.autoAnchor = autoAnchor;
 		}
 
-		/**
-		 * Sets the YAML version to output. Default is 1.1.
-		 */
+		/** Sets the YAML version to output. Default is 1.1. */
 		public void setVersion (Version version) {
 			emitterConfig.setVersion(version);
 		}
 
-		/**
-		 * If true, the YAML output will be canonical. Default is false.
-		 */
+		/** If true, the YAML output will be canonical. Default is false. */
 		public void setCanonical (boolean canonical) {
 			emitterConfig.setCanonical(canonical);
 		}
 
-		/**
-		 * Sets the number of spaces to indent. Default is 3.
-		 */
+		/** Sets the number of spaces to indent. Default is 3. */
 		public void setIndentSize (int indentSize) {
 			emitterConfig.setIndentSize(indentSize);
 		}
 
-		/**
-		 * Sets the column at which values will attempt to wrap. Default is 100.
-		 */
+		/** Sets the column at which values will attempt to wrap. Default is 100. */
 		public void setWrapColumn (int wrapColumn) {
 			emitterConfig.setWrapColumn(wrapColumn);
 		}
 
-		/**
-		 * If false, tags will never be surrounded by angle brackets (eg, "!<java.util.LinkedList>"). Default is false.
-		 */
+		/** If false, tags will never be surrounded by angle brackets (eg, "!<java.util.LinkedList>"). Default is false. */
 		public void setUseVerbatimTags (boolean useVerbatimTags) {
 			emitterConfig.setUseVerbatimTags(useVerbatimTags);
 		}
 
-		/**
-		 * If false, unicode characters will be output instead of the escaped unicode character code.
-		 */
+		/** If false, unicode characters will be output instead of the escaped unicode character code. */
 		public void setEscapeUnicode (boolean escapeUnicode) {
 			emitterConfig.setEscapeUnicode(escapeUnicode);
 		}
 
-		/**
-		 * If true, class name tags will always be output.
-		 */
+		/** If true, class name tags will always be output. */
 		public void setAlwaysWriteClassname (boolean write) {
 			alwaysWriteClassName = write;
 		}
@@ -275,25 +229,19 @@ public class YamlConfig {
 		ReadConfig () {
 		}
 
-		/**
-		 * Sets the default YAML version to expect if a YAML document does not explicitly specify a version. Default is 1.1.
-		 */
+		/** Sets the default YAML version to expect if a YAML document does not explicitly specify a version. Default is 1.1. */
 		public void setDefaultVersion (Version defaultVersion) {
 			if (defaultVersion == null) throw new IllegalArgumentException("defaultVersion cannot be null.");
 			this.defaultVersion = defaultVersion;
 		}
 
-		/**
-		 * Sets the class loader to use to find classes read from the YAML.
-		 */
+		/** Sets the class loader to use to find classes read from the YAML. */
 		public void setClassLoader (ClassLoader classLoader) {
 			this.classLoader = classLoader;
 		}
 
-		/**
-		 * Sets the names of the constructor parameters so classes without no-arg constructors can be instantiated. The Java 6+
-		 * annotation java.beans.ConstructorProperties can be used instead of this method.
-		 */
+		/** Sets the names of the constructor parameters so classes without no-arg constructors can be instantiated. The Java 6+
+		 * annotation java.beans.ConstructorProperties can be used instead of this method. */
 		public void setConstructorParameters (Class type, Class[] parameterTypes, String[] parameterNames) {
 			if (type == null) throw new IllegalArgumentException("type cannot be null.");
 			if (parameterTypes == null) throw new IllegalArgumentException("parameterTypes cannot be null.");

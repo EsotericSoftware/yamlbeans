@@ -21,10 +21,8 @@ import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * @author <a href="mailto:misc@n4te.com">Nathan Sweet</a>
- * @author <a href="mailto:ola.bini@ki.se">Ola Bini</a>
- */
+/** @author <a href="mailto:misc@n4te.com">Nathan Sweet</a>
+ * @author <a href="mailto:ola.bini@ki.se">Ola Bini</a> */
 class EmitterWriter {
 	private static final Map<Integer, String> ESCAPE_REPLACEMENTS = new HashMap();
 	static {
@@ -203,10 +201,10 @@ class EmitterWriter {
 				}
 			}
 			if (ceh == '\'') {
-					data = "''";
-					column += 2;
-					writer.write(data);
-					start = ending + 1;
+				data = "''";
+				column += 2;
+				writer.write(data);
+				start = ending + 1;
 			}
 			if (ceh != 0) {
 				spaces = ceh == ' ';

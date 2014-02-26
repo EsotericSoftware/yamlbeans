@@ -16,18 +16,16 @@
 
 package com.esotericsoftware.yamlbeans;
 
+import com.esotericsoftware.yamlbeans.Beans.Property;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.esotericsoftware.yamlbeans.Beans.Property;
-
-/**
- * Stores a constructor, parameters names, and property values so construction can be deferred until all property values are
+/** Stores a constructor, parameters names, and property values so construction can be deferred until all property values are
  * known.
- * @author <a href="mailto:misc@n4te.com">Nathan Sweet</a>
- */
+ * @author <a href="mailto:misc@n4te.com">Nathan Sweet</a> */
 class DeferredConstruction {
 	private final Constructor constructor;
 	private final String[] parameterNames;

@@ -16,14 +16,12 @@
 
 package com.esotericsoftware.yamlbeans.scalar;
 
+import com.esotericsoftware.yamlbeans.YamlException;
+
 import java.text.ParseException;
 import java.util.Date;
 
-import com.esotericsoftware.yamlbeans.YamlException;
-
-/**
- * @author <a href="mailto:misc@n4te.com">Nathan Sweet</a>
- */
+/** @author <a href="mailto:misc@n4te.com">Nathan Sweet</a> */
 public class DateSerializer implements ScalarSerializer<Date> {
 	private DateTimeParser dateParser = new DateTimeParser();
 
