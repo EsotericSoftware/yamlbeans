@@ -154,6 +154,7 @@ public class YamlConfig {
 
 	static public class WriteConfig {
 		boolean explicitFirstDocument = false;
+		boolean explicitEndDocument = false;
 		boolean writeDefaultValues = false;
 		boolean writeRootTags = true;
 		boolean writeRootElementTags = true;
@@ -170,6 +171,13 @@ public class YamlConfig {
 		 */
 		public void setExplicitFirstDocument (boolean explicitFirstDocument) {
 			this.explicitFirstDocument = explicitFirstDocument;
+		}
+
+		/**
+		 * If true, the every document will have a document end token (...). Default is false.
+		 */
+		public void setExplicitEndDocument (boolean explicitEndDocument) {
+			this.explicitEndDocument = explicitEndDocument;
 		}
 
 		/**
