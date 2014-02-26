@@ -21,6 +21,7 @@ import com.esotericsoftware.yamlbeans.YamlConfig.WriteConfig;
 import com.esotericsoftware.yamlbeans.emitter.Emitter;
 import com.esotericsoftware.yamlbeans.emitter.EmitterException;
 import com.esotericsoftware.yamlbeans.parser.AliasEvent;
+import com.esotericsoftware.yamlbeans.parser.DocumentEndEvent;
 import com.esotericsoftware.yamlbeans.parser.DocumentStartEvent;
 import com.esotericsoftware.yamlbeans.parser.Event;
 import com.esotericsoftware.yamlbeans.parser.MappingStartEvent;
@@ -94,7 +95,7 @@ public class YamlWriter {
 			emitter.emit(new DocumentStartEvent(config.writeConfig.explicitFirstDocument, null, null));
 			isRoot = true;
 			writeValue(object, config.writeConfig.writeRootTags ? null : object.getClass(), null, null);
-			emitter.emit(Event.DOCUMENT_END_FALSE);
+			emitter.emit(new DocumentEndEvent(config.writeConfig.explicitEndDocument));
 		} catch (EmitterException ex) {
 			throw new YamlException("Error writing YAML.", ex);
 		} catch (IOException ex) {

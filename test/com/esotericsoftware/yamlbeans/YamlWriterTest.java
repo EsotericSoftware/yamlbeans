@@ -206,6 +206,23 @@ public class YamlWriterTest extends TestCase {
 		roundTrip(test);
 	}
 
+	public void testExplicitDocumentEnd() throws Exception {
+		YamlConfig config = new YamlConfig();
+		config.writeConfig.explicitEndDocument = true;
+
+		StringWriter buffer = new StringWriter();
+		YamlWriter writer = new YamlWriter(buffer, config);
+		writer.write("test");
+		writer.close();
+		assertEquals("test\n...\n", buffer.toString());
+
+		buffer = new StringWriter();
+		writer = new YamlWriter(buffer, config);
+		writer.write("test");
+		writer.write("test");
+		writer.close();
+		assertEquals("test\n...\n--- test\n...\n", buffer.toString());
+	}
 
 	void checkWriterOutput(String example, String expected) throws Exception {
 		StringWriter buffer = new StringWriter();
