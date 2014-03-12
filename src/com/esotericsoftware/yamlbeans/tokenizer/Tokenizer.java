@@ -590,7 +590,7 @@ public class Tokenizer {
 		String minor = scanYamlDirectiveNumber();
 		if (NULL_BL_LINEBR.indexOf(peek()) == -1)
 			throw new TokenizerException("While scanning for a directive value, expected a digit or '.' but found: " + ch(peek()));
-		return major + " " + minor;
+		return major + "." + minor;
 	}
 
 	private String scanYamlDirectiveNumber () {
