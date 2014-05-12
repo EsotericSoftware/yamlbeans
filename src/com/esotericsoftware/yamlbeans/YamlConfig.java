@@ -91,9 +91,9 @@ public class YamlConfig {
 			throw new IllegalArgumentException("The class " + type.getName() + " does not have a property named: " + propertyName,
 				cause);
 		}
-		if (!Collection.class.isAssignableFrom(property.getType()) && !Map.class.isAssignableFrom(property.getType()))
+		if (!Collection.class.isAssignableFrom(property.getType()) && !Map.class.isAssignableFrom((Class<?>) property.getGenericType()))
 			throw new IllegalArgumentException("The '" + propertyName + "' property on the " + type.getName()
-				+ " class must be a Collection or Map: " + property.getType());
+				+ " class must be a Collection or Map: " + property.getGenericType());
 		propertyToElementType.put(property, elementType);
 	}
 
@@ -139,7 +139,9 @@ public class YamlConfig {
 		boolean writeRootTags = true;
 		boolean writeRootElementTags = true;
 		boolean autoAnchor = true;
-		boolean alwaysWriteClassName = false;
+		WriteClassName writeClassName = WriteClassName.AUTO;
+
+		//boolean alwaysWriteClassName = false;
 		EmitterConfig emitterConfig = new EmitterConfig();
 
 		WriteConfig () {
@@ -216,8 +218,8 @@ public class YamlConfig {
 		}
 
 		/** If true, class name tags will always be output. */
-		public void setAlwaysWriteClassname (boolean write) {
-			alwaysWriteClassName = write;
+		public void setWriteClassname (WriteClassName write) {
+			writeClassName = write;
 		}
 	}
 

@@ -8,7 +8,7 @@
 	<name>YamlBeans</name>
 	<groupId>com.esotericsoftware.yamlbeans</groupId>
 	<artifactId>yamlbeans</artifactId>
-	<version>1.05</version>
+	<version>1.05-generics</version>
 
 	<packaging>jar</packaging>
 	<description>Java object graphs, to and from YAML</description>
@@ -63,4 +63,5 @@
 			</roles>
 		</developer>
 	</developers>
+
 </project>

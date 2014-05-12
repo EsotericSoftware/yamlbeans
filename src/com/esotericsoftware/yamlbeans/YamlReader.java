@@ -16,8 +16,6 @@
 
 package com.esotericsoftware.yamlbeans;
 
-import static com.esotericsoftware.yamlbeans.parser.EventType.*;
-
 import com.esotericsoftware.yamlbeans.Beans.Property;
 import com.esotericsoftware.yamlbeans.parser.AliasEvent;
 import com.esotericsoftware.yamlbeans.parser.CollectionStartEvent;
@@ -34,11 +32,19 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import static com.esotericsoftware.yamlbeans.parser.EventType.DOCUMENT_START;
+import static com.esotericsoftware.yamlbeans.parser.EventType.MAPPING_END;
+import static com.esotericsoftware.yamlbeans.parser.EventType.SCALAR;
+import static com.esotericsoftware.yamlbeans.parser.EventType.SEQUENCE_END;
+import static com.esotericsoftware.yamlbeans.parser.EventType.STREAM_END;
 
 /** Deserializes Java objects from YAML.
  * @author <a href="mailto:misc@n4te.com">Nathan Sweet</a> */
@@ -47,60 +53,66 @@ public class YamlReader {
 	Parser parser;
 	private final Map<String, Object> anchors = new HashMap();
 
-	public YamlReader (Reader reader) {
+	public YamlReader(Reader reader) {
 		this(reader, new YamlConfig());
 	}
 
-	public YamlReader (Reader reader, YamlConfig config) {
+	public YamlReader(Reader reader, YamlConfig config) {
 		this.config = config;
 		parser = new Parser(reader, config.readConfig.defaultVersion);
 	}
 
-	public YamlReader (String yaml) {
+	public YamlReader(String yaml) {
 		this(new StringReader(yaml));
 	}
 
-	public YamlReader (String yaml, YamlConfig config) {
+	public YamlReader(String yaml, YamlConfig config) {
 		this(new StringReader(yaml), config);
 	}
 
-	public YamlConfig getConfig () {
+	public YamlConfig getConfig() {
 		return config;
 	}
 
 	/** Return the object with the given alias, or null. This is only valid after objects have been read and before {@link #close()} */
-	public Object get (String alias) {
+	public Object get(String alias) {
 		return anchors.get(alias);
 	}
 
-	public void close () throws IOException {
+	public void close() throws IOException {
 		parser.close();
 		anchors.clear();
 	}
 
 	/** Reads the next YAML document and deserializes it into an object. The type of object is defined by the YAML tag. If there is
 	 * no YAML tag, the object will be an {@link ArrayList}, {@link HashMap}, or String. */
-	public Object read () throws YamlException {
+	public Object read() throws YamlException {
 		return read(null);
 	}
 
 	/** Reads an object of the specified type from YAML.
 	 * @param type The type of object to read. If null, behaves the same as {{@link #read()}. */
-	public <T> T read (Class<T> type) throws YamlException {
+	public <T> T read(Class<T> type) throws YamlException {
 		return read(type, null);
 	}
 
 	/** Reads an array, Map, List, or Collection object of the specified type from YAML, using the specified element type.
 	 * @param type The type of object to read. If null, behaves the same as {{@link #read()}. */
-	public <T> T read (Class<T> type, Class elementType) throws YamlException {
+	public <T> T read(Class<T> type, Class elementType) throws YamlException {
 		try {
 			while (true) {
 				Event event = parser.getNextEvent();
-				if (event == null) return null;
-				if (event.type == STREAM_END) return null;
-				if (event.type == DOCUMENT_START) break;
+				if (event == null) {
+					return null;
+				}
+				if (event.type == STREAM_END) {
+					return null;
+				}
+				if (event.type == DOCUMENT_START) {
+					break;
+				}
 			}
-			return (T)readValue(type, elementType, null);
+			return (T) readValue(type, elementType, null);
 		} catch (ParserException ex) {
 			throw new YamlException("Error parsing YAML.", ex);
 		} catch (TokenizerException ex) {
@@ -109,38 +121,41 @@ public class YamlReader {
 	}
 
 	/** Reads an object from the YAML. Can be overidden to take some action for any of the objects returned. */
-	protected Object readValue (Class type, Class elementType, Class defaultType) throws YamlException, ParserException,
-		TokenizerException {
+	protected Object readValue(Class type, Class elementType, Class defaultType) throws YamlException, ParserException,
+			TokenizerException {
 		String tag = null, anchor = null;
 		Event event = parser.peekNextEvent();
 
 		switch (event.type) {
-		case ALIAS:
-			parser.getNextEvent();
-			anchor = ((AliasEvent)event).anchor;
-			Object value = anchors.get(anchor);
-			if (value == null) throw new YamlReaderException("Unknown anchor: " + anchor);
-			return value;
-		case MAPPING_START:
-		case SEQUENCE_START:
-			tag = ((CollectionStartEvent)event).tag;
-			anchor = ((CollectionStartEvent)event).anchor;
-			break;
-		case SCALAR:
-			tag = ((ScalarEvent)event).tag;
-			anchor = ((ScalarEvent)event).anchor;
-			break;
-		default:
+			case ALIAS:
+				parser.getNextEvent();
+				anchor = ((AliasEvent) event).anchor;
+				Object value = anchors.get(anchor);
+				if (value == null) {
+					throw new YamlReaderException("Unknown anchor: " + anchor);
+				}
+				return value;
+			case MAPPING_START:
+			case SEQUENCE_START:
+				tag = ((CollectionStartEvent) event).tag;
+				anchor = ((CollectionStartEvent) event).anchor;
+				break;
+			case SCALAR:
+				tag = ((ScalarEvent) event).tag;
+				anchor = ((ScalarEvent) event).anchor;
+				break;
+			default:
 		}
 
 		if (tag != null) {
 			type = config.tagToClass.get(tag);
 			if (type == null) {
 				try {
-					if (config.readConfig.classLoader != null)
+					if (config.readConfig.classLoader != null) {
 						type = Class.forName(tag, true, config.readConfig.classLoader);
-					else
+					} else {
 						type = Class.forName(tag);
+					}
 				} catch (ClassNotFoundException ex) {
 					throw new YamlReaderException("Unable to find class specified by tag: " + tag);
 				}
@@ -152,38 +167,43 @@ public class YamlReader {
 		return readValueInternal(type, elementType, anchor);
 	}
 
-	private Object readValueInternal (Class type, Class elementType, String anchor) throws YamlException, ParserException,
-		TokenizerException {
+	private Object readValueInternal(Class type, Class elementType, String anchor) throws YamlException, ParserException,
+			TokenizerException {
 		if (type == null || type == Object.class) {
 			Event event = parser.peekNextEvent();
 			switch (event.type) {
-			case MAPPING_START:
-				type = HashMap.class;
-				break;
-			case SCALAR:
-				type = String.class;
-				break;
-			case SEQUENCE_START:
-				type = ArrayList.class;
-				break;
-			default:
-				throw new YamlReaderException("Expected scalar, sequence, or mapping but found: " + event.type);
+				case MAPPING_START:
+					type = HashMap.class;
+					break;
+				case SCALAR:
+					type = String.class;
+					break;
+				case SEQUENCE_START:
+					type = ArrayList.class;
+					break;
+				default:
+					throw new YamlReaderException("Expected scalar, sequence, or mapping but found: " + event.type);
 			}
 		}
 
 		if (type == String.class) {
 			Event event = parser.getNextEvent();
-			if (event.type != SCALAR) throw new YamlReaderException("Expected scalar for String type but found: " + event.type);
-			String value = ((ScalarEvent)event).value;
-			if (anchor != null) anchors.put(anchor, value);
+			if (event.type != SCALAR) {
+				throw new YamlReaderException("Expected scalar for String type but found: " + event.type);
+			}
+			String value = ((ScalarEvent) event).value;
+			if (anchor != null) {
+				anchors.put(anchor, value);
+			}
 			return value;
 		}
 
 		if (Beans.isScalar(type)) {
 			Event event = parser.getNextEvent();
-			if (event.type != SCALAR)
+			if (event.type != SCALAR) {
 				throw new YamlReaderException("Expected scalar for primitive type '" + type.getClass() + "' but found: " + event.type);
-			String value = ((ScalarEvent)event).value;
+			}
+			String value = ((ScalarEvent) event).value;
 			try {
 				Object convertedValue;
 				if (type == String.class) {
@@ -220,9 +240,12 @@ public class YamlReader {
 					convertedValue = value.length() == 0 ? 0 : Byte.decode(value);
 				} else if (type == Byte.class) {
 					convertedValue = value.length() == 0 ? null : Byte.decode(value);
-				} else
+				} else {
 					throw new YamlException("Unknown field type.");
-				if (anchor != null) anchors.put(anchor, convertedValue);
+				}
+				if (anchor != null) {
+					anchors.put(anchor, convertedValue);
+				}
 				return convertedValue;
 			} catch (Exception ex) {
 				throw new YamlReaderException("Unable to convert value to required type \"" + type + "\": " + value, ex);
@@ -231,9 +254,13 @@ public class YamlReader {
 
 		if (Enum.class.isAssignableFrom(type)) {
 			Event event = parser.getNextEvent();
-			if (event.type != SCALAR) throw new YamlReaderException("Expected scalar for enum type but found: " + event.type);
-			String enumValueName = ((ScalarEvent)event).value;
-			if (enumValueName.length() == 0) return null;
+			if (event.type != SCALAR) {
+				throw new YamlReaderException("Expected scalar for enum type but found: " + event.type);
+			}
+			String enumValueName = ((ScalarEvent) event).value;
+			if (enumValueName.length() == 0) {
+				return null;
+			}
 			try {
 				return Enum.valueOf(type, enumValueName);
 			} catch (Exception ex) {
@@ -245,135 +272,185 @@ public class YamlReader {
 			if (entry.getKey().isAssignableFrom(type)) {
 				ScalarSerializer serializer = entry.getValue();
 				Event event = parser.getNextEvent();
-				if (event.type != SCALAR)
+				if (event.type != SCALAR) {
 					throw new YamlReaderException("Expected scalar for type '" + type + "' to be deserialized by scalar serializer '"
-						+ serializer.getClass().getName() + "' but found: " + event.type);
-				Object value = serializer.read(((ScalarEvent)event).value);
-				if (anchor != null) anchors.put(anchor, value);
+							+ serializer.getClass().getName() + "' but found: " + event.type);
+				}
+				Object value = serializer.read(((ScalarEvent) event).value);
+				if (anchor != null) {
+					anchors.put(anchor, value);
+				}
 				return value;
 			}
 		}
 
 		Event event = parser.peekNextEvent();
 		switch (event.type) {
-		case MAPPING_START: {
-			// Must be a map or an object.
-			event = parser.getNextEvent();
-			Object object;
-			try {
-				object = createObject(type);
-			} catch (InvocationTargetException ex) {
-				throw new YamlReaderException("Error creating object.", ex);
-			}
-			if (anchor != null) anchors.put(anchor, object);
-			while (true) {
-				if (parser.peekNextEvent().type == MAPPING_END) {
-					parser.getNextEvent();
-					break;
+			case MAPPING_START: {
+				// Must be a map or an object.
+				event = parser.getNextEvent();
+				Object object;
+				try {
+					object = createObject(type);
+				} catch (InvocationTargetException ex) {
+					throw new YamlReaderException("Error creating object.", ex);
 				}
-				Object key = readValue(null, null, null);
-				// Explicit key/value pairs (using "? key\n: value\n") will come back as a map.
-				boolean isExplicitKey = key instanceof Map;
-				Object value = null;
-				if (isExplicitKey) {
-					Entry nameValuePair = (Entry)((Map)key).entrySet().iterator().next();
-					key = nameValuePair.getKey();
-					value = nameValuePair.getValue();
+				if (anchor != null) {
+					anchors.put(anchor, object);
 				}
-				if (object instanceof Map) {
-					// Add to map.
-					if (!isExplicitKey) value = readValue(elementType, null, null);
-					((Map)object).put(key, value);
-				} else {
-					// Set field on object.
-					try {
-						Property property = Beans.getProperty(type, (String)key, config.beanProperties, config.privateFields, config);
-						if (property == null)
-							throw new YamlReaderException("Unable to find property '" + key + "' on class: " + type.getName());
-						Class propertyElementType = config.propertyToElementType.get(property);
-						Class propertyDefaultType = config.propertyToDefaultType.get(property);
-						if (!isExplicitKey) value = readValue(property.getType(), propertyElementType, propertyDefaultType);
-						property.set(object, value);
-					} catch (Exception ex) {
-						if (ex instanceof YamlReaderException) throw (YamlReaderException)ex;
-						throw new YamlReaderException("Error setting property '" + key + "' on class: " + type.getName(), ex);
+				while (true) {
+					if (parser.peekNextEvent().type == MAPPING_END) {
+						parser.getNextEvent();
+						break;
+					}
+					Object key = readValue(null, null, null);
+					// Explicit key/value pairs (using "? key\n: value\n") will come back as a map.
+					boolean isExplicitKey = key instanceof Map;
+					Object value = null;
+					if (isExplicitKey) {
+						Entry nameValuePair = (Entry) ((Map) key).entrySet().iterator().next();
+						key = nameValuePair.getKey();
+						value = nameValuePair.getValue();
+					}
+					if (object instanceof Map) {
+						// Add to map.
+						if (!isExplicitKey) {
+							value = readValue(elementType, null, null);
+						}
+						((Map) object).put(key, value);
+					} else {
+						// Set field on object.
+						try {
+							Property property = Beans.getProperty(type, (String) key, config.beanProperties, config.privateFields, config);
+							if (property == null) {
+								throw new YamlReaderException("Unable to find property '" + key + "' on class: " + type.getName());
+							}
+							Class propertyElementType = config.propertyToElementType.get(property);
+							if (propertyElementType == null) {
+								propertyElementType = getElementTypeFromGenerics(property.getGenericType());
+							}
+							Class propertyDefaultType = config.propertyToDefaultType.get(property);
+							if (!isExplicitKey) {
+								value = readValue(property.getType(), propertyElementType, propertyDefaultType);
+							}
+							property.set(object, value);
+						} catch (Exception ex) {
+							if (ex instanceof YamlReaderException) {
+								throw (YamlReaderException) ex;
+							}
+							throw new YamlReaderException("Error setting property '" + key + "' on class: " + type.getName(), ex);
+						}
 					}
 				}
-			}
-			if (object instanceof DeferredConstruction) {
-				try {
-					object = ((DeferredConstruction)object).construct();
-					if (anchor != null) anchors.put(anchor, object); // Update anchor with real object.
-				} catch (InvocationTargetException ex) {
-					throw new YamlReaderException("Error creating object.", ex);
+				if (object instanceof DeferredConstruction) {
+					try {
+						object = ((DeferredConstruction) object).construct();
+						if (anchor != null) {
+							anchors.put(anchor, object); // Update anchor with real object.
+						}
+					} catch (InvocationTargetException ex) {
+						throw new YamlReaderException("Error creating object.", ex);
+					}
 				}
+				return object;
 			}
-			return object;
-		}
-		case SEQUENCE_START: {
-			// Must be a collection or an array.
-			event = parser.getNextEvent();
-			Collection collection;
-			if (Collection.class.isAssignableFrom(type)) {
-				try {
-					collection = (Collection)Beans.createObject(type, config.privateConstructors);
-				} catch (InvocationTargetException ex) {
-					throw new YamlReaderException("Error creating object.", ex);
-				}
-			} else if (type.isArray()) {
-				collection = new ArrayList();
-				elementType = type.getComponentType();
-			} else
-				throw new YamlReaderException("A sequence is not a valid value for the type: " + type.getName());
-			if (!type.isArray() && anchor != null) anchors.put(anchor, collection);
-			while (true) {
-				event = parser.peekNextEvent();
-				if (event.type == SEQUENCE_END) {
-					parser.getNextEvent();
-					break;
-				}
-				collection.add(readValue(elementType, null, null));
-			}
-			if (!type.isArray()) return collection;
-			Object array = Array.newInstance(elementType, collection.size());
-			int i = 0;
-			for (Object object : collection)
-				Array.set(array, i++, object);
-			if (anchor != null) anchors.put(anchor, array);
-			return array;
-		}
-		case SCALAR:
-			// Interpret an empty scalar as null.
-			System.out.println(((ScalarEvent)event).value);
-			if (((ScalarEvent)event).value.length() == 0) {
+			case SEQUENCE_START: {
+				// Must be a collection or an array.
 				event = parser.getNextEvent();
-				return null;
+				Collection collection;
+				if (Collection.class.isAssignableFrom(type)) {
+					try {
+						collection = (Collection) Beans.createObject(type, config.privateConstructors);
+					} catch (InvocationTargetException ex) {
+						throw new YamlReaderException("Error creating object.", ex);
+					}
+				} else if (type.isArray()) {
+					collection = new ArrayList();
+					elementType = type.getComponentType();
+				} else {
+					throw new YamlReaderException("A sequence is not a valid value for the type: " + type.getName());
+				}
+				if (!type.isArray() && anchor != null) {
+					anchors.put(anchor, collection);
+				}
+				while (true) {
+					event = parser.peekNextEvent();
+					if (event.type == SEQUENCE_END) {
+						parser.getNextEvent();
+						break;
+					}
+					collection.add(readValue(elementType, null, null));
+				}
+				if (!type.isArray()) {
+					return collection;
+				}
+				Object array = Array.newInstance(elementType, collection.size());
+				int i = 0;
+				for (Object object : collection) {
+					Array.set(array, i++, object);
+				}
+				if (anchor != null) {
+					anchors.put(anchor, array);
+				}
+				return array;
 			}
-			// Fall through.
-		default:
-			throw new YamlReaderException("Expected data for a " + type.getName() + " field but found: " + event.type);
+			case SCALAR:
+				// Interpret an empty scalar as null.
+				System.out.println(((ScalarEvent) event).value);
+				if (((ScalarEvent) event).value.length() == 0) {
+					event = parser.getNextEvent();
+					return null;
+				}
+				// Fall through.
+			default:
+				throw new YamlReaderException("Expected data for a " + type.getName() + " field but found: " + event.type);
 		}
 	}
 
+	private Class getElementTypeFromGenerics(Type type) {
+		if (type instanceof ParameterizedType) {
+			ParameterizedType parameterizedType = (ParameterizedType) type;
+			Type rawType = parameterizedType.getRawType();
+
+			if (isCollection(rawType) || isMap(rawType)) {
+				Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
+				if (actualTypeArguments.length > 0) {
+					return (Class) actualTypeArguments[actualTypeArguments.length - 1];
+				}
+			}
+		}
+		return null;
+	}
+
+	private boolean isMap(Type type) {
+		return Map.class.isAssignableFrom((Class) type);
+	}
+
+	private boolean isCollection(Type type) {
+		return Collection.class.isAssignableFrom((Class) type);
+	}
+
 	/** Returns a new object of the requested type. */
-	protected Object createObject (Class type) throws InvocationTargetException {
+	protected Object createObject(Class type) throws InvocationTargetException {
 		// Use deferred construction if a non-zero-arg constructor is available.
 		DeferredConstruction deferredConstruction = Beans.getDeferredConstruction(type, config);
-		if (deferredConstruction != null) return deferredConstruction;
+		if (deferredConstruction != null) {
+			return deferredConstruction;
+		}
 		return Beans.createObject(type, config.privateConstructors);
 	}
 
 	public class YamlReaderException extends YamlException {
-		public YamlReaderException (String message, Throwable cause) {
+		public YamlReaderException(String message, Throwable cause) {
 			super("Line " + parser.getLineNumber() + ", column " + parser.getColumn() + ": " + message, cause);
 		}
 
-		public YamlReaderException (String message) {
+		public YamlReaderException(String message) {
 			this(message, null);
 		}
 	}
 
-	public static void main (String[] args) throws Exception {
+	public static void main(String[] args) throws Exception {
 		YamlReader reader = new YamlReader(new FileReader("test/test.yml"));
 		System.out.println(reader.read());
 	}
