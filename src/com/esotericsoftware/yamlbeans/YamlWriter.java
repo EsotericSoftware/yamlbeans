@@ -59,20 +59,20 @@ public class YamlWriter {
 	private int nextAnchor = 1;
 	private boolean isRoot;
 
-	public YamlWriter(Writer writer) {
+	public YamlWriter (Writer writer) {
 		this(writer, new YamlConfig());
 	}
 
-	public YamlWriter(Writer writer, YamlConfig config) {
+	public YamlWriter (Writer writer, YamlConfig config) {
 		this.config = config;
 		emitter = new Emitter(writer, config.writeConfig.emitterConfig);
 	}
 
-	public void setAlias(Object object, String alias) {
+	public void setAlias (Object object, String alias) {
 		anchoredObjects.put(object, alias);
 	}
 
-	public void write(Object object) throws YamlException {
+	public void write (Object object) throws YamlException {
 		if (config.writeConfig.autoAnchor) {
 			countObjectReferences(object);
 			queuedObjects.add(object);
@@ -81,11 +81,11 @@ public class YamlWriter {
 		writeInternal(object);
 	}
 
-	public YamlConfig getConfig() {
+	public YamlConfig getConfig () {
 		return config;
 	}
 
-	private void writeInternal(Object object) throws YamlException {
+	private void writeInternal (Object object) throws YamlException {
 		try {
 			if (!started) {
 				emitter.emit(Event.STREAM_START);
@@ -103,16 +103,15 @@ public class YamlWriter {
 	}
 
 	/** Returns the YAML emitter, which allows the YAML output to be configured. */
-	public Emitter getEmitter() {
+	public Emitter getEmitter () {
 		return emitter;
 	}
 
 	/** Writes any buffered objects, then resets the list of anchored objects.
 	 * @see WriteConfig#setAutoAnchor(boolean) */
-	public void clearAnchors() throws YamlException {
-		for (Object object : queuedObjects) {
+	public void clearAnchors () throws YamlException {
+		for (Object object : queuedObjects)
 			writeInternal(object);
-		}
 		queuedObjects.clear();
 		referenceCount.clear();
 		nextAnchor = 1;
@@ -120,7 +119,7 @@ public class YamlWriter {
 
 	/** Finishes writing any buffered output and releases all resources.
 	 * @throws YamlException If the buffered output could not be written or the writer could not be closed. */
-	public void close() throws YamlException {
+	public void close () throws YamlException {
 		clearAnchors();
 		defaultValuePrototypes.clear();
 		try {
@@ -133,24 +132,22 @@ public class YamlWriter {
 		}
 	}
 
-	private void writeValue(Object object, Class fieldClass, Class elementType, Class defaultType) throws EmitterException,
-			IOException, YamlException {
+	private void writeValue (Object object, Class fieldClass, Class elementType, Class defaultType) throws EmitterException,
+		IOException, YamlException {
 		boolean isRoot = this.isRoot;
 		this.isRoot = false;
 
 		if (object == null) {
-			emitter.emit(new ScalarEvent(null, null, new boolean[]{true, true}, null, (char) 0));
+			emitter.emit(new ScalarEvent(null, null, new boolean[] {true, true}, null, (char)0));
 			return;
 		}
 
 		Class valueClass = object.getClass();
 		boolean unknownType = fieldClass == null;
-		if (unknownType) {
-			fieldClass = valueClass;
-		}
+		if (unknownType) fieldClass = valueClass;
 
 		if (object instanceof Enum) {
-			emitter.emit(new ScalarEvent(null, null, new boolean[]{true, true}, ((Enum) object).name(), (char) 0));
+			emitter.emit(new ScalarEvent(null, null, new boolean[] {true, true}, ((Enum)object).name(), (char)0));
 			return;
 		}
 
@@ -177,45 +174,33 @@ public class YamlWriter {
 		boolean showTag = false;
 		if ((unknownType || valueClass != fieldClass || config.writeConfig.writeClassName == WriteClassName.ALWAYS) && config.writeConfig.writeClassName != WriteClassName.NEVER) {
 			showTag = true;
-			if ((unknownType || fieldClass == List.class) && valueClass == ArrayList.class) {
-				showTag = false;
-			}
-			if ((unknownType || fieldClass == Map.class) && valueClass == HashMap.class) {
-				showTag = false;
-			}
-			if (fieldClass == Set.class && valueClass == HashSet.class) {
-				showTag = false;
-			}
-			if (valueClass == defaultType) {
-				showTag = false;
-			}
+			if ((unknownType || fieldClass == List.class) && valueClass == ArrayList.class) showTag = false;
+			if ((unknownType || fieldClass == Map.class) && valueClass == HashMap.class) showTag = false;
+			if (fieldClass == Set.class && valueClass == HashSet.class) showTag = false;
+			if (valueClass == defaultType) showTag = false;
 			if (showTag) {
 				tag = config.classNameToTag.get(valueClass.getName());
-				if (tag == null) {
-					tag = valueClass.getName();
-				}
+				if (tag == null) tag = valueClass.getName();
 			}
 		}
 
 		for (Entry<Class, ScalarSerializer> entry : config.scalarSerializers.entrySet()) {
 			if (entry.getKey().isAssignableFrom(valueClass)) {
 				ScalarSerializer serializer = entry.getValue();
-				emitter.emit(new ScalarEvent(null, tag, new boolean[]{tag == null, tag == null}, serializer.write(object), (char) 0));
+				emitter.emit(new ScalarEvent(null, tag, new boolean[] {tag == null, tag == null}, serializer.write(object), (char)0));
 				return;
 			}
 		}
 
 		if (Beans.isScalar(valueClass)) {
-			emitter.emit(new ScalarEvent(null, null, new boolean[]{true, true}, String.valueOf(object), (char) 0));
+			emitter.emit(new ScalarEvent(null, null, new boolean[] {true, true}, String.valueOf(object), (char)0));
 			return;
 		}
 
 		if (object instanceof Collection) {
 			emitter.emit(new SequenceStartEvent(anchor, tag, !showTag, false));
-			for (Object item : (Collection) object) {
-				if (isRoot && !config.writeConfig.writeRootElementTags) {
-					elementType = item.getClass();
-				}
+			for (Object item : (Collection)object) {
+				if (isRoot && !config.writeConfig.writeRootElementTags) elementType = item.getClass();
 				writeValue(item, elementType, null, null);
 			}
 			emitter.emit(Event.SEQUENCE_END);
@@ -224,12 +209,10 @@ public class YamlWriter {
 
 		if (object instanceof Map) {
 			emitter.emit(new MappingStartEvent(anchor, tag, !showTag, false));
-			for (Object item : ((Map) object).entrySet()) {
-				Entry entry = (Entry) item;
+			for (Object item : ((Map)object).entrySet()) {
+				Entry entry = (Entry)item;
 				writeValue(entry.getKey(), null, null, null);
-				if (isRoot && !config.writeConfig.writeRootElementTags) {
-					elementType = entry.getValue().getClass();
-				}
+				if (isRoot && !config.writeConfig.writeRootElementTags) elementType = entry.getValue().getClass();
 				writeValue(entry.getValue(), elementType, null, null);
 			}
 			emitter.emit(Event.MAPPING_END);
@@ -239,9 +222,8 @@ public class YamlWriter {
 		if (fieldClass.isArray()) {
 			elementType = fieldClass.getComponentType();
 			emitter.emit(new SequenceStartEvent(anchor, null, true, false));
-			for (int i = 0, n = Array.getLength(object); i < n; i++) {
+			for (int i = 0, n = Array.getLength(object); i < n; i++)
 				writeValue(Array.get(object, i), elementType, null, null);
-			}
 			emitter.emit(Event.SEQUENCE_END);
 			return;
 		}
@@ -274,14 +256,10 @@ public class YamlWriter {
 				if (prototype != null) {
 					// Don't output properties that have the default value for the prototype.
 					Object prototypeValue = property.get(prototype);
-					if (propertyValue == null && prototypeValue == null) {
-						continue;
-					}
-					if (propertyValue != null && prototypeValue != null && prototypeValue.equals(propertyValue)) {
-						continue;
-					}
+					if (propertyValue == null && prototypeValue == null) continue;
+					if (propertyValue != null && prototypeValue != null && prototypeValue.equals(propertyValue)) continue;
 				}
-				emitter.emit(new ScalarEvent(null, null, new boolean[]{true, true}, property.getName(), (char) 0));
+				emitter.emit(new ScalarEvent(null, null, new boolean[] {true, true}, property.getName(), (char)0));
 				Class propertyElementType = config.propertyToElementType.get(property);
 				Class propertyDefaultType = config.propertyToDefaultType.get(property);
 				writeValue(propertyValue, property.getType(), propertyElementType, propertyDefaultType);
@@ -292,10 +270,8 @@ public class YamlWriter {
 		emitter.emit(Event.MAPPING_END);
 	}
 
-	private void countObjectReferences(Object object) throws YamlException {
-		if (object == null || Beans.isScalar(object.getClass())) {
-			return;
-		}
+	private void countObjectReferences (Object object) throws YamlException {
+		if (object == null || Beans.isScalar(object.getClass())) return;
 
 		// Count every reference to the object, but follow its own references the first time it is encountered.
 		Integer count = referenceCount.get(object);
@@ -306,23 +282,20 @@ public class YamlWriter {
 		referenceCount.put(object, 1);
 
 		if (object instanceof Collection) {
-			for (Object item : (Collection) object) {
+			for (Object item : (Collection)object)
 				countObjectReferences(item);
-			}
 			return;
 		}
 
 		if (object instanceof Map) {
-			for (Object value : ((Map) object).values()) {
+			for (Object value : ((Map)object).values())
 				countObjectReferences(value);
-			}
 			return;
 		}
 
 		if (object.getClass().isArray()) {
-			for (int i = 0, n = Array.getLength(object); i < n; i++) {
+			for (int i = 0, n = Array.getLength(object); i < n; i++)
 				countObjectReferences(Array.get(object, i));
-			}
 			return;
 		}
 
@@ -335,9 +308,7 @@ public class YamlWriter {
 			throw new YamlException("Error inspecting class: " + object.getClass().getName(), ex);
 		}
 		for (Property property : properties) {
-			if (Beans.isScalar(property.getType())) {
-				continue;
-			}
+			if (Beans.isScalar(property.getType())) continue;
 			Object propertyValue;
 			try {
 				propertyValue = property.get(object);

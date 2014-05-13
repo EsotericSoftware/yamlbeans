@@ -40,27 +40,23 @@ import java.util.TreeSet;
 /** Utility for dealing with beans and public fields.
  * @author <a href="mailto:misc@n4te.com">Nathan Sweet</a> */
 class Beans {
-	private Beans() {
+	private Beans () {
 	}
 
-	static public boolean isScalar(Class c) {
+	static public boolean isScalar (Class c) {
 		return c.isPrimitive() || c == String.class || c == Integer.class || c == Boolean.class || c == Float.class
-				|| c == Long.class || c == Double.class || c == Short.class || c == Byte.class || c == Character.class;
+			|| c == Long.class || c == Double.class || c == Short.class || c == Byte.class || c == Character.class;
 	}
 
-	static public DeferredConstruction getDeferredConstruction(Class type, YamlConfig config) {
+	static public DeferredConstruction getDeferredConstruction (Class type, YamlConfig config) {
 		ConstructorParameters parameters = config.readConfig.constructorParameters.get(type);
-		if (parameters != null) {
-			return new DeferredConstruction(parameters.constructor, parameters.parameterNames);
-		}
+		if (parameters != null) return new DeferredConstruction(parameters.constructor, parameters.parameterNames);
 		try {
 			Class constructorProperties = Class.forName("java.beans.ConstructorProperties");
 			for (Constructor typeConstructor : type.getConstructors()) {
 				Annotation annotation = typeConstructor.getAnnotation(constructorProperties);
-				if (annotation == null) {
-					continue;
-				}
-				String[] parameterNames = (String[]) constructorProperties.getMethod("value").invoke(annotation, (Object[]) null);
+				if (annotation == null) continue;
+				String[] parameterNames = (String[])constructorProperties.getMethod("value").invoke(annotation, (Object[])null);
 				return new DeferredConstruction(typeConstructor, parameterNames);
 			}
 		} catch (Exception ignored) {
@@ -68,21 +64,17 @@ class Beans {
 		return null;
 	}
 
-	static private boolean canInitializeProperty(Class type, PropertyDescriptor property, YamlConfig config) {
-		if (property.getWriteMethod() != null) {
-			return true;
-		}
+	static private boolean canInitializeProperty (Class type, PropertyDescriptor property, YamlConfig config) {
+		if (property.getWriteMethod() != null) return true;
 
 		// Check if the property can be initialized through the constructor.
 		DeferredConstruction deferredConstruction = getDeferredConstruction(type, config);
-		if (deferredConstruction != null && deferredConstruction.hasParameter(property.getName())) {
-			return true;
-		}
+		if (deferredConstruction != null && deferredConstruction.hasParameter(property.getName())) return true;
 
 		return false;
 	}
 
-	static public Object createObject(Class type, boolean privateConstructors) throws InvocationTargetException {
+	static public Object createObject (Class type, boolean privateConstructors) throws InvocationTargetException {
 		// Use no-arg constructor.
 		Constructor constructor = null;
 		for (Constructor typeConstructor : type.getConstructors()) {
@@ -117,9 +109,8 @@ class Beans {
 			}
 		}
 
-		if (constructor == null) {
+		if (constructor == null)
 			throw new InvocationTargetException(null, "Unable to find a no-arg constructor for class: " + type.getName());
-		}
 
 		try {
 			return constructor.newInstance();
@@ -128,28 +119,20 @@ class Beans {
 		}
 	}
 
-	static public Set<Property> getProperties(Class type, boolean beanProperties, boolean privateFields, YamlConfig config)
-			throws IntrospectionException {
-		if (type == null) {
-			throw new IllegalArgumentException("type cannot be null.");
-		}
+	static public Set<Property> getProperties (Class type, boolean beanProperties, boolean privateFields, YamlConfig config)
+		throws IntrospectionException {
+		if (type == null) throw new IllegalArgumentException("type cannot be null.");
 		Set<Property> properties = new TreeSet();
 		if (beanProperties) {
-			for (PropertyDescriptor property : Introspector.getBeanInfo(type).getPropertyDescriptors()) {
-				if (property.getReadMethod() != null && canInitializeProperty(type, property, config)) {
+			for (PropertyDescriptor property : Introspector.getBeanInfo(type).getPropertyDescriptors())
+				if (property.getReadMethod() != null && canInitializeProperty(type, property, config))
 					properties.add(new MethodProperty(type, property));
-				}
-			}
 		}
 		for (Field field : getAllFields(type)) {
 			int modifiers = field.getModifiers();
-			if (Modifier.isStatic(modifiers) || Modifier.isTransient(modifiers)) {
-				continue;
-			}
+			if (Modifier.isStatic(modifiers) || Modifier.isTransient(modifiers)) continue;
 			if (!Modifier.isPublic(modifiers)) {
-				if (!privateFields) {
-					continue;
-				}
+				if (!privateFields) continue;
 				field.setAccessible(true);
 			}
 			properties.add(new FieldProperty(field));
@@ -157,46 +140,32 @@ class Beans {
 		return properties;
 	}
 
-	static public Property getProperty(Class type, String name, boolean beanProperties, boolean privateFields, YamlConfig config)
-			throws IntrospectionException {
-		if (type == null) {
-			throw new IllegalArgumentException("type cannot be null.");
-		}
-		if (name == null || name.length() == 0) {
-			throw new IllegalArgumentException("name cannot be null or empty.");
-		}
+	static public Property getProperty (Class type, String name, boolean beanProperties, boolean privateFields, YamlConfig config)
+		throws IntrospectionException {
+		if (type == null) throw new IllegalArgumentException("type cannot be null.");
+		if (name == null || name.length() == 0) throw new IllegalArgumentException("name cannot be null or empty.");
 		if (beanProperties) {
 			for (PropertyDescriptor property : Introspector.getBeanInfo(type).getPropertyDescriptors()) {
 				if (property.getName().equals(name)) {
-					if (property.getReadMethod() != null && canInitializeProperty(type, property, config)) {
-						Type genericType = property.getReadMethod().getGenericReturnType();
-
+					if (property.getReadMethod() != null && canInitializeProperty(type, property, config))
 						return new MethodProperty(type, property);
-					}
 					break;
 				}
 			}
 		}
 		for (Field field : getAllFields(type)) {
 			int modifiers = field.getModifiers();
-			if (Modifier.isStatic(modifiers) || Modifier.isTransient(modifiers)) {
-				continue;
-			}
+			if (Modifier.isStatic(modifiers) || Modifier.isTransient(modifiers)) continue;
 			if (!Modifier.isPublic(modifiers)) {
-				if (!privateFields) {
-					continue;
-				}
+				if (!privateFields) continue;
 				field.setAccessible(true);
 			}
-			if (field.getName().equals(name)) {
-				return new FieldProperty(field);
-			}
-			Type genericType = field.getGenericType();
+			if (field.getName().equals(name)) return new FieldProperty(field);
 		}
 		return null;
 	}
 
-	static private ArrayList<Field> getAllFields(Class type) {
+	static private ArrayList<Field> getAllFields (Class type) {
 		ArrayList<Field> allFields = new ArrayList();
 		Class nextClass = type;
 		while (nextClass != Object.class) {
@@ -209,20 +178,20 @@ class Beans {
 	static public class MethodProperty extends Property {
 		private final PropertyDescriptor property;
 
-		public MethodProperty(Class declaringClass, PropertyDescriptor property) throws IntrospectionException {
+		public MethodProperty (Class declaringClass, PropertyDescriptor property) throws IntrospectionException {
 			super(declaringClass, property);
 			this.property = property;
 		}
 
-		public void set(Object object, Object value) throws Exception {
+		public void set (Object object, Object value) throws Exception {
 			if (object instanceof DeferredConstruction) {
-				((DeferredConstruction) object).storeProperty(this, value);
+				((DeferredConstruction)object).storeProperty(this, value);
 				return;
 			}
 			property.getWriteMethod().invoke(object, value);
 		}
 
-		public Object get(Object object) throws Exception {
+		public Object get (Object object) throws Exception {
 			return property.getReadMethod().invoke(object);
 		}
 	}
@@ -230,20 +199,20 @@ class Beans {
 	static public class FieldProperty extends Property {
 		private final Field field;
 
-		public FieldProperty(Field field) {
+		public FieldProperty (Field field) {
 			super(field.getDeclaringClass(), field.getName(), field.getType(), field.getGenericType());
 			this.field = field;
 		}
 
-		public void set(Object object, Object value) throws Exception {
+		public void set (Object object, Object value) throws Exception {
 			if (object instanceof DeferredConstruction) {
-				((DeferredConstruction) object).storeProperty(this, value);
+				((DeferredConstruction)object).storeProperty(this, value);
 				return;
 			}
 			field.set(object, value);
 		}
 
-		public Object get(Object object) throws Exception {
+		public Object get (Object object) throws Exception {
 			return field.get(object);
 		}
 	}
@@ -254,21 +223,21 @@ class Beans {
 		private final Class type;
 		private final Type genericType;
 
-		Property(Class declaringClass, String name, Class type, Type genericType) {
+		Property (Class declaringClass, String name, Class type, Type genericType) {
 			this.declaringClass = declaringClass;
 			this.name = name;
 			this.type = type;
 			this.genericType = genericType;
 		}
 
-		Property(Class declaringClass, PropertyDescriptor property) throws IntrospectionException {
+		Property (Class declaringClass, PropertyDescriptor property) throws IntrospectionException {
 			this.declaringClass = declaringClass;
 			this.name = property.getName();
 			try {
 				// The PropertyDescriptor returns the wrong type if the getter is an implementation of a interface method with a
 				// generic return value.
 				Method readMethod = property.getReadMethod().getDeclaringClass()
-						.getDeclaredMethod(property.getReadMethod().getName(), new Class[0]);
+					.getDeclaredMethod(property.getReadMethod().getName(), new Class[0]);
 				type = readMethod.getReturnType();
 				genericType = readMethod.getGenericReturnType();
 			} catch (Exception ex) {
@@ -278,92 +247,70 @@ class Beans {
 			}
 		}
 
-		public int hashCode() {
+		public int hashCode () {
 			final int prime = 31;
 			int result = 1;
 			result = prime * result + ((declaringClass == null) ? 0 : declaringClass.hashCode());
 			result = prime * result + ((name == null) ? 0 : name.hashCode());
+			result = prime * result + ((type == null) ? 0 : type.hashCode());
 			result = prime * result + ((genericType == null) ? 0 : genericType.hashCode());
 			return result;
 		}
 
-		public boolean equals(Object obj) {
-			if (this == obj) {
-				return true;
-			}
-			if (obj == null) {
-				return false;
-			}
-			if (getClass() != obj.getClass()) {
-				return false;
-			}
-			Property other = (Property) obj;
+		public boolean equals (Object obj) {
+			if (this == obj) return true;
+			if (obj == null) return false;
+			if (getClass() != obj.getClass()) return false;
+			Property other = (Property)obj;
 			if (declaringClass == null) {
-				if (other.declaringClass != null) {
-					return false;
-				}
-			} else if (!declaringClass.equals(other.declaringClass)) {
-				return false;
-			}
+				if (other.declaringClass != null) return false;
+			} else if (!declaringClass.equals(other.declaringClass)) return false;
 			if (name == null) {
-				if (other.name != null) {
-					return false;
-				}
-			} else if (!name.equals(other.name)) {
-				return false;
-			}
+				if (other.name != null) return false;
+			} else if (!name.equals(other.name)) return false;
+			if (type == null) {
+				if (other.type != null) return false;
+			} else if (!type.equals(other.type)) return false;
 			if (genericType == null) {
-				if (other.genericType != null) {
-					return false;
-				}
-			} else if (!genericType.equals(other.genericType)) {
-				return false;
-			}
+				if (other.genericType != null) return false;
+			} else if (!genericType.equals(other.genericType)) return false;
 			return true;
 		}
 
-		public Class getDeclaringClass() {
+		public Class getDeclaringClass () {
 			return declaringClass;
 		}
 
-		public Type getGenericType() {
+		public Type getGenericType () {
 			return genericType;
 		}
 
-		public Class getType() {
+		public Class getType () {
 			return type;
 		}
 
-		public String getName() {
+		public String getName () {
 			return name;
 		}
 
-		public String toString() {
+		public String toString () {
 			return name;
 		}
 
-		public int compareTo(Property o) {
+		public int compareTo (Property o) {
 			int comparison = name.compareTo(o.name);
 			if (comparison != 0) {
 				// Sort id and name above all other fields.
-				if (name.equals("id")) {
-					return -1;
-				}
-				if (o.name.equals("id")) {
-					return 1;
-				}
-				if (name.equals("name")) {
-					return -1;
-				}
-				if (o.name.equals("name")) {
-					return 1;
-				}
+				if (name.equals("id")) return -1;
+				if (o.name.equals("id")) return 1;
+				if (name.equals("name")) return -1;
+				if (o.name.equals("name")) return 1;
 			}
 			return comparison;
 		}
 
-		abstract public void set(Object object, Object value) throws Exception;
+		abstract public void set (Object object, Object value) throws Exception;
 
-		abstract public Object get(Object object) throws Exception;
+		abstract public Object get (Object object) throws Exception;
 	}
 }
