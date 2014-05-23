@@ -6,7 +6,7 @@
   <name>YamlBeans</name>
   <groupId>com.esotericsoftware.yamlbeans</groupId>
   <artifactId>yamlbeans</artifactId>
-  <version>1.0.7.1</version>
+  <version>1.0.8</version>
 
   <description>Java object graphs, to and from YAML</description>
   <url>https://github.com/EsotericSoftware/yamlbeans</url>
@@ -19,9 +19,9 @@
     </license>
   </licenses>
   <scm>
-    <url>scm:git:git@github.com:tchemit/yamlbeans.git</url>
-    <connection>scm:git:git@github.com:tchemit/yamlbeans.git</connection>
-    <developerConnection>scm:git:git@github.com:tchemit/yamlbeans.git</developerConnection>
+    <url>scm:git:git@github.com:esotericsoftware/yamlbeans.git</url>
+    <connection>scm:git:git@github.com:esotericsoftware/yamlbeans.git</connection>
+    <developerConnection>scm:git:git@github.com:esotericsoftware/yamlbeans.git</developerConnection>
     <tag>HEAD</tag>
   </scm>
 
