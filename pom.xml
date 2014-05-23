@@ -6,7 +6,7 @@
   <name>YamlBeans</name>
   <groupId>com.esotericsoftware.yamlbeans</groupId>
   <artifactId>yamlbeans</artifactId>
-  <version>1.0.8</version>
+  <version>1.08</version>
 
   <description>Java object graphs, to and from YAML</description>
   <url>https://github.com/EsotericSoftware/yamlbeans</url>
