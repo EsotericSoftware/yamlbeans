@@ -16,20 +16,6 @@
 
 package com.esotericsoftware.yamlbeans;
 
-import com.esotericsoftware.yamlbeans.Beans.Property;
-import com.esotericsoftware.yamlbeans.YamlConfig.WriteConfig;
-import com.esotericsoftware.yamlbeans.emitter.Emitter;
-import com.esotericsoftware.yamlbeans.emitter.EmitterException;
-import com.esotericsoftware.yamlbeans.parser.AliasEvent;
-import com.esotericsoftware.yamlbeans.parser.DocumentEndEvent;
-import com.esotericsoftware.yamlbeans.parser.DocumentStartEvent;
-import com.esotericsoftware.yamlbeans.parser.Event;
-import com.esotericsoftware.yamlbeans.parser.MappingStartEvent;
-import com.esotericsoftware.yamlbeans.parser.ScalarEvent;
-import com.esotericsoftware.yamlbeans.parser.SequenceStartEvent;
-import com.esotericsoftware.yamlbeans.scalar.ScalarSerializer;
-
-import java.beans.IntrospectionException;
 import java.io.IOException;
 import java.io.Writer;
 import java.lang.reflect.Array;
@@ -43,6 +29,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+
+import com.esotericsoftware.yamlbeans.Beans.Property;
+import com.esotericsoftware.yamlbeans.YamlConfig.WriteConfig;
+import com.esotericsoftware.yamlbeans.emitter.Emitter;
+import com.esotericsoftware.yamlbeans.emitter.EmitterException;
+import com.esotericsoftware.yamlbeans.parser.AliasEvent;
+import com.esotericsoftware.yamlbeans.parser.DocumentEndEvent;
+import com.esotericsoftware.yamlbeans.parser.DocumentStartEvent;
+import com.esotericsoftware.yamlbeans.parser.Event;
+import com.esotericsoftware.yamlbeans.parser.MappingStartEvent;
+import com.esotericsoftware.yamlbeans.parser.ScalarEvent;
+import com.esotericsoftware.yamlbeans.parser.SequenceStartEvent;
+import com.esotericsoftware.yamlbeans.scalar.ScalarSerializer;
 
 /** Serializes Java objects as YAML.
  * @author <a href="mailto:misc@n4te.com">Nathan Sweet</a> */
@@ -243,12 +242,7 @@ public class YamlWriter {
 			}
 		}
 
-		Set<Property> properties;
-		try {
-			properties = Beans.getProperties(valueClass, config.beanProperties, config.privateFields, config);
-		} catch (IntrospectionException ex) {
-			throw new YamlException("Error inspecting class: " + valueClass.getName(), ex);
-		}
+		Set<Property> properties = Beans.getProperties(valueClass, config.beanProperties, config.privateFields, config);
 		emitter.emit(new MappingStartEvent(anchor, tag, !showTag, false));
 		for (Property property : properties) {
 			try {
@@ -299,14 +293,9 @@ public class YamlWriter {
 			return;
 		}
 
-		// Value must be a bean.
+		// Value must be an object.
 
-		Set<Property> properties;
-		try {
-			properties = Beans.getProperties(object.getClass(), config.beanProperties, config.privateFields, config);
-		} catch (IntrospectionException ex) {
-			throw new YamlException("Error inspecting class: " + object.getClass().getName(), ex);
-		}
+		Set<Property> properties = Beans.getProperties(object.getClass(), config.beanProperties, config.privateFields, config);
 		for (Property property : properties) {
 			if (Beans.isScalar(property.getType())) continue;
 			Object propertyValue;

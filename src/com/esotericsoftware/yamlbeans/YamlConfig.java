@@ -16,12 +16,6 @@
 
 package com.esotericsoftware.yamlbeans;
 
-import com.esotericsoftware.yamlbeans.Beans.Property;
-import com.esotericsoftware.yamlbeans.emitter.EmitterConfig;
-import com.esotericsoftware.yamlbeans.scalar.DateSerializer;
-import com.esotericsoftware.yamlbeans.scalar.ScalarSerializer;
-
-import java.beans.IntrospectionException;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,6 +24,11 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
+
+import com.esotericsoftware.yamlbeans.Beans.Property;
+import com.esotericsoftware.yamlbeans.emitter.EmitterConfig;
+import com.esotericsoftware.yamlbeans.scalar.DateSerializer;
+import com.esotericsoftware.yamlbeans.scalar.ScalarSerializer;
 
 /** Stores configuration for reading and writing YAML.
  * @author <a href="mailto:misc@n4te.com">Nathan Sweet</a> */
@@ -80,20 +79,13 @@ public class YamlConfig {
 		if (type == null) throw new IllegalArgumentException("type cannot be null.");
 		if (propertyName == null) throw new IllegalArgumentException("propertyName cannot be null.");
 		if (elementType == null) throw new IllegalArgumentException("propertyType cannot be null.");
-		Property property = null;
-		Exception cause = null;
-		try {
-			property = Beans.getProperty(type, propertyName, beanProperties, privateFields, this);
-		} catch (IntrospectionException ex) {
-			cause = ex;
-		}
-		if (property == null) {
-			throw new IllegalArgumentException("The class " + type.getName() + " does not have a property named: " + propertyName,
-				cause);
-		}
-		if (!Collection.class.isAssignableFrom(property.getType()) && !Map.class.isAssignableFrom(property.getType()))
+		Property property = Beans.getProperty(type, propertyName, beanProperties, privateFields, this);
+		if (property == null)
+			throw new IllegalArgumentException("The class " + type.getName() + " does not have a property named: " + propertyName);
+		if (!Collection.class.isAssignableFrom(property.getType()) && !Map.class.isAssignableFrom(property.getType())) {
 			throw new IllegalArgumentException("The '" + propertyName + "' property on the " + type.getName()
 				+ " class must be a Collection or Map: " + property.getType());
+		}
 		propertyToElementType.put(property, elementType);
 	}
 
@@ -103,21 +95,14 @@ public class YamlConfig {
 		if (type == null) throw new IllegalArgumentException("type cannot be null.");
 		if (propertyName == null) throw new IllegalArgumentException("propertyName cannot be null.");
 		if (defaultType == null) throw new IllegalArgumentException("defaultType cannot be null.");
-		Property property = null;
-		Exception cause = null;
-		try {
-			property = Beans.getProperty(type, propertyName, beanProperties, privateFields, this);
-		} catch (IntrospectionException ex) {
-			cause = ex;
-		}
-		if (property == null) {
-			throw new IllegalArgumentException("The class " + type.getName() + " does not have a property named: " + propertyName,
-				cause);
-		}
+		Property property = Beans.getProperty(type, propertyName, beanProperties, privateFields, this);
+		if (property == null)
+			throw new IllegalArgumentException("The class " + type.getName() + " does not have a property named: " + propertyName);
 		propertyToDefaultType.put(property, defaultType);
 	}
 
-	/** If true, bean properties with both a getter and setter will be used. Default is true. */
+	/** If true, bean properties with both a getter and setter will be used. Note the getter and setter methods must be named the
+	 * same as the field they get or set. Default is true. */
 	public void setBeanProperties (boolean beanProperties) {
 		this.beanProperties = beanProperties;
 	}

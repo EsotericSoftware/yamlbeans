@@ -16,15 +16,11 @@
 
 package com.esotericsoftware.yamlbeans;
 
-import com.esotericsoftware.yamlbeans.YamlConfig.ConstructorParameters;
-
-import java.beans.IntrospectionException;
-import java.beans.Introspector;
-import java.beans.PropertyDescriptor;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -34,6 +30,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+
+import com.esotericsoftware.yamlbeans.YamlConfig.ConstructorParameters;
 
 /** Utility for dealing with beans and public fields.
  * @author <a href="mailto:misc@n4te.com">Nathan Sweet</a> */
@@ -60,16 +58,6 @@ class Beans {
 		} catch (Exception ignored) {
 		}
 		return null;
-	}
-
-	static private boolean canInitializeProperty (Class type, PropertyDescriptor property, YamlConfig config) {
-		if (property.getWriteMethod() != null) return true;
-
-		// Check if the property can be initialized through the constructor.
-		DeferredConstruction deferredConstruction = getDeferredConstruction(type, config);
-		if (deferredConstruction != null && deferredConstruction.hasParameter(property.getName())) return true;
-
-		return false;
 	}
 
 	static public Object createObject (Class type, boolean privateConstructors) throws InvocationTargetException {
@@ -117,16 +105,34 @@ class Beans {
 		}
 	}
 
-	static public Set<Property> getProperties (Class type, boolean beanProperties, boolean privateFields, YamlConfig config)
-		throws IntrospectionException {
+	static public Set<Property> getProperties (Class type, boolean beanProperties, boolean privateFields, YamlConfig config) {
 		if (type == null) throw new IllegalArgumentException("type cannot be null.");
+		Class[] noArgs = new Class[0], oneArg = new Class[1];
 		Set<Property> properties = new TreeSet();
-		if (beanProperties) {
-			for (PropertyDescriptor property : Introspector.getBeanInfo(type).getPropertyDescriptors())
-				if (property.getReadMethod() != null && canInitializeProperty(type, property, config))
-					properties.add(new MethodProperty(type, property));
-		}
 		for (Field field : getAllFields(type)) {
+			String name = field.getName();
+
+			if (beanProperties) {
+				DeferredConstruction deferredConstruction = getDeferredConstruction(type, config);
+				boolean constructorProperty = deferredConstruction != null && deferredConstruction.hasParameter(name);
+
+				String nameUpper = Character.toUpperCase(name.charAt(0)) + name.substring(1);
+				Method getMethod = null, setMethod = null;
+				try {
+					oneArg[0] = field.getType();
+					setMethod = type.getMethod("set" + nameUpper, oneArg);
+				} catch (Exception ignored) {
+				}
+				try {
+					getMethod = type.getMethod("get" + nameUpper, noArgs);
+				} catch (Exception ignored) {
+				}
+				if (getMethod != null && (setMethod != null || constructorProperty)) {
+					properties.add(new MethodProperty(name, setMethod, getMethod));
+					continue;
+				}
+			}
+
 			int modifiers = field.getModifiers();
 			if (Modifier.isStatic(modifiers) || Modifier.isTransient(modifiers)) continue;
 			if (!Modifier.isPublic(modifiers)) {
@@ -138,27 +144,39 @@ class Beans {
 		return properties;
 	}
 
-	static public Property getProperty (Class type, String name, boolean beanProperties, boolean privateFields, YamlConfig config)
-		throws IntrospectionException {
+	static public Property getProperty (Class type, String name, boolean beanProperties, boolean privateFields, YamlConfig config) {
 		if (type == null) throw new IllegalArgumentException("type cannot be null.");
 		if (name == null || name.length() == 0) throw new IllegalArgumentException("name cannot be null or empty.");
-		if (beanProperties) {
-			for (PropertyDescriptor property : Introspector.getBeanInfo(type).getPropertyDescriptors()) {
-				if (property.getName().equals(name)) {
-					if (property.getReadMethod() != null && canInitializeProperty(type, property, config))
-						return new MethodProperty(type, property);
-					break;
-				}
-			}
-		}
+		Class[] noArgs = new Class[0], oneArg = new Class[1];
 		for (Field field : getAllFields(type)) {
+			if (!field.getName().equals(name)) continue;
+
+			if (beanProperties) {
+				DeferredConstruction deferredConstruction = getDeferredConstruction(type, config);
+				boolean constructorProperty = deferredConstruction != null && deferredConstruction.hasParameter(name);
+
+				String nameUpper = Character.toUpperCase(name.charAt(0)) + name.substring(1);
+				Method getMethod = null, setMethod = null;
+				try {
+					oneArg[0] = field.getType();
+					setMethod = type.getMethod("set" + nameUpper, oneArg);
+				} catch (Exception ignored) {
+				}
+				try {
+					getMethod = type.getMethod("get" + nameUpper, noArgs);
+				} catch (Exception ignored) {
+				}
+				if (getMethod != null && (setMethod != null || constructorProperty))
+					return new MethodProperty(name, setMethod, getMethod);
+			}
+
 			int modifiers = field.getModifiers();
 			if (Modifier.isStatic(modifiers) || Modifier.isTransient(modifiers)) continue;
 			if (!Modifier.isPublic(modifiers)) {
 				if (!privateFields) continue;
 				field.setAccessible(true);
 			}
-			if (field.getName().equals(name)) return new FieldProperty(field);
+			return new FieldProperty(field);
 		}
 		return null;
 	}
@@ -174,11 +192,12 @@ class Beans {
 	}
 
 	static public class MethodProperty extends Property {
-		private final PropertyDescriptor property;
+		private final Method setMethod, getMethod;
 
-		public MethodProperty (Class declaringClass, PropertyDescriptor property) throws IntrospectionException {
-			super(declaringClass, property);
-			this.property = property;
+		public MethodProperty (String name, Method setMethod, Method getMethod) {
+			super(getMethod.getDeclaringClass(), name, getMethod.getReturnType());
+			this.setMethod = setMethod;
+			this.getMethod = getMethod;
 		}
 
 		public void set (Object object, Object value) throws Exception {
@@ -186,11 +205,11 @@ class Beans {
 				((DeferredConstruction)object).storeProperty(this, value);
 				return;
 			}
-			property.getWriteMethod().invoke(object, value);
+			setMethod.invoke(object, value);
 		}
 
 		public Object get (Object object) throws Exception {
-			return property.getReadMethod().invoke(object);
+			return getMethod.invoke(object);
 		}
 	}
 
@@ -224,21 +243,6 @@ class Beans {
 			this.declaringClass = declaringClass;
 			this.name = name;
 			this.type = type;
-		}
-
-		Property (Class declaringClass, PropertyDescriptor property) throws IntrospectionException {
-			this.declaringClass = declaringClass;
-			this.name = property.getName();
-			try {
-				// The PropertyDescriptor returns the wrong type if the getter is an implementation of a interface method with a
-				// generic return value.
-				type = property.getReadMethod().getDeclaringClass()
-					.getDeclaredMethod(property.getReadMethod().getName(), new Class[0]).getReturnType();
-			} catch (Exception ex) {
-				IntrospectionException introspectionEx = new IntrospectionException("Error getting ");
-				introspectionEx.initCause(ex);
-				throw introspectionEx;
-			}
 		}
 
 		public int hashCode () {
