@@ -184,7 +184,7 @@ class Beans {
 	static private ArrayList<Field> getAllFields (Class type) {
 		ArrayList<Field> allFields = new ArrayList();
 		Class nextClass = type;
-		while (nextClass != Object.class) {
+		while (nextClass != null && nextClass != Object.class) {
 			Collections.addAll(allFields, nextClass.getDeclaredFields());
 			nextClass = nextClass.getSuperclass();
 		}
