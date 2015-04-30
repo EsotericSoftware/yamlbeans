@@ -192,7 +192,16 @@ public class YamlWriter {
 		}
 
 		if (Beans.isScalar(valueClass)) {
-			emitter.emit(new ScalarEvent(null, null, new boolean[] {true, true}, String.valueOf(object), (char)0));
+			char style = 0;
+			String string = String.valueOf(object);
+			if (valueClass == String.class) {
+				try {
+					Float.parseFloat(string);
+					style = '\'';
+				} catch (NumberFormatException ignored) {
+				}
+			}
+			emitter.emit(new ScalarEvent(null, tag, new boolean[] {true, true}, string, style));
 			return;
 		}
 
