@@ -262,7 +262,7 @@ public class YamlWriter {
 					if (propertyValue == null && prototypeValue == null) continue;
 					if (propertyValue != null && prototypeValue != null && prototypeValue.equals(propertyValue)) continue;
 				}
-				emitter.emit(new ScalarEvent(null, null, new boolean[] {true, true}, property.getName(), (char)0));
+				emitter.emit(new ScalarEvent(null, null, new boolean[] {true, true}, property.getConvertedName(), (char)0));
 				Class propertyElementType = config.propertyToElementType.get(property);
 				Class propertyDefaultType = config.propertyToDefaultType.get(property);
 				writeValue(propertyValue, property.getType(), propertyElementType, propertyDefaultType);

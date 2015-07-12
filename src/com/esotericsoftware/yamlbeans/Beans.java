@@ -111,6 +111,7 @@ class Beans {
 		Set<Property> properties = new TreeSet();
 		for (Field field : getAllFields(type)) {
 			String name = field.getName();
+			String convertedName = config.propertyNameConverter.convertFieldToPropertyName(field);
 
 			if (beanProperties) {
 				DeferredConstruction deferredConstruction = getDeferredConstruction(type, config);
@@ -128,7 +129,7 @@ class Beans {
 				} catch (Exception ignored) {
 				}
 				if (getMethod != null && (setMethod != null || constructorProperty)) {
-					properties.add(new MethodProperty(name, setMethod, getMethod));
+					properties.add(new MethodProperty(name, setMethod, getMethod, convertedName));
 					continue;
 				}
 			}
@@ -139,7 +140,7 @@ class Beans {
 				if (!privateFields) continue;
 				field.setAccessible(true);
 			}
-			properties.add(new FieldProperty(field));
+			properties.add(new FieldProperty(field, convertedName));
 		}
 		return properties;
 	}
@@ -149,13 +150,14 @@ class Beans {
 		if (name == null || name.length() == 0) throw new IllegalArgumentException("name cannot be null or empty.");
 		Class[] noArgs = new Class[0], oneArg = new Class[1];
 		for (Field field : getAllFields(type)) {
-			if (!field.getName().equals(name)) continue;
+			String convertedName = config.propertyNameConverter.convertFieldToPropertyName(field);
+			if (!name.equals(convertedName)) continue;
 
 			if (beanProperties) {
 				DeferredConstruction deferredConstruction = getDeferredConstruction(type, config);
-				boolean constructorProperty = deferredConstruction != null && deferredConstruction.hasParameter(name);
+				boolean constructorProperty = deferredConstruction != null && deferredConstruction.hasParameter(field.getName());
 
-				String nameUpper = Character.toUpperCase(name.charAt(0)) + name.substring(1);
+				String nameUpper = Character.toUpperCase(field.getName().charAt(0)) + field.getName().substring(1);
 				Method getMethod = null, setMethod = null;
 				try {
 					oneArg[0] = field.getType();
@@ -167,7 +169,7 @@ class Beans {
 				} catch (Exception ignored) {
 				}
 				if (getMethod != null && (setMethod != null || constructorProperty))
-					return new MethodProperty(name, setMethod, getMethod);
+					return new MethodProperty(field.getName(), setMethod, getMethod, convertedName);
 			}
 
 			int modifiers = field.getModifiers();
@@ -176,7 +178,7 @@ class Beans {
 				if (!privateFields) continue;
 				field.setAccessible(true);
 			}
-			return new FieldProperty(field);
+			return new FieldProperty(field, convertedName);
 		}
 		return null;
 	}
@@ -194,8 +196,8 @@ class Beans {
 	static public class MethodProperty extends Property {
 		private final Method setMethod, getMethod;
 
-		public MethodProperty (String name, Method setMethod, Method getMethod) {
-			super(getMethod.getDeclaringClass(), name, getMethod.getReturnType());
+		public MethodProperty (String name, Method setMethod, Method getMethod, String convertedName) {
+			super(getMethod.getDeclaringClass(), name, getMethod.getReturnType(), convertedName);
 			this.setMethod = setMethod;
 			this.getMethod = getMethod;
 		}
@@ -216,8 +218,8 @@ class Beans {
 	static public class FieldProperty extends Property {
 		private final Field field;
 
-		public FieldProperty (Field field) {
-			super(field.getDeclaringClass(), field.getName(), field.getType());
+		public FieldProperty (Field field, String convertedName) {
+			super(field.getDeclaringClass(), field.getName(), field.getType(), convertedName);
 			this.field = field;
 		}
 
@@ -238,11 +240,13 @@ class Beans {
 		private final Class declaringClass;
 		private final String name;
 		private final Class type;
+		private final String convertedName;
 
-		Property (Class declaringClass, String name, Class type) {
+		Property (Class declaringClass, String name, Class type, String convertedName) {
 			this.declaringClass = declaringClass;
 			this.name = name;
 			this.type = type;
+			this.convertedName = convertedName;
 		}
 
 		public int hashCode () {
@@ -251,6 +255,7 @@ class Beans {
 			result = prime * result + ((declaringClass == null) ? 0 : declaringClass.hashCode());
 			result = prime * result + ((name == null) ? 0 : name.hashCode());
 			result = prime * result + ((type == null) ? 0 : type.hashCode());
+			result = prime * result + ((convertedName == null) ? 0 : convertedName.hashCode());
 			return result;
 		}
 
@@ -268,6 +273,9 @@ class Beans {
 			if (type == null) {
 				if (other.type != null) return false;
 			} else if (!type.equals(other.type)) return false;
+			if (convertedName == null) {
+				if (other.convertedName != null) return false;
+			} else if (!convertedName.equals(other.convertedName)) return false;
 			return true;
 		}
 
@@ -281,6 +289,10 @@ class Beans {
 
 		public String getName () {
 			return name;
+		}
+
+		public String getConvertedName() {
+			return convertedName;
 		}
 
 		public String toString () {
