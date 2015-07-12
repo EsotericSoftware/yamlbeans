@@ -92,8 +92,10 @@ public class YamlConfig {
 		propertyToElementType.put(property, elementType);
 	}
 
-	/** Sets the default type of a property. No tag will be output for values of this type. This type will be used if no tag is
-	 * found. */
+	/** Sets the default type of a property. No tag will be output for values of this type.
+	 * This type will be used if no tag is found.
+	 * If a PropertyNameConverter is in use then propertyName should be in the converted format
+	 */
 	public void setPropertyDefaultType (Class type, String propertyName, Class defaultType) {
 		if (type == null) throw new IllegalArgumentException("type cannot be null.");
 		if (propertyName == null) throw new IllegalArgumentException("propertyName cannot be null.");
