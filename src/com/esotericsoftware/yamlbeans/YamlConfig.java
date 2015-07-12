@@ -44,6 +44,7 @@ public class YamlConfig {
 	final Map<Class, ScalarSerializer> scalarSerializers = new IdentityHashMap();
 	final Map<Property, Class> propertyToElementType = new HashMap();
 	final Map<Property, Class> propertyToDefaultType = new HashMap();
+	PropertyNameConverter propertyNameConverter = PropertyNameConverter.DEFAULT;
 	boolean beanProperties = true;
 	boolean privateFields;
 	boolean privateConstructors = true;
@@ -74,7 +75,9 @@ public class YamlConfig {
 	}
 
 	/** Sets the default type of elements in a Collection or Map property. No tag will be output for elements of this type. This
-	 * type will be used for each element if no tag is found. */
+	 * type will be used for each element if no tag is found.
+	 * If a PropertyNameConverter is in use then propertyName should be in the converted format
+	 * */
 	public void setPropertyElementType (Class type, String propertyName, Class elementType) {
 		if (type == null) throw new IllegalArgumentException("type cannot be null.");
 		if (propertyName == null) throw new IllegalArgumentException("propertyName cannot be null.");
@@ -89,8 +92,10 @@ public class YamlConfig {
 		propertyToElementType.put(property, elementType);
 	}
 
-	/** Sets the default type of a property. No tag will be output for values of this type. This type will be used if no tag is
-	 * found. */
+	/** Sets the default type of a property. No tag will be output for values of this type.
+	 * This type will be used if no tag is found.
+	 * If a PropertyNameConverter is in use then propertyName should be in the converted format
+	 */
 	public void setPropertyDefaultType (Class type, String propertyName, Class defaultType) {
 		if (type == null) throw new IllegalArgumentException("type cannot be null.");
 		if (propertyName == null) throw new IllegalArgumentException("propertyName cannot be null.");
@@ -115,6 +120,12 @@ public class YamlConfig {
 	/** If true, private no-arg constructors will be used. Default is true. */
 	public void setPrivateConstructors (boolean privateConstructors) {
 		this.privateConstructors = privateConstructors;
+	}
+
+	/** Sets the strategy to use when converting between YAML property and Java field names.
+	 *  Default is no conversion. (Yaml properties will be matched to Java fields with the same name)*/
+	public void setPropertyNameConverter (PropertyNameConverter propertyNameConverter) {
+		this.propertyNameConverter = propertyNameConverter;
 	}
 
 	static public class WriteConfig {

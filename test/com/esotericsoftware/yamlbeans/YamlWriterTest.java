@@ -21,12 +21,7 @@ import com.esotericsoftware.yamlbeans.scalar.ScalarSerializer;
 import java.beans.ConstructorProperties;
 import java.io.File;
 import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import junit.framework.TestCase;
 
@@ -304,6 +299,155 @@ public class YamlWriterTest extends TestCase {
 		assertEquals(object.file, roundTrip.file);
 	}
 
+	public void testSimpleTypes_String_WithWriteConverter () throws Exception {
+		String expected = "simple string\n";
+
+		String string = "simple string";
+		assertEquals(string, roundTripUpperCase(string, expected));
+	}
+
+	public void testSimpleTypes_Map_WithWriteConverter () throws Exception {
+		String expected = "moo: cow\n";
+
+		Map map = new HashMap();
+		map.put("moo", "cow");
+		assertEquals(map, roundTripUpperCase(map, expected));
+	}
+
+	public void testSimpleTypes_List_WithWriteConverter () throws Exception {
+		String expected = "- moo\n" +
+				"- cow\n";
+
+		List list = new ArrayList();
+		list.add("moo");
+		list.add("cow");
+		assertEquals(list, roundTripUpperCase(list, expected));
+	}
+
+	public void testSimpleTypes_NestedList_WithWriteConverter () throws Exception {
+		String expected = "moo: cow\n" +
+				"fubar: \n" +
+				"- moo\n" +
+				"- cow\n";
+
+		List list = new ArrayList();
+		list.add("moo");
+		list.add("cow");
+
+		Map map = new HashMap();
+		map.put("moo", "cow");
+		map.put("fubar", list);
+
+		assertEquals(map, roundTripUpperCase(map, expected));
+	}
+
+	public void testSimpleTypes_StringArray_WithWriteConverter () throws Exception {
+		String expected = "- moo\n" +
+				"- meow\n" +
+				"- cow\n" +
+				"- gato\n";
+
+		String[] stringArray = new String[] {"moo", "meow", "cow", "gato"};
+		List result = (List)roundTripUpperCase(stringArray, expected);
+		assertEquals(stringArray[0], result.get(0));
+		assertEquals(stringArray[1], result.get(1));
+		assertEquals(stringArray[2], result.get(2));
+		assertEquals(stringArray[3], result.get(3));
+	}
+
+	public void testObjects_WithWriteConverter () throws Exception {
+		String expected = "!com.esotericsoftware.yamlbeans.YamlWriterTest$Test\n" +
+				"BOOLEANVALUE: true\n" +
+				"CHILD: &1 !com.esotericsoftware.yamlbeans.YamlWriterTest$Test2\n" +
+				"   VALUE: weeeee\n" +
+				"DATE: 2015-07-10 17:45:56\n" +
+				"DOUBLEVALUE: 1.5\n" +
+				"FLOATVALUE: 1.2\n" +
+				"INTVALUE: 123\n" +
+				"LISTVALUES: !java.util.LinkedList\n" +
+				"- woo\n" +
+				"- !com.esotericsoftware.yamlbeans.YamlWriterTest$Test {}\n" +
+				"- 123\n" +
+				"- *1\n" +
+				"STRINGVALUE: yay\n" +
+				"VALUE: c\n";
+
+		Test test = new Test();
+		test.stringValue = "yay";
+		test.intValue = 123;
+		test.booleanValue = true;
+		test.floatValue = 1.2f;
+		test.doubleValue = 1.5;
+		test.child = new Test2();
+		((Test2)test.child).setValue("weeeee");
+		test.listValues = new LinkedList();
+		test.listValues.add("woo");
+		test.listValues.add(new Test());
+		test.listValues.add(123);
+		test.listValues.add(test.child);
+		test.value = Value.c;
+		test.date = new GregorianCalendar(2015, 6, 10, 17, 45, 56).getTime();
+
+
+		YamlConfig config = new YamlConfig();
+		config.setPropertyNameConverter(new TestPropertyNameConverter());
+		config.writeConfig.setAutoAnchor(true);
+		Test result = roundTrip(test, Test.class, config, expected);
+		assertEquals(test.stringValue, result.stringValue);
+		assertEquals(test.intValue, result.intValue);
+		assertEquals(test.booleanValue, result.booleanValue);
+		assertEquals(test.floatValue, result.floatValue);
+		assertEquals(test.doubleValue, result.doubleValue);
+		assertEquals(test.listValues.size(), result.listValues.size());
+		assertEquals(test.listValues.getClass(), result.listValues.getClass());
+		assertEquals(((Test2)test.child).getValue(), "weeeee");
+		assertEquals(test.value, result.value);
+		assertTrue(result.child == result.listValues.get(3));
+	}
+
+	public void testObjectField_WithWriteConverter () throws Exception {
+		String expected = "!com.esotericsoftware.yamlbeans.YamlWriterTest$ValueHolder\n" +
+				"VALUE: XYZ\n";
+
+		ValueHolder object = new ValueHolder();
+		object.value = "XYZ";
+		ValueHolder roundTrip = (ValueHolder)roundTripUpperCase(object, expected);
+		assertEquals("XYZ", roundTrip.value);
+	}
+
+	public void testConstructorProperties_WithWriteConverter () throws Exception {
+		String expected = "!com.esotericsoftware.yamlbeans.YamlWriterTest$ConstructorPropertiesSample\n" +
+				"X: 1\n" +
+				"Y: 2\n" +
+				"Z: 3\n";
+
+		ConstructorPropertiesSample object = new ConstructorPropertiesSample(1, 2, 3);
+		ConstructorPropertiesSample roundTrip = (ConstructorPropertiesSample)roundTripUpperCase(object, expected);
+		assertEquals(1, roundTrip.getX());
+		assertEquals(2, roundTrip.getY());
+		assertEquals(3, roundTrip.getZ());
+	}
+
+	public void testConstructorPropertiesMixed_WithPropertyConverter () throws Exception {
+		String expected = "!com.esotericsoftware.yamlbeans.YamlWriterTest$ConstructorPropertiesSampleMixed\n" +
+				"X: 1\n" +
+				"Y: 2\n" +
+				"Z: 3\n";
+
+		ConstructorPropertiesSampleMixed object = new ConstructorPropertiesSampleMixed(1, 2);
+		object.setZ(3);
+		ConstructorPropertiesSampleMixed roundTrip = (ConstructorPropertiesSampleMixed)roundTripUpperCase(object, expected);
+		assertEquals(1, roundTrip.getX());
+		assertEquals(2, roundTrip.getY());
+		assertEquals(3, roundTrip.getZ());
+	}
+
+	private Object roundTripUpperCase (Object object, String expectedOutput) throws Exception {
+		YamlConfig config = new YamlConfig();
+		config.setPropertyNameConverter(new TestPropertyNameConverter());
+		return roundTrip(object, null, config, expectedOutput);
+	}
+
 	private Object roundTrip (Object object) throws Exception {
 		return roundTrip(object, null, new YamlConfig());
 	}
@@ -316,6 +460,21 @@ public class YamlWriterTest extends TestCase {
 		writer.close();
 
 		if (true) System.out.println(buffer);
+
+		YamlReader reader = new YamlReader(buffer.toString(), config);
+		return reader.read(type);
+	}
+
+	private <T> T roundTrip (Object object, Class<T> type, YamlConfig config, String expectedOutput) throws Exception {
+		StringWriter buffer = new StringWriter();
+
+		YamlWriter writer = new YamlWriter(buffer, config);
+		writer.write(object);
+		writer.close();
+
+		if (true) System.out.println(buffer);
+
+		assertEquals(expectedOutput, buffer.toString());
 
 		YamlReader reader = new YamlReader(buffer.toString(), config);
 		return reader.read(type);

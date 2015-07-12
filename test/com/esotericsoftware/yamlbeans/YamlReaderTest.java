@@ -16,6 +16,7 @@
 
 package com.esotericsoftware.yamlbeans;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -166,6 +167,21 @@ public class YamlReaderTest extends TestCase {
 		return new YamlReader(yaml).read(Test.class);
 	}
 
+	private Test readUpperCase (String yaml) throws Exception {
+		if (true) {
+			System.out.println(yaml);
+			System.out.println("===");
+			YamlReader reader = new YamlReader(yaml);
+			reader.getConfig().setPropertyNameConverter(new TestPropertyNameConverter());
+			System.out.println(reader.read(null));
+			System.out.println();
+			System.out.println();
+		}
+		YamlReader reader = new YamlReader(yaml);
+		reader.getConfig().setPropertyNameConverter(new TestPropertyNameConverter());
+		return reader.read(Test.class);
+	}
+
 	static public class Test {
 		public String stringValue;
 		public int intValue;
@@ -213,6 +229,97 @@ public class YamlReaderTest extends TestCase {
 		assertEquals(3, object.getX());
 		assertEquals(4, object.getY());
 		assertEquals(5, object.getZ());
+	}
+
+	public void testReadMap_WithPropertyNameConverter () throws Exception {
+		YamlConfig config = new YamlConfig();
+		config.setPropertyNameConverter(new TestPropertyNameConverter());
+		Map actual = (Map) new YamlReader("foo: bar\nbaz:\n buz: qux", config).read();
+
+		Map expected = new HashMap();
+		expected.put("foo", "bar");
+
+		Map expectedBaz = new HashMap();
+		expectedBaz.put("buz", "qux");
+		expected.put("baz", expectedBaz);
+
+		assertEquals(expected, actual);
+	}
+
+	public void testSimpleFields_WithPropertyNameConverter () throws Exception {
+		Test test = readUpperCase( //
+				"STRINGVALUE: moo\ufec9moo\n" + //
+						"INTVALUE: !!int 123\n" + //
+						"FLOATVALUE: 0.3\n" + //
+						"DOUBLEVALUE: 0.0002\n" + //
+						"LONGVALUE: 999999\n" + //
+						"SHORTVALUE: 125\n" + //
+						"CHARVALUE: j\n" + //
+						"TESTENUM: b\n" + //
+						"BYTEVALUE: 14" //
+		);
+
+		assertEquals("moo\ufec9moo", test.stringValue);
+		assertEquals(123, test.intValue);
+		assertEquals(0.3f, test.floatValue);
+		assertEquals(0.0002d, test.doubleValue);
+		assertEquals(999999, test.longValue);
+		assertEquals(125, test.shortValue);
+		assertEquals('j', test.charValue);
+		assertEquals(14, test.byteValue);
+		assertEquals(TestEnum.b, test.testEnum);
+
+		assertEquals(true, readUpperCase("BOOLEANVALUE: true").booleanValue);
+		assertEquals(false, readUpperCase("BOOLEANVALUE: 123").booleanValue);
+		assertEquals(false, readUpperCase("BOOLEANVALUE: 0").booleanValue);
+		assertEquals(false, readUpperCase("BOOLEANVALUE: false").booleanValue);
+	}
+
+	public void testSequence_WithPropertyNameConverter () throws Exception {
+		Test test = readUpperCase("LISTVALUES: [moo, 2]");
+		assertEquals(2, test.listValues.size());
+		assertEquals("moo", test.listValues.get(0));
+		assertEquals("2", test.listValues.get(1));
+
+		test = readUpperCase("ARRAYOBJECTS: [moo, 2]");
+		assertEquals(2, test.arrayObjects.length);
+		assertEquals("moo", test.arrayObjects[0]);
+		assertEquals("2", test.arrayObjects[1]);
+
+		test = readUpperCase("ARRAYSTRINGS: [moo, 2]");
+		assertEquals(2, test.arrayStrings.length);
+		assertEquals("moo", test.arrayStrings[0]);
+		assertEquals("2", test.arrayStrings[1]);
+
+		test = readUpperCase("ARRAYINTS: [34, 21]");
+		assertEquals(2, test.arrayInts.length);
+		assertEquals(34, test.arrayInts[0]);
+		assertEquals(21, test.arrayInts[1]);
+
+		test = readUpperCase("LISTVALUES:\n- moo\n- 2");
+		assertEquals(2, test.listValues.size());
+		assertEquals("moo", test.listValues.get(0));
+		assertEquals("2", test.listValues.get(1));
+
+		test = readUpperCase("LISTVALUES:\n  - moo\n  - 2");
+		assertEquals(2, test.listValues.size());
+		assertEquals("moo", test.listValues.get(0));
+		assertEquals("2", test.listValues.get(1));
+
+		test = readUpperCase("ARRAYOBJECTS:\n  - moo\n  - 2");
+		assertEquals(2, test.arrayObjects.length);
+		assertEquals("moo", test.arrayObjects[0]);
+		assertEquals("2", test.arrayObjects[1]);
+
+		test = readUpperCase("ARRAYSTRINGS:\n  - moo\n  - 2");
+		assertEquals(2, test.arrayStrings.length);
+		assertEquals("moo", test.arrayStrings[0]);
+		assertEquals("2", test.arrayStrings[1]);
+
+		test = readUpperCase("ARRAYINTS:\n  - 34\n  - 21");
+		assertEquals(2, test.arrayInts.length);
+		assertEquals(34, test.arrayInts[0]);
+		assertEquals(21, test.arrayInts[1]);
 	}
 
 	static public class Moo1 {
