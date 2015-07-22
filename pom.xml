@@ -1,18 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-				 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-				 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.sonatype.oss</groupId>
+		<artifactId>oss-parent</artifactId>
+		<version>7</version>
+	</parent>
 
 	<name>YamlBeans</name>
 	<groupId>com.esotericsoftware.yamlbeans</groupId>
 	<artifactId>yamlbeans</artifactId>
-	<version>1.05</version>
+	<version>1.09</version>
 
-	<packaging>jar</packaging>
 	<description>Java object graphs, to and from YAML</description>
-	<url>http://code.google.com/p/yamlbeans</url>
+	<url>https://github.com/EsotericSoftware/yamlbeans</url>
 
 	<licenses>
 		<license>
@@ -22,8 +25,10 @@
 		</license>
 	</licenses>
 	<scm>
-		<url>http://code.google.com/p/yamlbeans/source/browse/</url>
-		<connection>http://yamlbeans.googlecode.com/svn</connection>
+		<url>scm:git:git@github.com:esotericsoftware/yamlbeans.git</url>
+		<connection>scm:git:git@github.com:esotericsoftware/yamlbeans.git</connection>
+		<developerConnection>scm:git:git@github.com:esotericsoftware/yamlbeans.git</developerConnection>
+		<tag>HEAD</tag>
 	</scm>
 
 	<dependencies>
@@ -35,6 +40,14 @@
 		</dependency>
 	</dependencies>
 
+	<properties>
+
+		<!-- default encoding -->
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+		<java.version>1.5</java.version>
+	</properties>
+
 	<build>
 		<sourceDirectory>src</sourceDirectory>
 		<testSourceDirectory>test</testSourceDirectory>
@@ -43,12 +56,50 @@
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
-					<source>1.5</source>
-					<target>1.5</target>
-					<encoding>UTF-8</encoding>
+					<source>${java.version}</source>
+					<target>${java.version}</target>
 				</configuration>
 			</plugin>
 		</plugins>
+
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<artifactId>maven-resources-plugin</artifactId>
+					<version>2.6</version>
+				</plugin>
+				<plugin>
+					<artifactId>maven-surefire-plugin</artifactId>
+					<version>2.12.4</version>
+				</plugin>
+				<plugin>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>2.5.1</version>
+				</plugin>
+				<plugin>
+					<artifactId>maven-source-plugin</artifactId>
+					<version>2.2.1</version>
+				</plugin>
+				<plugin>
+					<artifactId>maven-javadoc-plugin</artifactId>
+					<version>2.9</version>
+				</plugin>
+				<plugin>
+					<artifactId>maven-gpg-plugin</artifactId>
+					<version>1.4</version>
+				</plugin>
+				<plugin>
+					<artifactId>maven-deploy-plugin</artifactId>
+					<version>2.7</version>
+				</plugin>
+				<plugin>
+					<groupId>org.nuiton</groupId>
+					<artifactId>helper-maven-plugin</artifactId>
+					<version>2.0</version>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+
 	</build>
 
 	<developers>
@@ -63,4 +114,64 @@
 			</roles>
 		</developer>
 	</developers>
+
+	<contributors>
+		<contributor>
+			<name>Tony Chemit</name>
+			<email>chemit at codelutin dot com</email>
+			<organization>CodeLutin</organization>
+			<organizationUrl>http://codelutin.com</organizationUrl>
+			<timezone>Europe/Paris</timezone>
+			<roles>
+				<role>Maven packager</role>
+			</roles>
+		</contributor>
+	</contributors>
+
+	<profiles>
+		<profile>
+			<id>release-sign-artifacts</id>
+			<activation>
+				<property>
+					<name>performRelease</name>
+					<value>true</value>
+				</property>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.nuiton</groupId>
+						<artifactId>helper-maven-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>get-pgp-passphrase</id>
+								<goals>
+									<goal>share-server-secret</goal>
+								</goals>
+								<phase>verify</phase>
+								<configuration>
+									<serverId>${gpg.serverId}</serverId>
+									<usernameOut>gpg.keyname</usernameOut>
+									<passwordOut>gpg.passphrase</passwordOut>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<artifactId>maven-gpg-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>sign-artifacts</id>
+								<phase>verify</phase>
+								<goals>
+									<goal>sign</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+
 </project>

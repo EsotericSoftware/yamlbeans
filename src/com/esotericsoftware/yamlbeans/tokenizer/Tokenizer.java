@@ -133,7 +133,6 @@ public class Tokenizer {
 		if (!tokens.isEmpty()) {
 			tokensTaken++;
 			Token token = tokens.remove(0);
-			// System.out.println("Tokenizer: " + token);
 			return token;
 		}
 		return null;

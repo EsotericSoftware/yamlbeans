@@ -344,7 +344,6 @@ public class YamlReader {
 		}
 		case SCALAR:
 			// Interpret an empty scalar as null.
-			System.out.println(((ScalarEvent)event).value);
 			if (((ScalarEvent)event).value.length() == 0) {
 				event = parser.getNextEvent();
 				return null;
