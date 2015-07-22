@@ -34,8 +34,6 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -294,7 +292,7 @@ public class YamlReader {
 							throw new YamlReaderException("Unable to find property '" + key + "' on class: " + type.getName());
 						Class propertyElementType = config.propertyToElementType.get(property);
 						if (propertyElementType == null)
-							propertyElementType = getElementTypeFromGenerics(property.getGenericType());
+							propertyElementType = property.getElementType();
 						Class propertyDefaultType = config.propertyToDefaultType.get(property);
 						if (!isExplicitKey) value = readValue(property.getType(), propertyElementType, propertyDefaultType);
 						property.set(object, value);
@@ -348,7 +346,6 @@ public class YamlReader {
 		}
 		case SCALAR:
 			// Interpret an empty scalar as null.
-			System.out.println(((ScalarEvent)event).value);
 			if (((ScalarEvent)event).value.length() == 0) {
 				event = parser.getNextEvent();
 				return null;
@@ -357,29 +354,6 @@ public class YamlReader {
 		default:
 			throw new YamlReaderException("Expected data for a " + type.getName() + " field but found: " + event.type);
 		}
-	}
-
-	private Class getElementTypeFromGenerics (Type type) {
-		if (type instanceof ParameterizedType) {
-			ParameterizedType parameterizedType = (ParameterizedType)type;
-			Type rawType = parameterizedType.getRawType();
-
-			if (isCollection(rawType) || isMap(rawType)) {
-				Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
-				if (actualTypeArguments.length > 0) {
-					return (Class)actualTypeArguments[actualTypeArguments.length - 1];
-				}
-			}
-		}
-		return null;
-	}
-
-	private boolean isMap (Type type) {
-		return Map.class.isAssignableFrom((Class) type);
-	}
-
-	private boolean isCollection (Type type) {
-		return Collection.class.isAssignableFrom((Class) type);
 	}
 
 	/** Returns a new object of the requested type. */
