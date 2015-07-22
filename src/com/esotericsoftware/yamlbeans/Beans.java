@@ -15,14 +15,16 @@
  */
 
 package com.esotericsoftware.yamlbeans;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -195,7 +197,7 @@ class Beans {
 		private final Method setMethod, getMethod;
 
 		public MethodProperty (String name, Method setMethod, Method getMethod) {
-			super(getMethod.getDeclaringClass(), name, getMethod.getReturnType());
+			super(getMethod.getDeclaringClass(), name, getMethod.getReturnType(), getMethod.getGenericReturnType());
 			this.setMethod = setMethod;
 			this.getMethod = getMethod;
 		}
@@ -217,7 +219,7 @@ class Beans {
 		private final Field field;
 
 		public FieldProperty (Field field) {
-			super(field.getDeclaringClass(), field.getName(), field.getType());
+			super(field.getDeclaringClass(), field.getName(), field.getType(), field.getGenericType());
 			this.field = field;
 		}
 
@@ -238,11 +240,37 @@ class Beans {
 		private final Class declaringClass;
 		private final String name;
 		private final Class type;
+		private final Class elementType;
 
-		Property (Class declaringClass, String name, Class type) {
+		Property (Class declaringClass, String name, Class type, Type genericType) {
 			this.declaringClass = declaringClass;
 			this.name = name;
 			this.type = type;
+			this.elementType = getElementTypeFromGenerics(genericType);
+		}
+
+
+		private Class getElementTypeFromGenerics (Type type) {
+			if (type instanceof ParameterizedType) {
+				ParameterizedType parameterizedType = (ParameterizedType)type;
+				Type rawType = parameterizedType.getRawType();
+
+				if (isCollection(rawType) || isMap(rawType)) {
+					Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
+					if (actualTypeArguments.length > 0) {
+						return (Class)actualTypeArguments[actualTypeArguments.length - 1];
+					}
+				}
+			}
+			return null;
+		}
+
+		private boolean isMap (Type type) {
+			return Map.class.isAssignableFrom((Class) type);
+		}
+
+		private boolean isCollection (Type type) {
+			return Collection.class.isAssignableFrom((Class) type);
 		}
 
 		public int hashCode () {
@@ -251,6 +279,7 @@ class Beans {
 			result = prime * result + ((declaringClass == null) ? 0 : declaringClass.hashCode());
 			result = prime * result + ((name == null) ? 0 : name.hashCode());
 			result = prime * result + ((type == null) ? 0 : type.hashCode());
+			result = prime * result + ((elementType == null) ? 0 : elementType.hashCode());
 			return result;
 		}
 
@@ -268,11 +297,18 @@ class Beans {
 			if (type == null) {
 				if (other.type != null) return false;
 			} else if (!type.equals(other.type)) return false;
+			if (elementType == null) {
+				if (other.elementType != null) return false;
+			} else if (!elementType.equals(other.elementType)) return false;
 			return true;
 		}
 
 		public Class getDeclaringClass () {
 			return declaringClass;
+		}
+
+		public Class getElementType() {
+			return elementType;
 		}
 
 		public Class getType () {

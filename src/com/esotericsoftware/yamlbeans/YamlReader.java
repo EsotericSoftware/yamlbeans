@@ -291,6 +291,8 @@ public class YamlReader {
 						if (property == null)
 							throw new YamlReaderException("Unable to find property '" + key + "' on class: " + type.getName());
 						Class propertyElementType = config.propertyToElementType.get(property);
+						if (propertyElementType == null)
+							propertyElementType = property.getElementType();
 						Class propertyDefaultType = config.propertyToDefaultType.get(property);
 						if (!isExplicitKey) value = readValue(property.getType(), propertyElementType, propertyDefaultType);
 						property.set(object, value);
