@@ -34,7 +34,6 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import com.esotericsoftware.yamlbeans.YamlConfig.ConstructorParameters;
-import com.sun.org.apache.xpath.internal.operations.Bool;
 
 /** Utility for dealing with beans and public fields.
  * @author <a href="mailto:misc@n4te.com">Nathan Sweet</a> */
