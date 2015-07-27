@@ -129,6 +129,12 @@ class Beans {
 					getMethod = type.getMethod("get" + nameUpper, noArgs);
 				} catch (Exception ignored) {
 				}
+				if (getMethod == null && (field.getType().equals(Boolean.class) || field.getType().equals(boolean.class))) {
+					try {
+						getMethod = type.getMethod("is" + nameUpper, noArgs);
+					} catch (Exception ignored) {
+					}
+				}
 				if (getMethod != null && (setMethod != null || constructorProperty)) {
 					properties.add(new MethodProperty(name, setMethod, getMethod));
 					continue;
@@ -167,6 +173,12 @@ class Beans {
 				try {
 					getMethod = type.getMethod("get" + nameUpper, noArgs);
 				} catch (Exception ignored) {
+				}
+				if (getMethod == null && (field.getType().equals(Boolean.class) || field.getType().equals(boolean.class))) {
+					try {
+						getMethod = type.getMethod("is" + nameUpper, noArgs);
+					} catch (Exception ignored) {
+					}
 				}
 				if (getMethod != null && (setMethod != null || constructorProperty))
 					return new MethodProperty(name, setMethod, getMethod);
