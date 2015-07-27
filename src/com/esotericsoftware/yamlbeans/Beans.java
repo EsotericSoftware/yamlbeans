@@ -34,6 +34,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import com.esotericsoftware.yamlbeans.YamlConfig.ConstructorParameters;
+import com.sun.org.apache.xpath.internal.operations.Bool;
 
 /** Utility for dealing with beans and public fields.
  * @author <a href="mailto:misc@n4te.com">Nathan Sweet</a> */
@@ -129,6 +130,12 @@ class Beans {
 					getMethod = type.getMethod("get" + nameUpper, noArgs);
 				} catch (Exception ignored) {
 				}
+				if (getMethod == null && (field.getType().equals(Boolean.class) || field.getType().equals(boolean.class))) {
+					try {
+						getMethod = type.getMethod("is" + nameUpper, noArgs);
+					} catch (Exception ignored) {
+					}
+				}
 				if (getMethod != null && (setMethod != null || constructorProperty)) {
 					properties.add(new MethodProperty(name, setMethod, getMethod));
 					continue;
@@ -167,6 +174,12 @@ class Beans {
 				try {
 					getMethod = type.getMethod("get" + nameUpper, noArgs);
 				} catch (Exception ignored) {
+				}
+				if (getMethod == null && (field.getType().equals(Boolean.class) || field.getType().equals(boolean.class))) {
+					try {
+						getMethod = type.getMethod("is" + nameUpper, noArgs);
+					} catch (Exception ignored) {
+					}
 				}
 				if (getMethod != null && (setMethod != null || constructorProperty))
 					return new MethodProperty(name, setMethod, getMethod);
