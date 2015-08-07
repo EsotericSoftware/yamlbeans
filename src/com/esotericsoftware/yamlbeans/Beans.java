@@ -147,6 +147,7 @@ class Beans {
 	static public Property getProperty (Class type, String name, boolean beanProperties, boolean privateFields, YamlConfig config) {
 		if (type == null) throw new IllegalArgumentException("type cannot be null.");
 		if (name == null || name.length() == 0) throw new IllegalArgumentException("name cannot be null or empty.");
+		name = name.replace(" ", "");
 		Class[] noArgs = new Class[0], oneArg = new Class[1];
 		for (Field field : getAllFields(type)) {
 			if (!field.getName().equals(name)) continue;
