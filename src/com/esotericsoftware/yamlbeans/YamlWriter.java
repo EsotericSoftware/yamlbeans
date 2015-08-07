@@ -31,6 +31,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import com.esotericsoftware.yamlbeans.Beans.Property;
+import com.esotericsoftware.yamlbeans.YamlConfig.WriteClassName;
 import com.esotericsoftware.yamlbeans.YamlConfig.WriteConfig;
 import com.esotericsoftware.yamlbeans.emitter.Emitter;
 import com.esotericsoftware.yamlbeans.emitter.EmitterException;
@@ -171,7 +172,7 @@ public class YamlWriter {
 
 		String tag = null;
 		boolean showTag = false;
-		if (unknownType || valueClass != fieldClass || config.writeConfig.alwaysWriteClassName) {
+		if ((unknownType || valueClass != fieldClass || config.writeConfig.writeClassName == WriteClassName.ALWAYS) && config.writeConfig.writeClassName != WriteClassName.NEVER) {
 			showTag = true;
 			if ((unknownType || fieldClass == List.class) && valueClass == ArrayList.class) showTag = false;
 			if ((unknownType || fieldClass == Map.class) && valueClass == HashMap.class) showTag = false;

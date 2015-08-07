@@ -124,7 +124,7 @@ public class YamlConfig {
 		boolean writeRootTags = true;
 		boolean writeRootElementTags = true;
 		boolean autoAnchor = true;
-		boolean alwaysWriteClassName = false;
+		WriteClassName writeClassName = WriteClassName.AUTO;
 		EmitterConfig emitterConfig = new EmitterConfig();
 
 		WriteConfig () {
@@ -201,8 +201,8 @@ public class YamlConfig {
 		}
 
 		/** If true, class name tags will always be output. */
-		public void setAlwaysWriteClassname (boolean write) {
-			alwaysWriteClassName = write;
+		public void setWriteClassname (WriteClassName write) {
+			writeClassName = write;
 		}
 	}
 
@@ -246,5 +246,9 @@ public class YamlConfig {
 	static class ConstructorParameters {
 		public Constructor constructor;
 		public String[] parameterNames;
+	}
+
+	public static enum WriteClassName {
+		ALWAYS, NEVER, AUTO
 	}
 }

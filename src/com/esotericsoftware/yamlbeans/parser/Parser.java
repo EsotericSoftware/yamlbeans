@@ -79,7 +79,6 @@ public class Parser {
 		while (!parseStack.isEmpty()) {
 			Event event = parseStack.remove(0).produce();
 			if (event != null) {
-				// System.out.println("Parser: " + event);
 				return event;
 			}
 		}
