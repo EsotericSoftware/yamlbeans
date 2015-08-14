@@ -5,140 +5,163 @@ import junit.framework.Assert;
 import junit.framework.TestCase;
 
 import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 public class GenericTest extends TestCase {
-	private static final String YAML =
-			"integerList: \n"+
-			"- 1\n"+
-			"- 100500\n"+
-			"- 10\n"+
-			"stringMap: \n"+
-			"   a: av\n"+
-			"   b: bv\n"+
-			"structList: \n"+
-			"-  i: 10\n"+
-			"   str: aaa\n"+
-			"-  i: 20\n"+
-			"   str: bbb\n"+
-			"structMap: \n"+
-			"   a: \n"+
-			"      i: 1\n"+
-			"      str: aa\n"+
-			"   b: \n"+
-			"      i: 2\n"+
-			"      str: ab\n";
 
-	public void testRead () throws YamlException {
-		Test test = createTest();
+    private static final String YAML
+            = "integerList: \n"
+            + "- 1\n"
+            + "- 100500\n"
+            + "- 10\n"
+            + "stringMap: \n"
+            + "   a: av\n"
+            + "   b: bv\n"
+            + "structList: \n"
+            + "-  i: 10\n"
+            + "   str: aaa\n"
+            + "-  i: 20\n"
+            + "   str: bbb\n"
+            + "structMap: \n"
+            + "   a: \n"
+            + "      i: 1\n"
+            + "      str: aa\n"
+            + "   b: \n"
+            + "      i: 2\n"
+            + "      str: ab\n";
 
-		Test read = new YamlReader(YAML).read(Test.class);
-		Assert.assertEquals(test, read);
-	}
+    public void testRead() throws YamlException {
+        Test test = createTest();
 
-	public void testWrite () throws YamlException {
-		Test test = createTest();
-		StringWriter stringWriter = new StringWriter();
+        Test read = new YamlReader(YAML).read(Test.class);
+        Assert.assertEquals(test, read);
+    }
 
-		YamlWriter yamlWriter = new YamlWriter(stringWriter);
-		yamlWriter.getConfig().writeConfig.setWriteClassname(WriteClassName.NEVER);
-		yamlWriter.write(test);
-		yamlWriter.close();
+    public void testWrite() throws YamlException {
+        Test test = createTest();
+        StringWriter stringWriter = new StringWriter();
 
-		Assert.assertEquals(YAML, stringWriter.getBuffer().toString());
-	}
+        YamlWriter yamlWriter = new YamlWriter(stringWriter);
+        yamlWriter.getConfig().writeConfig.setWriteClassname(WriteClassName.NEVER);
+        yamlWriter.write(test);
+        yamlWriter.close();
 
-	private Test createTest () {
-		Map<String, String> stringMap = new HashMap<String, String>();
-		stringMap.put("a", "av");
-		stringMap.put("b", "bv");
+        Assert.assertEquals(YAML, stringWriter.getBuffer().toString());
+    }
 
-		Map<String,Struct> structMap = new HashMap<String, Struct>();
-		structMap.put("a", new Struct(1, "aa"));
-		structMap.put("b", new Struct(2, "ab"));
+    private Test createTest() {
+        Map<String, String> stringMap = new LinkedHashMap<String, String>();
+        stringMap.put("a", "av");
+        stringMap.put("b", "bv");
 
-		List<Integer> integerList = new ArrayList<Integer>();
-		integerList.add(1);
-		integerList.add(100500);
-		integerList.add(10);
+        Map<String, Struct> structMap = new LinkedHashMap<String, Struct>();
+        structMap.put("a", new Struct(1, "aa"));
+        structMap.put("b", new Struct(2, "ab"));
 
-		List<Struct> structList = new ArrayList<Struct>();
-		structList.add(new Struct(10, "aaa"));
-		structList.add(new Struct(20, "bbb"));
+        List<Integer> integerList = new LinkedList<Integer>();
+        integerList.add(1);
+        integerList.add(100500);
+        integerList.add(10);
 
-		Test test = new Test();
-		test.stringMap = stringMap;
-		test.structMap = structMap;
-		test.integerList = integerList;
-		test.structList =  structList;
+        List<Struct> structList = new LinkedList<Struct>();
+        structList.add(new Struct(10, "aaa"));
+        structList.add(new Struct(20, "bbb"));
 
-		return test;
-	}
+        Test test = new Test();
+        test.stringMap = stringMap;
+        test.structMap = structMap;
+        test.integerList = integerList;
+        test.structList = structList;
 
-	static class Struct {
-		public int i;
-		public String str;
+        return test;
+    }
 
-		Struct (int i, String str) {
-			this.i = i;
-			this.str = str;
-		}
+    static class Struct {
 
-		Struct () {
-		}
+        public int i;
+        public String str;
 
-		@Override
-		public boolean equals (Object o) {
-			if (this == o) { return true; }
-			if (!(o instanceof Struct)) { return false; }
+        Struct(int i, String str) {
+            this.i = i;
+            this.str = str;
+        }
 
-			Struct struct = (Struct) o;
+        Struct() {
+        }
 
-			if (i != struct.i) { return false; }
-			if (str != null ? !str.equals(struct.str) : struct.str != null) { return false; }
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (!(o instanceof Struct)) {
+                return false;
+            }
 
-			return true;
-		}
+            Struct struct = (Struct) o;
 
-		@Override
-		public int hashCode () {
-			int result = i;
-			result = 31 * result + (str != null ? str.hashCode() : 0);
-			return result;
-		}
-	}
+            if (i != struct.i) {
+                return false;
+            }
+            if (str != null ? !str.equals(struct.str) : struct.str != null) {
+                return false;
+            }
 
-	static class Test {
-		public Map<String, String> stringMap;
-		public Map<String, Struct> structMap;
-		public List<Integer> integerList;
-		public List<Struct> structList;
+            return true;
+        }
 
-		@Override
-		public boolean equals (Object o) {
-			if (this == o) { return true; }
-			if (!(o instanceof Test)) { return false; }
+        @Override
+        public int hashCode() {
+            int result = i;
+            result = 31 * result + (str != null ? str.hashCode() : 0);
+            return result;
+        }
+    }
 
-			Test test = (Test) o;
+    static class Test {
 
-			if (integerList != null ? !integerList.equals(test.integerList) : test.integerList != null) { return false; }
-			if (stringMap != null ? !stringMap.equals(test.stringMap) : test.stringMap != null) { return false; }
-			if (structList != null ? !structList.equals(test.structList) : test.structList != null) { return false; }
-			if (structMap != null ? !structMap.equals(test.structMap) : test.structMap != null) { return false; }
+        public Map<String, String> stringMap;
+        public Map<String, Struct> structMap;
+        public List<Integer> integerList;
+        public List<Struct> structList;
 
-			return true;
-		}
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (!(o instanceof Test)) {
+                return false;
+            }
 
-		@Override
-		public int hashCode () {
-			int result = stringMap != null ? stringMap.hashCode() : 0;
-			result = 31 * result + (structMap != null ? structMap.hashCode() : 0);
-			result = 31 * result + (integerList != null ? integerList.hashCode() : 0);
-			result = 31 * result + (structList != null ? structList.hashCode() : 0);
-			return result;
-		}
-	}
+            Test test = (Test) o;
+
+            if (integerList != null ? !integerList.equals(test.integerList) : test.integerList != null) {
+                return false;
+            }
+            if (stringMap != null ? !stringMap.equals(test.stringMap) : test.stringMap != null) {
+                return false;
+            }
+            if (structList != null ? !structList.equals(test.structList) : test.structList != null) {
+                return false;
+            }
+            if (structMap != null ? !structMap.equals(test.structMap) : test.structMap != null) {
+                return false;
+            }
+
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = stringMap != null ? stringMap.hashCode() : 0;
+            result = 31 * result + (structMap != null ? structMap.hashCode() : 0);
+            result = 31 * result + (integerList != null ? integerList.hashCode() : 0);
+            result = 31 * result + (structList != null ? structList.hashCode() : 0);
+            return result;
+        }
+    }
 }
