@@ -210,7 +210,7 @@ public class YamlConfig {
 		Version defaultVersion = new Version(1, 1);
 		ClassLoader classLoader;
 		final Map<Class, ConstructorParameters> constructorParameters = new IdentityHashMap();
-		boolean allowUnknownProperties;
+		boolean ignoreUnknownProperties;
 
 		ReadConfig () {
 		}
@@ -243,9 +243,9 @@ public class YamlConfig {
 			constructorParameters.put(type, parameters);
 		}
 
-		/** If true, unknown properties will be ignored instead of raising an exception while parsing. Default is false. */
-		public void setAllowUnknownProperties(boolean allowUnknownProperties) {
-			this.allowUnknownProperties = allowUnknownProperties;
+		/** When true, fields in the YAML that are not found on the class will not throw a {@link YamlException}. Default is false. */
+		public void setIgnoreUnknownProperties (boolean allowUnknownProperties) {
+			this.ignoreUnknownProperties = allowUnknownProperties;
 		}
 	}
 

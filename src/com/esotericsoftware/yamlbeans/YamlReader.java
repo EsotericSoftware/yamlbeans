@@ -288,14 +288,12 @@ public class YamlReader {
 					// Set field on object.
 					try {
 						Property property = Beans.getProperty(type, (String)key, config.beanProperties, config.privateFields, config);
-						if (property == null)
-							if (config.readConfig.allowUnknownProperties)
-								continue;
-							else
-								throw new YamlReaderException("Unable to find property '" + key + "' on class: " + type.getName());
+						if (property == null) {
+							if (config.readConfig.ignoreUnknownProperties) continue;
+							throw new YamlReaderException("Unable to find property '" + key + "' on class: " + type.getName());
+						}
 						Class propertyElementType = config.propertyToElementType.get(property);
-						if (propertyElementType == null)
-							propertyElementType = property.getElementType();
+						if (propertyElementType == null) propertyElementType = property.getElementType();
 						Class propertyDefaultType = config.propertyToDefaultType.get(property);
 						if (!isExplicitKey) value = readValue(property.getType(), propertyElementType, propertyDefaultType);
 						property.set(object, value);

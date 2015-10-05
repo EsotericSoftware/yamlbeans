@@ -297,24 +297,22 @@ public class YamlReaderTest extends TestCase {
 		public int a, c, d = 4;
 	}
 
-	public void testAllowUnknownProperties() {
+	public void testIgnoreUnknownProperties () {
 		String input = "a: 1\nb: 2\nc: 3";
 		YamlConfig config = new YamlConfig();
 		try {
 			new YamlReader(input, config).read(ACD.class);
 			fail("Unknown properties were not supposed to be allowed.");
-		}
-		catch (YamlException e) {
+		} catch (YamlException e) {
 		}
 
-		config.readConfig.setAllowUnknownProperties(true);
+		config.readConfig.setIgnoreUnknownProperties(true);
 		try {
 			ACD pojo = new YamlReader(input, config).read(ACD.class);
 			assertEquals(1, pojo.a);
 			assertEquals(3, pojo.c);
 			assertEquals(4, pojo.d);
-		}
-		catch (YamlException e) {
+		} catch (YamlException e) {
 			fail("Unknown properties were supposed to be allowed.");
 		}
 	}
