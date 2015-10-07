@@ -16,19 +16,14 @@
 
 package com.esotericsoftware.yamlbeans;
 
-import java.lang.reflect.Constructor;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.IdentityHashMap;
-import java.util.Map;
-
 import com.esotericsoftware.yamlbeans.Beans.Property;
 import com.esotericsoftware.yamlbeans.emitter.EmitterConfig;
 import com.esotericsoftware.yamlbeans.scalar.DateSerializer;
+import com.esotericsoftware.yamlbeans.scalar.EnumSerializer;
 import com.esotericsoftware.yamlbeans.scalar.ScalarSerializer;
+
+import java.lang.reflect.Constructor;
+import java.util.*;
 
 /** Stores configuration for reading and writing YAML.
  * @author <a href="mailto:misc@n4te.com">Nathan Sweet</a> */
@@ -39,11 +34,12 @@ public class YamlConfig {
 	/** Configuration for reading YAML. */
 	public final ReadConfig readConfig = new ReadConfig();
 
-	final Map<String, String> classNameToTag = new HashMap();
-	final Map<String, Class> tagToClass = new HashMap();
-	final Map<Class, ScalarSerializer> scalarSerializers = new IdentityHashMap();
-	final Map<Property, Class> propertyToElementType = new HashMap();
-	final Map<Property, Class> propertyToDefaultType = new HashMap();
+	final Map<String, String> classNameToTag = new HashMap<String, String>();
+	final Map<String, Class> tagToClass = new HashMap<String, Class>();
+	final Map<Class, ScalarSerializer> scalarSerializers = new IdentityHashMap<Class, ScalarSerializer>();
+	final Map<Class, EnumSerializer> enumSerializers = new IdentityHashMap<Class, EnumSerializer>();
+	final Map<Property, Class> propertyToElementType = new HashMap<Property, Class>();
+	final Map<Property, Class> propertyToDefaultType = new HashMap<Property, Class>();
 	boolean beanProperties = true;
 	boolean privateFields;
 	boolean privateConstructors = true;
@@ -71,6 +67,18 @@ public class YamlConfig {
 		if (type == null) throw new IllegalArgumentException("type cannot be null.");
 		if (serializer == null) throw new IllegalArgumentException("serializer cannot be null.");
 		scalarSerializers.put(type, serializer);
+	}
+
+	public void setEnumSerializer(Class type, EnumSerializer serializer) {
+		if (type == null) {
+			throw new IllegalArgumentException("type cannot be null.");
+		}
+
+		if (serializer == null) {
+			throw new IllegalArgumentException("serializer cannot be null.");
+		}
+
+		enumSerializers.put(type, serializer);
 	}
 
 	/** Sets the default type of elements in a Collection or Map property. No tag will be output for elements of this type. This

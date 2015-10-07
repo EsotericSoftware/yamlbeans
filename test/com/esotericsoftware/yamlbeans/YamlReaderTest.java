@@ -16,10 +16,11 @@
 
 package com.esotericsoftware.yamlbeans;
 
+import com.esotericsoftware.yamlbeans.scalar.EnumSerializer;
+import junit.framework.TestCase;
+
 import java.util.List;
 import java.util.Map;
-
-import junit.framework.TestCase;
 
 /** @author <a href="mailto:misc@n4te.com">Nathan Sweet</a> */
 public class YamlReaderTest extends TestCase {
@@ -33,6 +34,7 @@ public class YamlReaderTest extends TestCase {
 			"shortValue: 125\n" + //
 			"charValue: j\n" + //
 			"testEnum: b\n" + //
+			"testOtherEnum: QUICK\n" + //
 			"byteValue: 14" //
 		);
 
@@ -45,11 +47,24 @@ public class YamlReaderTest extends TestCase {
 		assertEquals('j', test.charValue);
 		assertEquals(14, test.byteValue);
 		assertEquals(TestEnum.b, test.testEnum);
+		assertEquals(CaseInsensitiveTestEnum.QUICK, test.testOtherEnum);
 
 		assertEquals(true, read("booleanValue: true").booleanValue);
 		assertEquals(false, read("booleanValue: 123").booleanValue);
 		assertEquals(false, read("booleanValue: 0").booleanValue);
 		assertEquals(false, read("booleanValue: false").booleanValue);
+	}
+
+	public void testCaseInsensitiveEnum() throws Exception {
+		assertEquals(CaseInsensitiveTestEnum.QUICK, readCaseInsensitiveEnum("testOtherEnum: QUICK").testOtherEnum);
+		assertEquals(CaseInsensitiveTestEnum.BROWN, readCaseInsensitiveEnum("testOtherEnum: BROWN").testOtherEnum);
+		assertEquals(CaseInsensitiveTestEnum.FOX, readCaseInsensitiveEnum("testOtherEnum: FOX").testOtherEnum);
+		assertEquals(CaseInsensitiveTestEnum.QUICK, readCaseInsensitiveEnum("testOtherEnum: Quick").testOtherEnum);
+		assertEquals(CaseInsensitiveTestEnum.BROWN, readCaseInsensitiveEnum("testOtherEnum: Brown").testOtherEnum);
+		assertEquals(CaseInsensitiveTestEnum.FOX, readCaseInsensitiveEnum("testOtherEnum: Fox").testOtherEnum);
+		assertEquals(CaseInsensitiveTestEnum.QUICK, readCaseInsensitiveEnum("testOtherEnum: quick").testOtherEnum);
+		assertEquals(CaseInsensitiveTestEnum.BROWN, readCaseInsensitiveEnum("testOtherEnum: brown").testOtherEnum);
+		assertEquals(CaseInsensitiveTestEnum.FOX, readCaseInsensitiveEnum("testOtherEnum: fox").testOtherEnum);
 	}
 
 	public void testUnicodeStrings () throws Exception {
@@ -166,6 +181,19 @@ public class YamlReaderTest extends TestCase {
 		return new YamlReader(yaml).read(Test.class);
 	}
 
+	private Test readCaseInsensitiveEnum (String yaml) throws Exception {
+        YamlReader reader = new YamlReader(yaml);
+        reader.getConfig().setEnumSerializer(CaseInsensitiveTestEnum.class, new CaseInsensitiveEnumSerializer());
+        if (true) {
+            System.out.println(yaml);
+            System.out.println("===");
+            System.out.println(new YamlReader(yaml).read(null));
+            System.out.println();
+            System.out.println();
+        }
+        return reader.read(Test.class);
+	}
+
 	static public class Test {
 		public String stringValue;
 		public int intValue;
@@ -183,10 +211,29 @@ public class YamlReaderTest extends TestCase {
 		public Test child1;
 		public Test child2;
 		public TestEnum testEnum;
+		public CaseInsensitiveTestEnum testOtherEnum;
 	}
 
-	static public enum TestEnum {
+	public enum TestEnum {
 		a, b, c
+	}
+
+	public enum CaseInsensitiveTestEnum {
+		QUICK,
+		BROWN,
+		FOX
+	}
+
+	static public class CaseInsensitiveEnumSerializer implements EnumSerializer<CaseInsensitiveTestEnum> {
+		public String write(CaseInsensitiveTestEnum object) throws YamlException {
+			// Assume that the wanted casing is lower case
+			return object.name().toLowerCase();
+		}
+
+		public CaseInsensitiveTestEnum read(String value) throws YamlException {
+			// Assume that the actual enum values are upper case
+			return CaseInsensitiveTestEnum.valueOf(value.toUpperCase());
+		}
 	}
 
 	public void testPropertyElementType () throws Exception {

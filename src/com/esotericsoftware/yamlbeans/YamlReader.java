@@ -16,15 +16,10 @@
 
 package com.esotericsoftware.yamlbeans;
 
-import static com.esotericsoftware.yamlbeans.parser.EventType.*;
-
 import com.esotericsoftware.yamlbeans.Beans.Property;
-import com.esotericsoftware.yamlbeans.parser.AliasEvent;
-import com.esotericsoftware.yamlbeans.parser.CollectionStartEvent;
-import com.esotericsoftware.yamlbeans.parser.Event;
-import com.esotericsoftware.yamlbeans.parser.Parser;
+import com.esotericsoftware.yamlbeans.parser.*;
 import com.esotericsoftware.yamlbeans.parser.Parser.ParserException;
-import com.esotericsoftware.yamlbeans.parser.ScalarEvent;
+import com.esotericsoftware.yamlbeans.scalar.EnumSerializer;
 import com.esotericsoftware.yamlbeans.scalar.ScalarSerializer;
 import com.esotericsoftware.yamlbeans.tokenizer.Tokenizer.TokenizerException;
 
@@ -39,6 +34,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import static com.esotericsoftware.yamlbeans.parser.EventType.*;
 
 /** Deserializes Java objects from YAML.
  * @author <a href="mailto:misc@n4te.com">Nathan Sweet</a> */
@@ -234,6 +231,15 @@ public class YamlReader {
 			if (event.type != SCALAR) throw new YamlReaderException("Expected scalar for enum type but found: " + event.type);
 			String enumValueName = ((ScalarEvent)event).value;
 			if (enumValueName.length() == 0) return null;
+
+			// Try to find a custom serializer first
+			for (Entry<Class, EnumSerializer> entry : config.enumSerializers.entrySet()) {
+				if (entry.getKey().isAssignableFrom(type)) {
+					EnumSerializer serializer = entry.getValue();
+					return serializer.read(enumValueName);
+				}
+			}
+
 			try {
 				return Enum.valueOf(type, enumValueName);
 			} catch (Exception ex) {
