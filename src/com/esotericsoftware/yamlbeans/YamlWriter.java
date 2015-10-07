@@ -16,33 +16,21 @@
 
 package com.esotericsoftware.yamlbeans;
 
-import java.io.IOException;
-import java.io.Writer;
-import java.lang.reflect.Array;
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
 import com.esotericsoftware.yamlbeans.Beans.Property;
 import com.esotericsoftware.yamlbeans.YamlConfig.WriteClassName;
 import com.esotericsoftware.yamlbeans.YamlConfig.WriteConfig;
 import com.esotericsoftware.yamlbeans.emitter.Emitter;
 import com.esotericsoftware.yamlbeans.emitter.EmitterException;
-import com.esotericsoftware.yamlbeans.parser.AliasEvent;
-import com.esotericsoftware.yamlbeans.parser.DocumentEndEvent;
-import com.esotericsoftware.yamlbeans.parser.DocumentStartEvent;
-import com.esotericsoftware.yamlbeans.parser.Event;
-import com.esotericsoftware.yamlbeans.parser.MappingStartEvent;
-import com.esotericsoftware.yamlbeans.parser.ScalarEvent;
-import com.esotericsoftware.yamlbeans.parser.SequenceStartEvent;
+import com.esotericsoftware.yamlbeans.parser.*;
+import com.esotericsoftware.yamlbeans.scalar.EnumSerializer;
 import com.esotericsoftware.yamlbeans.scalar.ScalarSerializer;
+
+import java.io.IOException;
+import java.io.Writer;
+import java.lang.reflect.Array;
+import java.lang.reflect.InvocationTargetException;
+import java.util.*;
+import java.util.Map.Entry;
 
 /** Serializes Java objects as YAML.
  * @author <a href="mailto:misc@n4te.com">Nathan Sweet</a> */
@@ -147,6 +135,17 @@ public class YamlWriter {
 		if (unknownType) fieldClass = valueClass;
 
 		if (object instanceof Enum) {
+
+			// Check if a custom EnumSerializer has been set
+			for (Entry<Class, EnumSerializer> entry : config.enumSerializers.entrySet()) {
+				if (entry.getKey().isAssignableFrom(object.getClass())) {
+					EnumSerializer serializer = entry.getValue();
+					emitter.emit(new ScalarEvent(null, null, new boolean[]{true, true}, serializer.write(object), (char) 0));
+					return;
+				}
+			}
+
+			// Default to Enum.name()
 			emitter.emit(new ScalarEvent(null, null, new boolean[] {true, true}, ((Enum)object).name(), (char)0));
 			return;
 		}

@@ -16,19 +16,16 @@
 
 package com.esotericsoftware.yamlbeans;
 
+import com.esotericsoftware.yamlbeans.scalar.EnumSerializer;
 import com.esotericsoftware.yamlbeans.scalar.ScalarSerializer;
+import junit.framework.TestCase;
 
 import java.beans.ConstructorProperties;
 import java.io.File;
 import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-
-import junit.framework.TestCase;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /** @author <a href="mailto:misc@n4te.com">Nathan Sweet</a> */
 public class YamlWriterTest extends TestCase {
@@ -319,6 +316,79 @@ public class YamlWriterTest extends TestCase {
 
 		YamlReader reader = new YamlReader(buffer.toString(), config);
 		return reader.read(type);
+	}
+
+	public void testEnumSerializerRoundTrip() throws Exception {
+		YamlConfig config = new YamlConfig();
+		config.setEnumSerializer(SomeEnum.class, new SomeEnumSerializer());
+
+		final EnumTest testData = new EnumTest();
+		testData.first = SomeEnum.JUMP;
+		testData.second = SomeEnum.LAZY;
+		testData.third = SomeEnum.DOG;
+
+		final EnumTest result = roundTrip(testData, EnumTest.class, config);
+		assertEquals(testData.first, result.first);
+		assertEquals(testData.second, result.second);
+		assertEquals(testData.third, result.third);
+	}
+
+	public void testEnumSerializer() throws Exception {
+		YamlConfig config = new YamlConfig();
+		config.setEnumSerializer(SomeEnum.class, new SomeEnumSerializer());
+
+		final EnumTest testData = new EnumTest();
+		testData.first = SomeEnum.JUMP;
+		testData.second = SomeEnum.LAZY;
+		testData.third = SomeEnum.DOG;
+
+		final StringWriter writer = new StringWriter(64);
+		final YamlWriter yaml = new YamlWriter(writer, config);
+		yaml.write(testData);
+		yaml.close();
+		final String buffer = writer.toString();
+		System.out.println(buffer);
+
+		assertContainsPair(buffer, "first", "jump");
+		assertContainsPair(buffer, "second", "lazy");
+		assertContainsPair(buffer, "third", "dog");
+	}
+
+	private void assertContainsPair(CharSequence input, String key, String value) {
+		final String p = key + ":\\s+" + value;
+		final Pattern pattern = Pattern.compile(p);
+		final Matcher matcher = pattern.matcher(input);
+		assertTrue("Check if contains '" + key + "' with value '" + value + '\'', matcher.find());
+	}
+
+	public enum SomeEnum {
+		JUMP,
+		LAZY,
+		DOG
+	}
+
+	static public class SomeEnumSerializer implements EnumSerializer<SomeEnum> {
+		public String write(SomeEnum object) throws YamlException {
+			// Assume that the wanted casing is lower case
+			return object.name().toLowerCase();
+		}
+
+		public SomeEnum read(String value) throws YamlException {
+			// Assume that the actual enum values are upper case
+			return SomeEnum.valueOf(value.toUpperCase());
+		}
+	}
+
+	static public class EnumTest {
+		public SomeEnum first;
+		public SomeEnum second;
+		public SomeEnum third;
+
+		public EnumTest() {
+			first = SomeEnum.LAZY;
+			second = SomeEnum.DOG;
+			third = SomeEnum.JUMP;
+		}
 	}
 
 	static public class Test {
