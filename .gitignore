@@ -5,3 +5,9 @@
 
 bin/
 target/
+
+# JetBrains
+*.iml
+*.ipr
+*.iws
+.idea/
