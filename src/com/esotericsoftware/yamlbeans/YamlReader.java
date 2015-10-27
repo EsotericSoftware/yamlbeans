@@ -289,7 +289,16 @@ public class YamlReader {
 					try {
 						Property property = Beans.getProperty(type, (String)key, config.beanProperties, config.privateFields, config);
 						if (property == null) {
-							if (config.readConfig.ignoreUnknownProperties) continue;
+							if (config.readConfig.ignoreUnknownProperties) {
+								// if next event is sequence start, go
+								// though all of it until corresponding
+								// sequence end
+								if (parser.peekNextEvent().type == SEQUENCE_START) {
+									skipSequence();
+								}
+
+								continue;
+							}
 							throw new YamlReaderException("Unable to find property '" + key + "' on class: " + type.getName());
 						}
 						Class propertyElementType = config.propertyToElementType.get(property);
@@ -355,6 +364,25 @@ public class YamlReader {
 		default:
 			throw new YamlReaderException("Expected data for a " + type.getName() + " field but found: " + event.type);
 		}
+	}
+
+	private void skipSequence() {
+		Event nextEvent;
+		int depth = 0;
+		do {
+			nextEvent = parser.getNextEvent();
+			switch (nextEvent.type) {
+				case SEQUENCE_START :
+					depth++;
+					break;
+				case SEQUENCE_END :
+					depth--;
+					break;
+				default :
+					// ignore
+					break;
+			}
+		} while (depth > 0);
 	}
 
 	/** Returns a new object of the requested type. */

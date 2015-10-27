@@ -316,4 +316,27 @@ public class YamlReaderTest extends TestCase {
 			fail("Unknown properties were supposed to be allowed.");
 		}
 	}
+	
+	public void testIgnoreUnknownPropertiesSequences() throws Exception {
+		String input = "" +
+			"elements: \n" + 
+			"  - 1\n" +
+			"  - 2\n";
+
+		YamlConfig config = new YamlConfig();
+		try {
+			new YamlReader(input, config).read(ACD.class);
+			fail("Unknown properties were not supposed to be allowed.");
+		} catch (YamlException e) {
+		}
+
+		config.readConfig.setIgnoreUnknownProperties(true);
+		try {
+			ACD pojo = new YamlReader(input, config).read(ACD.class);
+		} catch (YamlException e) {
+			e.printStackTrace();
+			fail("Unknown properties were supposed to be allowed.");
+		}
+
+	}
 }
