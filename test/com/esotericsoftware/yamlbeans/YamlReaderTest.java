@@ -159,7 +159,7 @@ public class YamlReaderTest extends TestCase {
 		if (true) {
 			System.out.println(yaml);
 			System.out.println("===");
-			System.out.println(new YamlReader(yaml).read(null));
+			System.out.println(new YamlReader(yaml).read(null).toString());
 			System.out.println();
 			System.out.println();
 		}
