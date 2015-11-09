@@ -290,10 +290,13 @@ public class YamlReader {
 						Property property = Beans.getProperty(type, (String)key, config.beanProperties, config.privateFields, config);
 						if (property == null) {
 							if (config.readConfig.ignoreUnknownProperties) {
+								// go though the next event, because this is a value of missing property
+								Event nextEvent = parser.getNextEvent();
+								
 								// if next event is sequence start, go
-								// though all of it until corresponding
+								//though all of it until corresponding
 								// sequence end
-								if (parser.peekNextEvent().type == SEQUENCE_START) {
+								if (nextEvent.type == SEQUENCE_START) {
 									skipSequence();
 								}
 
