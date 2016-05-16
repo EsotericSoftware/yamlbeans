@@ -133,7 +133,7 @@ public class YamlReader {
 		default:
 		}
 
-		if (tag != null) {
+		if (tag != null && !config.readConfig.ignoreTypeTags) {
 			type = config.tagToClass.get(tag);
 			if (type == null) {
 				try {
