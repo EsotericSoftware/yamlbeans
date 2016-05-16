@@ -211,6 +211,7 @@ public class YamlConfig {
 		ClassLoader classLoader;
 		final Map<Class, ConstructorParameters> constructorParameters = new IdentityHashMap();
 		boolean ignoreUnknownProperties;
+		boolean ignoreTypeTags = false;
 
 		ReadConfig () {
 		}
@@ -246,6 +247,15 @@ public class YamlConfig {
 		/** When true, fields in the YAML that are not found on the class will not throw a {@link YamlException}. Default is false. */
 		public void setIgnoreUnknownProperties (boolean allowUnknownProperties) {
 			this.ignoreUnknownProperties = allowUnknownProperties;
+		}
+		
+		/** When true, type tags in the YAML will be ignored and will not be used to force a type on the resulting object. This 
+		 * is intended for cases when the YAML may have been output by a different tool using YamlBeans, and the classes referred
+		 * to by those type tags are not on the current classpath. If those tags are not ignored, then the parsing will fail, even
+		 * if a different target type is explicitly provided. Default is false.
+		 */
+		public void setIgnoreTypeTags (boolean ignoreTypeTags) {
+			this.ignoreTypeTags = ignoreTypeTags;
 		}
 	}
 

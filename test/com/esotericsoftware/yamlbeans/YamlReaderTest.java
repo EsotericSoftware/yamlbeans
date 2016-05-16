@@ -316,4 +316,62 @@ public class YamlReaderTest extends TestCase {
 			fail("Unknown properties were supposed to be allowed.");
 		}
 	}
+	
+	public void testIgnoreTypeTagsTopLevel () throws YamlException {
+		// We are parsing this document that was output by another program using YamlBeans, that includes
+		// a type tag for a class that we don't have on our classpath.
+		String input = "!com.example.not.on.classpath.Fish\n" + //
+				"species: Walleye\n" + //
+				"weight: 24";
+	
+		YamlConfig config = new YamlConfig();
+		try {
+			new YamlReader(input, config).read(Map.class);
+			fail("A type tag with an unknown class fails to parse, even if we ask for it as a simple Map.");
+		} catch (YamlException e) {
+			// Expected behavior.
+		}
+		
+		config.readConfig.setIgnoreTypeTags(true);
+		// If we ignore type tags, the type tag in the document does not override our request for a Map.
+		Map<?, ?> map = new YamlReader(input, config).read(Map.class);
+		assertEquals("Walleye", map.get("species"));		
+	}
+	
+	static class Lake {
+		public String name;
+		public List<Fish> fish;
+	}
+	
+	static class Fish {
+		public String species;
+		public int weight;
+	}
+	
+	public void testIgnoreTypeTagsEmbedded () throws YamlException {
+		// We are parsing this document that was output by another program using YamlBeans, that includes
+		// type tags for multiple classes that we don't have on our classpath. One of those type tags is
+		// embedded within the document, not at the top level.
+		String input = "!com.example.not.on.classpath.Lake\n" + //
+				"name: Superior\n" + //
+				"fish:\n" + 
+				"  - !com.example.not.on.classpath.Fish\n" + //
+				"    species: Walleye\n" + //
+				"    weight: 24";
+	
+		YamlConfig config = new YamlConfig();
+		try {
+			new YamlReader(input, config).read(Lake.class);
+			fail("A type tag with an unknown class fails to parse, even if we ask for it as a known class.");
+		} catch (YamlException e) {
+			// Expected behavior.
+		}
+		
+		config.readConfig.setIgnoreTypeTags(true);
+		// If we ignore type tags, we can specify the return type & embedded types instead of failing to parse.
+		Lake lake = new YamlReader(input, config).read(Lake.class);
+		assertEquals("Superior", lake.name);
+		assertEquals(1, lake.fish.size());
+		assertEquals("Walleye", lake.fish.get(0).species);
+	}
 }
