@@ -159,35 +159,36 @@ class Beans {
 		if (type == null) throw new IllegalArgumentException("type cannot be null.");
 		if (name == null || name.length() == 0) throw new IllegalArgumentException("name cannot be null or empty.");
 		name = name.replace(" ", "");
-		Class[] noArgs = new Class[0], oneArg = new Class[1];
-		for (Field field : getAllFields(type)) {
-			if (!field.getName().equals(name)) continue;
 
-			if (beanProperties) {
-				DeferredConstruction deferredConstruction = getDeferredConstruction(type, config);
-				boolean constructorProperty = deferredConstruction != null && deferredConstruction.hasParameter(name);
+		if (beanProperties) {
+			DeferredConstruction deferredConstruction = getDeferredConstruction(type, config);
+			boolean constructorProperty = deferredConstruction != null && deferredConstruction.hasParameter(name);
 
-				String nameUpper = Character.toUpperCase(name.charAt(0)) + name.substring(1);
-				Method getMethod = null, setMethod = null;
+			String nameUpper = Character.toUpperCase(name.charAt(0)) + name.substring(1);
+			Method getMethod = null;
+			try {
+				getMethod = type.getMethod("get" + nameUpper);
+			} catch (Exception ignored) {
+			}
+			if (getMethod == null) {
 				try {
-					oneArg[0] = field.getType();
-					setMethod = type.getMethod("set" + nameUpper, oneArg);
+					getMethod = type.getMethod("is" + nameUpper);
 				} catch (Exception ignored) {
 				}
+			}
+			if (getMethod != null) {
+				Method setMethod = null;
 				try {
-					getMethod = type.getMethod("get" + nameUpper, noArgs);
+					setMethod = type.getMethod("set" + nameUpper, getMethod.getReturnType());
 				} catch (Exception ignored) {
-				}
-				if (getMethod == null && (field.getType().equals(Boolean.class) || field.getType().equals(boolean.class))) {
-					try {
-						getMethod = type.getMethod("is" + nameUpper, noArgs);
-					} catch (Exception ignored) {
-					}
 				}
 				if (getMethod != null && (setMethod != null || constructorProperty))
 					return new MethodProperty(name, setMethod, getMethod);
 			}
+		}
 
+		for (Field field : getAllFields(type)) {
+			if (!field.getName().equals(name)) continue;
 			int modifiers = field.getModifiers();
 			if (Modifier.isStatic(modifiers) || Modifier.isTransient(modifiers)) continue;
 			if (!Modifier.isPublic(modifiers) && !privateFields) continue;
