@@ -133,23 +133,65 @@ public class YamlReader {
 		default:
 		}
 
+		return readValueInternal(this.chooseType(tag,  defaultType, type), elementType, anchor);
+	}
+	
+	private Class<?> chooseType(String tag, Class<?> defaultType, Class<?> providedType) throws YamlReaderException {
 		if (tag != null) {
-			type = config.tagToClass.get(tag);
-			if (type == null) {
-				try {
-					if (config.readConfig.classLoader != null)
-						type = Class.forName(tag, true, config.readConfig.classLoader);
-					else
-						type = Class.forName(tag);
-				} catch (ClassNotFoundException ex) {
-					throw new YamlReaderException("Unable to find class specified by tag: " + tag);
-				}
+			Class<?> userConfiguredByTag = config.tagToClass.get(tag);
+			if (userConfiguredByTag != null) {
+				return userConfiguredByTag;
 			}
-		} else if (defaultType != null) {
-			type = defaultType;
+			
+			ClassLoader classLoader = (config.readConfig.classLoader == null ? this.getClass().getClassLoader()
+					: config.readConfig.classLoader);
+			
+			try {
+				Class<?> loadedFromTag = findTagClass(tag, classLoader);
+				if (loadedFromTag != null) {
+					return loadedFromTag;
+				}
+			} catch (ClassNotFoundException e) {
+				throw new YamlReaderException("Unable to find class specified by tag: " + tag);
+			}
 		}
-
-		return readValueInternal(type, elementType, anchor);
+		
+		if (defaultType != null) {
+			return defaultType;
+		}
+		
+		// This may be null.
+		return providedType;
+	}
+	
+	/**
+	 * Used during reading when a tag is present, and
+	 * {@link YamlConfig#setClassTag(String, Class)} was not used for that tag.
+	 * Attempts to load the class corresponding to that tag.
+	 * 
+	 * If this returns a non-null Class, that will be used as the
+	 * deserialization type regardless of whether a type was explicitly asked
+	 * for or if a default type exists.
+	 * 
+	 * If this returns null, no guidance will be provided by the tag and we will
+	 * fall back to the default type or a requested target type, if any exist.
+	 * 
+	 * If this throws a ClassNotFoundException, parsing will fail.
+	 * 
+	 * The default implementation is simply
+	 * 
+	 * <pre>
+	 *  {@code Class.forName(tag, true, classLoader);}
+	 * </pre>
+	 * 
+	 * and never returns null.
+	 * 
+	 * You can override this to handle cases where you do not want to respect
+	 * the type tags found in a document - e.g., if they were output by another
+	 * program using classes that do not exist on your classpath.
+	 */
+	protected Class<?> findTagClass(String tag, ClassLoader classLoader) throws ClassNotFoundException {
+		return Class.forName(tag, true, classLoader);
 	}
 
 	private Object readValueInternal (Class type, Class elementType, String anchor) throws YamlException, ParserException,
