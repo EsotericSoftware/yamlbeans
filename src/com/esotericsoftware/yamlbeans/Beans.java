@@ -15,6 +15,7 @@
  */
 
 package com.esotericsoftware.yamlbeans;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -143,16 +144,18 @@ class Beans {
 
 			int modifiers = field.getModifiers();
 			if (Modifier.isStatic(modifiers) || Modifier.isTransient(modifiers)) continue;
-			if (!Modifier.isPublic(modifiers)) {
-				if (!privateFields) continue;
+			if (!Modifier.isPublic(modifiers) && !privateFields) continue;
+			try {
 				field.setAccessible(true);
+			} catch (Exception ignored) {
 			}
 			properties.add(new FieldProperty(field));
 		}
 		return properties;
 	}
 
-	static public Property getProperty (Class type, String name, boolean beanProperties, boolean privateFields, YamlConfig config) {
+	static public Property getProperty (Class type, String name, boolean beanProperties, boolean privateFields,
+		YamlConfig config) {
 		if (type == null) throw new IllegalArgumentException("type cannot be null.");
 		if (name == null || name.length() == 0) throw new IllegalArgumentException("name cannot be null or empty.");
 		name = name.replace(" ", "");
@@ -187,9 +190,10 @@ class Beans {
 
 			int modifiers = field.getModifiers();
 			if (Modifier.isStatic(modifiers) || Modifier.isTransient(modifiers)) continue;
-			if (!Modifier.isPublic(modifiers)) {
-				if (!privateFields) continue;
+			if (!Modifier.isPublic(modifiers) && !privateFields) continue;
+			try {
 				field.setAccessible(true);
+			} catch (Exception ignored) {
 			}
 			return new FieldProperty(field);
 		}
@@ -262,7 +266,6 @@ class Beans {
 			this.elementType = getElementTypeFromGenerics(genericType);
 		}
 
-
 		private Class getElementTypeFromGenerics (Type type) {
 			if (type instanceof ParameterizedType) {
 				ParameterizedType parameterizedType = (ParameterizedType)type;
@@ -279,11 +282,11 @@ class Beans {
 		}
 
 		private boolean isMap (Type type) {
-			return Map.class.isAssignableFrom((Class) type);
+			return Map.class.isAssignableFrom((Class)type);
 		}
 
 		private boolean isCollection (Type type) {
-			return Collection.class.isAssignableFrom((Class) type);
+			return Collection.class.isAssignableFrom((Class)type);
 		}
 
 		public int hashCode () {
@@ -320,7 +323,7 @@ class Beans {
 			return declaringClass;
 		}
 
-		public Class getElementType() {
+		public Class getElementType () {
 			return elementType;
 		}
 
