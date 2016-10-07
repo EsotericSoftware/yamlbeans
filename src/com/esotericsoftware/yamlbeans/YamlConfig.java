@@ -124,6 +124,7 @@ public class YamlConfig {
 		boolean writeRootTags = true;
 		boolean writeRootElementTags = true;
 		boolean autoAnchor = true;
+		boolean keepBeanPropertyOrder = false;
 		WriteClassName writeClassName = WriteClassName.AUTO;
 		EmitterConfig emitterConfig = new EmitterConfig();
 
@@ -168,6 +169,12 @@ public class YamlConfig {
 		 * {@link YamlWriter#clearAnchors()} should be called first to output any buffered objects. Default is true. */
 		public void setAutoAnchor (boolean autoAnchor) {
 			this.autoAnchor = autoAnchor;
+		}
+
+		/** If true, bean fields/properties are written in the same order as the fields are defined in the bean class.
+		 * If false, they are sorted alphabetically. Default is false. */ 
+		public void setKeepBeanPropertyOrder(boolean keepBeanPropertyOrder) {
+			this.keepBeanPropertyOrder = keepBeanPropertyOrder;
 		}
 
 		/** Sets the YAML version to output. Default is 1.1. */
