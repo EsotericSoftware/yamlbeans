@@ -29,6 +29,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -111,7 +112,7 @@ class Beans {
 	static public Set<Property> getProperties (Class type, boolean beanProperties, boolean privateFields, YamlConfig config) {
 		if (type == null) throw new IllegalArgumentException("type cannot be null.");
 		Class[] noArgs = new Class[0], oneArg = new Class[1];
-		Set<Property> properties = new TreeSet();
+		Set<Property> properties = config.writeConfig.keepBeanPropertyOrder ? new LinkedHashSet() : new TreeSet();
 		for (Field field : getAllFields(type)) {
 			String name = field.getName();
 
@@ -202,11 +203,15 @@ class Beans {
 	}
 
 	static private ArrayList<Field> getAllFields (Class type) {
-		ArrayList<Field> allFields = new ArrayList();
+		ArrayList<Class> classes = new ArrayList();
 		Class nextClass = type;
 		while (nextClass != null && nextClass != Object.class) {
-			Collections.addAll(allFields, nextClass.getDeclaredFields());
+			classes.add(nextClass);
 			nextClass = nextClass.getSuperclass();
+		}
+		ArrayList<Field> allFields = new ArrayList();
+		for(int i = classes.size() - 1; i >= 0; i--) {
+			Collections.addAll(allFields, classes.get(i).getDeclaredFields());
 		}
 		return allFields;
 	}
