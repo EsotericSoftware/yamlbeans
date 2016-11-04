@@ -47,6 +47,7 @@ public class YamlConfig {
 	boolean beanProperties = true;
 	boolean privateFields;
 	boolean privateConstructors = true;
+	boolean allowDuplicates = true;
 
 	public YamlConfig () {
 		scalarSerializers.put(Date.class, new DateSerializer());
@@ -56,6 +57,11 @@ public class YamlConfig {
 		tagToClass.put("tag:yaml.org,2002:seq", ArrayList.class);
 		tagToClass.put("tag:yaml.org,2002:map", HashMap.class);
 		tagToClass.put("tag:yaml.org,2002:float", Float.class);
+	}
+
+	/** Allows duplicate keys in YAML document. Default is true. */
+	public void setAllowDuplicates (boolean allowDuplicates) {
+		this.allowDuplicates = allowDuplicates;
 	}
 
 	/** Allows the specified tag to be used in YAML instead of the full class name. */

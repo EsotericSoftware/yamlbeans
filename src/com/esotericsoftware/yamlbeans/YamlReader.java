@@ -45,16 +45,10 @@ import java.util.Map.Entry;
 public class YamlReader {
 	private final YamlConfig config;
 	Parser parser;
-	boolean allowDuplicates = true;
 	private final Map<String, Object> anchors = new HashMap();
 
 	public YamlReader (Reader reader) {
 		this(reader, new YamlConfig());
-	}
-
-	public YamlReader (Reader reader, boolean allowDuplicates) {
-		this(reader, new YamlConfig());
-		this.allowDuplicates = allowDuplicates;
 	}
 
 	public YamlReader (Reader reader, YamlConfig config) {
@@ -332,14 +326,18 @@ public class YamlReader {
 				if (object instanceof Map) {
 					// Add to map.
 					if (!isExplicitKey) value = readValue(elementType, null, null);
-					if (!allowDuplicates && keys.contains(key)) {
+					if (!config.allowDuplicates && ((Map) object).containsKey(key)) {
 						throw new YamlReaderException("Duplicate key found '" + key + "'");
 					}
-					keys.add(key);
 					((Map)object).put(key, value);
 				} else {
 					// Set field on object.
 					try {
+						if (!config.allowDuplicates && keys.contains(key)) {
+							throw new YamlReaderException("Duplicate key found '" + key + "'");
+						}
+						keys.add(key);
+
 						Property property = Beans.getProperty(type, (String)key, config.beanProperties, config.privateFields, config);
 						if (property == null) {
 							if (config.readConfig.ignoreUnknownProperties) continue;

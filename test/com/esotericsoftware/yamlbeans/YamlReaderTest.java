@@ -321,7 +321,9 @@ public class YamlReaderTest extends TestCase {
 	
 	public void testDuplicateKeysAreNotAllowedIfAllowDuplicateIsSetSo () {
 		String inputWithDuplicates = "a: 1\na: 2\nc: 3";
-		YamlReader yamlReader = new YamlReader(new StringReader(inputWithDuplicates), false);
+		YamlConfig yamlConfig = new YamlConfig();
+		yamlConfig.setAllowDuplicates(false);
+		YamlReader yamlReader = new YamlReader(inputWithDuplicates, yamlConfig);
 		try {
 			yamlReader.read();
 			fail("Duplicates should not have been allowed.");
@@ -329,7 +331,7 @@ public class YamlReaderTest extends TestCase {
 		}
 
 		String inputWithoutDuplicates = "a: 1\nb: 2\nc: 3";
-		YamlReader yamlReader1 = new YamlReader(new StringReader(inputWithoutDuplicates), false);
+		YamlReader yamlReader1 = new YamlReader(inputWithoutDuplicates, yamlConfig);
 		try {
 			yamlReader1.read();
 		} catch (YamlException e) {
@@ -339,7 +341,7 @@ public class YamlReaderTest extends TestCase {
 
 	public void testDuplicateKeysAreAllowedIfAllowDuplicateIsSetSo () {
 		String inputWithDuplicates = "a: 1\na: 2\nc: 3";
-		YamlReader yamlReader = new YamlReader(new StringReader(inputWithDuplicates));
+		YamlReader yamlReader = new YamlReader(inputWithDuplicates);
 		try {
 			yamlReader.read();
 		} catch (YamlException e) {
@@ -348,7 +350,9 @@ public class YamlReaderTest extends TestCase {
 		}
 
 		String inputWithoutDuplicates = "a: 1\nb: 2\nc: 3";
-		YamlReader yamlReader1 = new YamlReader(new StringReader(inputWithoutDuplicates), true);
+		YamlConfig yamlConfig = new YamlConfig();
+		yamlConfig.setAllowDuplicates(false);
+		YamlReader yamlReader1 = new YamlReader(inputWithoutDuplicates, yamlConfig);
 		try {
 			yamlReader1.read();
 		} catch (YamlException e) {
