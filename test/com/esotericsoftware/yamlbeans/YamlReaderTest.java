@@ -428,4 +428,4 @@ public class YamlReaderTest extends TestCase {
 		assertEquals(1, lake.fish.size());
 		assertEquals("Walleye", lake.fish.get(0).species);
 	}
-}
+}

@@ -270,4 +270,4 @@ public class YamlConfig {
 	public static enum WriteClassName {
 		ALWAYS, NEVER, AUTO
 	}
-}
+}

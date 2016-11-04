@@ -430,4 +430,4 @@ public class YamlReader {
 		YamlReader reader = new YamlReader(new FileReader("test/test.yml"));
 		System.out.println(reader.read());
 	}
-}
+}
