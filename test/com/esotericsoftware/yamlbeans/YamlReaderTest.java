@@ -16,7 +16,6 @@
 
 package com.esotericsoftware.yamlbeans;
 
-import java.io.StringReader;
 import java.util.List;
 import java.util.Map;
 
@@ -319,48 +318,6 @@ public class YamlReaderTest extends TestCase {
 		}
 	}
 	
-	public void testDuplicateKeysAreNotAllowedIfAllowDuplicateIsSetSo () {
-		String inputWithDuplicates = "a: 1\na: 2\nc: 3";
-		YamlConfig yamlConfig = new YamlConfig();
-		yamlConfig.setAllowDuplicates(false);
-		YamlReader yamlReader = new YamlReader(inputWithDuplicates, yamlConfig);
-		try {
-			yamlReader.read();
-			fail("Duplicates should not have been allowed.");
-		} catch (YamlException e) {
-		}
-
-		String inputWithoutDuplicates = "a: 1\nb: 2\nc: 3";
-		YamlReader yamlReader1 = new YamlReader(inputWithoutDuplicates, yamlConfig);
-		try {
-			yamlReader1.read();
-		} catch (YamlException e) {
-			fail("Duplicates should have been allowed.");
-		}
-	}
-
-	public void testDuplicateKeysAreAllowedIfAllowDuplicateIsSetSo () {
-		String inputWithDuplicates = "a: 1\na: 2\nc: 3";
-		YamlReader yamlReader = new YamlReader(inputWithDuplicates);
-		try {
-			yamlReader.read();
-		} catch (YamlException e) {
-			e.printStackTrace();
-			fail("Duplicates should have been allowed.");
-		}
-
-		String inputWithoutDuplicates = "a: 1\nb: 2\nc: 3";
-		YamlConfig yamlConfig = new YamlConfig();
-		yamlConfig.setAllowDuplicates(false);
-		YamlReader yamlReader1 = new YamlReader(inputWithoutDuplicates, yamlConfig);
-		try {
-			yamlReader1.read();
-		} catch (YamlException e) {
-			e.printStackTrace();
-			fail("Duplicates should have been allowed.");
-		}
-	}
-
 	private static class TypeTagIgnoringReader extends YamlReader {
 
 		public TypeTagIgnoringReader(String yaml) {
