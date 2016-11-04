@@ -47,7 +47,7 @@ public class YamlConfig {
 	boolean beanProperties = true;
 	boolean privateFields;
 	boolean privateConstructors = true;
-   boolean allowDuplicates = true;
+   	boolean allowDuplicates = true;
 
 	public YamlConfig () {
 		scalarSerializers.put(Date.class, new DateSerializer());
