@@ -276,16 +276,21 @@ By default, the behaviour of this YAML parser is to ignore duplicate keys if you
       line2: NYC
 ```
 
-The above YAML will give me `address` with `line1` value set to `711 3rd Ave S` because the key `line1` is duplicated and by default the last value of `line1` will be retained and there would not be any errors. This is fine normally, however, if your business logic requires you to validate YAML for such duplicates, then you can still do using `allowDuplicates` option of the `YamlConfig` object. Following is how its done:
+The above YAML will give you an `address` object with attribute `line1` set to `711 3rd Ave S`. This is because the key `line1` in the above YAML is duplicated and thus the last value of `line1` will be retained. YAML parser will not complain about it. However, if your business logic requires you to validate YAML for such duplicates, then you can still do using `allowDuplicates` option of the `YamlConfig` object. Following is how its done:
 
 ```java
-    YamlConfig yamlConfig = new YamlConfig();
-    yamlConfig.setAllowDuplicates(false); // default value is true
-    YamlReader reader = new YamlReader(new FileReader("contact.yml"), yamlConfig);
-    Object object = reader.read();
-    System.out.println(object);
-    Map map = (Map)object;
-    System.out.println(map.get("address"));
+    try {
+        YamlConfig yamlConfig = new YamlConfig();
+        yamlConfig.setAllowDuplicates(false); // default value is true
+        YamlReader reader = new YamlReader(new FileReader("contact.yml"), yamlConfig);
+        Object object = reader.read();
+        System.out.println(object);
+        Map map = (Map)object;
+        System.out.println(map.get("address"));
+    } catch (YamlException ex) {
+        ex.printStackTrace();
+        // or handle duplicate key case here according to your business logic
+    }
 ```
 
 The above code will not print anything, but throw `YamlReaderException` at line 4 saying, `Duplicate key found 'line1'`.
