@@ -308,6 +308,7 @@ public class YamlReader {
 				throw new YamlReaderException("Error creating object.", ex);
 			}
 			if (anchor != null) anchors.put(anchor, object);
+			ArrayList keys = new ArrayList();
 			while (true) {
 				if (parser.peekNextEvent().type == MAPPING_END) {
 					parser.getNextEvent();
@@ -325,10 +326,18 @@ public class YamlReader {
 				if (object instanceof Map) {
 					// Add to map.
 					if (!isExplicitKey) value = readValue(elementType, null, null);
+					if (!config.allowDuplicates && ((Map) object).containsKey(key)) {
+						throw new YamlReaderException("Duplicate key found '" + key + "'");
+					}
 					((Map)object).put(key, value);
 				} else {
 					// Set field on object.
 					try {
+						if (!config.allowDuplicates && keys.contains(key)) {
+							throw new YamlReaderException("Duplicate key found '" + key + "'");
+						}
+						keys.add(key);
+
 						Property property = Beans.getProperty(type, (String)key, config.beanProperties, config.privateFields, config);
 						if (property == null) {
 							if (config.readConfig.ignoreUnknownProperties) continue;
@@ -421,4 +430,4 @@ public class YamlReader {
 		YamlReader reader = new YamlReader(new FileReader("test/test.yml"));
 		System.out.println(reader.read());
 	}
-}
+}
