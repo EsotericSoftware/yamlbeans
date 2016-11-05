@@ -263,6 +263,33 @@ In this map, the "oldest friend" and "best friend" keys reference the same objec
     map.put("best friend", contact);
 ```
 
+## Duplicate key's validation
+
+By default, the behaviour of this YAML parser is to ignore duplicate keys if you have. e.g if you have the following
+
+```yaml
+    name: Nathan Sweet
+    age: 28
+    address:
+      line1: 485 Madison Ave S
+      line1: 711 3rd Ave S
+      line2: NYC
+```
+
+The above YAML will give me `address` with `line1` value set to `711 3rd Ave S` because the key `line1` is duplicated and by default the last value of `line1` will be retained and there would not be any errors. This is fine normally, however, if your business logic requires you to validate YAML for such duplicates, then you can still do using `allowDuplicates` option of the `YamlConfig` object. Following is how its done:
+
+```java
+    YamlConfig yamlConfig = new YamlConfig();
+    yamlConfig.setAllowDuplicates(false); // default value if true
+    YamlReader reader = new YamlReader(new FileReader("contact.yml"), yamlConfig);
+    Object object = reader.read();
+    System.out.println(object);
+    Map map = (Map)object;
+    System.out.println(map.get("address"));
+```
+
+The above code will not print anything, but throw error at line 4 saying, `Duplicate key found 'line1'`.
+
 ## Architecture
 
 The YAML tokenizer, parser, and emitter are based on those from the JvYAML project. They have been heavily refactored, bugs fixed, etc. The rest of the JvYAML project was not used because of its complexity. YamlBeans strives for the simplest possible thing that works, with the goal being to make it easy to use the YAML data format with Java.
