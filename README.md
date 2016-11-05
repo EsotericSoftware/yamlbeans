@@ -280,7 +280,7 @@ The above YAML will give me `address` with `line1` value set to `711 3rd Ave S` 
 
 ```java
     YamlConfig yamlConfig = new YamlConfig();
-    yamlConfig.setAllowDuplicates(false); // default value if true
+    yamlConfig.setAllowDuplicates(false); // default value is true
     YamlReader reader = new YamlReader(new FileReader("contact.yml"), yamlConfig);
     Object object = reader.read();
     System.out.println(object);
