@@ -293,7 +293,7 @@ The above YAML will give you an `address` object with attribute `line1` set to `
     }
 ```
 
-The above code will not print anything, but throw `YamlReaderException` at line 4 saying, `Duplicate key found 'line1'`.
+The above code will not print anything, but throw `YamlReaderException` at line 5 saying, `Duplicate key found 'line1'`.
 
 ## Architecture
 
