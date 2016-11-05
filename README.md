@@ -288,7 +288,7 @@ The above YAML will give me `address` with `line1` value set to `711 3rd Ave S` 
     System.out.println(map.get("address"));
 ```
 
-The above code will not print anything, but throw error at line 4 saying, `Duplicate key found 'line1'`.
+The above code will not print anything, but throw `YamlReaderException` at line 4 saying, `Duplicate key found 'line1'`.
 
 ## Architecture
 
