@@ -1,2 +1,2 @@
 classpath: lib|*.jar|!junit*.jar
-version: 1.09
+version: 1.11
