@@ -263,7 +263,7 @@ In this map, the "oldest friend" and "best friend" keys reference the same objec
     map.put("best friend", contact);
 ```
 
-## Duplicate key's validation
+## Duplicate key validation
 
 By default, the behaviour of this YAML parser is to ignore duplicate keys if you have. e.g if you have the following
 
