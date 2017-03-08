@@ -48,7 +48,8 @@ class ScalarAnalysis {
 	}
 
 	static public ScalarAnalysis analyze (String scalar, boolean escapeUnicode) {
-		if (scalar == null || "".equals(scalar)) return new ScalarAnalysis(scalar, true, false, false, true, true, true, false);
+		if (scalar == null) return new ScalarAnalysis(scalar, true, false, false, true, true, true, false);
+		if ("".equals(scalar)) return new ScalarAnalysis(scalar, false, false, false, false, false, true, false);
 		boolean blockIndicators = false;
 		boolean flowIndicators = false;
 		boolean lineBreaks = false;
