@@ -155,11 +155,20 @@ class Beans {
 		return properties;
 	}
 
+	static private String toJavaIdentifier (String name) {
+		StringBuilder buffer = new StringBuilder();
+		for (int i = 0, n = name.length(); i < n; i++) {
+			char c = name.charAt(i);
+			if (Character.isJavaIdentifierPart(c)) buffer.append(c);
+		}
+		return buffer.toString();
+	}
+
 	static public Property getProperty (Class type, String name, boolean beanProperties, boolean privateFields,
 		YamlConfig config) {
 		if (type == null) throw new IllegalArgumentException("type cannot be null.");
 		if (name == null || name.length() == 0) throw new IllegalArgumentException("name cannot be null or empty.");
-		name = name.replace(" ", "");
+		name = toJavaIdentifier(name);
 
 		if (beanProperties) {
 			DeferredConstruction deferredConstruction = getDeferredConstruction(type, config);
@@ -210,7 +219,7 @@ class Beans {
 			nextClass = nextClass.getSuperclass();
 		}
 		ArrayList<Field> allFields = new ArrayList();
-		for(int i = classes.size() - 1; i >= 0; i--) {
+		for (int i = classes.size() - 1; i >= 0; i--) {
 			Collections.addAll(allFields, classes.get(i).getDeclaredFields());
 		}
 		return allFields;
