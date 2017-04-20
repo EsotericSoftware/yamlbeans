@@ -16,6 +16,7 @@
 
 package com.esotericsoftware.yamlbeans;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.Writer;
 import java.lang.reflect.Array;
@@ -46,7 +47,7 @@ import com.esotericsoftware.yamlbeans.scalar.ScalarSerializer;
 
 /** Serializes Java objects as YAML.
  * @author <a href="mailto:misc@n4te.com">Nathan Sweet</a> */
-public class YamlWriter {
+public class YamlWriter implements Closeable {
 	private final YamlConfig config;
 	private final Emitter emitter;
 	private boolean started;
