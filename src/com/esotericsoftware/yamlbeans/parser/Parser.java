@@ -579,7 +579,7 @@ public class Parser {
 		};
 		table[P_EMPTY_SCALAR] = new Production() {
 			public Event produce () {
-				return new ScalarEvent(null, null, new boolean[] {true, false}, "", (char)0);
+				return new ScalarEvent(null, null, new boolean[] {true, false}, null, (char)0);
 			}
 		};
 	}
