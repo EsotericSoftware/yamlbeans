@@ -16,210 +16,217 @@
 
 package com.esotericsoftware.yamlbeans;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-
 import com.esotericsoftware.yamlbeans.YamlConfig.ConstructorParameters;
 
-/** Utility for dealing with beans and public fields.
- * @author <a href="mailto:misc@n4te.com">Nathan Sweet</a> */
+import java.lang.annotation.Annotation;
+import java.lang.reflect.*;
+import java.util.*;
+
+/**
+ * Utility for dealing with beans and public fields.
+ *
+ * @author <a href="mailto:misc@n4te.com">Nathan Sweet</a>
+ */
 class Beans {
-	private Beans () {
-	}
 
-	static public boolean isScalar (Class c) {
-		return c.isPrimitive() || c == String.class || c == Integer.class || c == Boolean.class || c == Float.class
-			|| c == Long.class || c == Double.class || c == Short.class || c == Byte.class || c == Character.class;
-	}
+    private Beans() {
+    }
 
-	static public DeferredConstruction getDeferredConstruction (Class type, YamlConfig config) {
-		ConstructorParameters parameters = config.readConfig.constructorParameters.get(type);
-		if (parameters != null) return new DeferredConstruction(parameters.constructor, parameters.parameterNames);
-		try {
-			Class constructorProperties = Class.forName("java.beans.ConstructorProperties");
-			for (Constructor typeConstructor : type.getConstructors()) {
-				Annotation annotation = typeConstructor.getAnnotation(constructorProperties);
-				if (annotation == null) continue;
-				String[] parameterNames = (String[])constructorProperties.getMethod("value").invoke(annotation, (Object[])null);
-				return new DeferredConstruction(typeConstructor, parameterNames);
-			}
-		} catch (Exception ignored) {
-		}
-		return null;
-	}
+    static public boolean isScalar(Class c) {
+        return c.isPrimitive() || c == String.class || c == Integer.class || c == Boolean.class || c == Float.class
+                || c == Long.class || c == Double.class || c == Short.class || c == Byte.class || c == Character.class;
+    }
 
-	static public Object createObject (Class type, boolean privateConstructors) throws InvocationTargetException {
-		// Use no-arg constructor.
-		Constructor constructor = null;
-		for (Constructor typeConstructor : type.getConstructors()) {
-			if (typeConstructor.getParameterTypes().length == 0) {
-				constructor = typeConstructor;
-				break;
-			}
-		}
+    static public DeferredConstruction getDeferredConstruction(Class type, YamlConfig config) {
+        ConstructorParameters parameters = config.readConfig.constructorParameters.get(type);
+        if (parameters != null) {
+            return new DeferredConstruction(parameters.constructor, parameters.parameterNames);
+        }
+        try {
+            Class constructorProperties = Class.forName("java.beans.ConstructorProperties");
+            for (Constructor typeConstructor : type.getConstructors()) {
+                Annotation annotation = typeConstructor.getAnnotation(constructorProperties);
+                if (annotation == null) {
+                    continue;
+                }
+                String[] parameterNames = (String[]) constructorProperties.getMethod("value").invoke(annotation, (Object[]) null);
+                return new DeferredConstruction(typeConstructor, parameterNames);
+            }
+        } catch (Exception ignored) {
+        }
+        return null;
+    }
 
-		if (constructor == null && privateConstructors) {
-			// Try a private constructor.
-			try {
-				constructor = type.getDeclaredConstructor();
-				constructor.setAccessible(true);
-			} catch (SecurityException ignored) {
-			} catch (NoSuchMethodException ignored) {
-			}
-		}
+    static public Object createObject(Class type, boolean privateConstructors) throws InvocationTargetException {
+        // Use no-arg constructor.
+        Constructor constructor = null;
+        for (Constructor typeConstructor : type.getConstructors()) {
+            if (typeConstructor.getParameterTypes().length == 0) {
+                constructor = typeConstructor;
+                break;
+            }
+        }
 
-		// Otherwise try to use a common implementation.
-		if (constructor == null) {
-			try {
-				if (List.class.isAssignableFrom(type)) {
-					constructor = ArrayList.class.getConstructor(new Class[0]);
-				} else if (Set.class.isAssignableFrom(type)) {
-					constructor = HashSet.class.getConstructor(new Class[0]);
-				} else if (Map.class.isAssignableFrom(type)) {
-					constructor = HashMap.class.getConstructor(new Class[0]);
-				}
-			} catch (Exception ex) {
-				throw new InvocationTargetException(ex, "Error getting constructor for class: " + type.getName());
-			}
-		}
+        if (constructor == null && privateConstructors) {
+            // Try a private constructor.
+            try {
+                constructor = type.getDeclaredConstructor();
+                constructor.setAccessible(true);
+            } catch (SecurityException ignored) {
+            } catch (NoSuchMethodException ignored) {
+            }
+        }
 
-		if (constructor == null)
-			throw new InvocationTargetException(null, "Unable to find a no-arg constructor for class: " + type.getName());
+        // Otherwise try to use a common implementation.
+        if (constructor == null) {
+            try {
+                if (List.class.isAssignableFrom(type)) {
+                    constructor = ArrayList.class.getConstructor(new Class[0]);
+                } else if (Set.class.isAssignableFrom(type)) {
+                    constructor = HashSet.class.getConstructor(new Class[0]);
+                } else if (Map.class.isAssignableFrom(type)) {
+                    constructor = HashMap.class.getConstructor(new Class[0]);
+                }
+            } catch (Exception ex) {
+                throw new InvocationTargetException(ex, "Error getting constructor for class: " + type.getName());
+            }
+        }
 
-		try {
-			return constructor.newInstance();
-		} catch (Exception ex) {
-			throw new InvocationTargetException(ex, "Error constructing instance of class: " + type.getName());
-		}
-	}
+        if (constructor == null)
+            throw new InvocationTargetException(null, "Unable to find a no-arg constructor for class: " + type.getName());
 
-	static public Set<Property> getProperties (Class type, boolean beanProperties, boolean privateFields, YamlConfig config) {
-		if (type == null) throw new IllegalArgumentException("type cannot be null.");
-		Class[] noArgs = new Class[0], oneArg = new Class[1];
-		Set<Property> properties = config.writeConfig.keepBeanPropertyOrder ? new LinkedHashSet() : new TreeSet();
-		for (Field field : getAllFields(type)) {
-			String name = field.getName();
+        try {
+            return constructor.newInstance();
+        } catch (Exception ex) {
+            throw new InvocationTargetException(ex, "Error constructing instance of class: " + type.getName());
+        }
+    }
 
-			if (beanProperties) {
-				DeferredConstruction deferredConstruction = getDeferredConstruction(type, config);
-				boolean constructorProperty = deferredConstruction != null && deferredConstruction.hasParameter(name);
+    static public Set<Property> getProperties(Class type, boolean beanProperties, boolean privateFields, YamlConfig config) {
+        if (type == null) {
+            throw new IllegalArgumentException("type cannot be null.");
+        }
+        Class[] noArgs = new Class[0], oneArg = new Class[1];
+        Set<Property> properties = config.writeConfig.keepBeanPropertyOrder ? new LinkedHashSet() : new TreeSet();
+        for (Field field : getAllFields(type)) {
+            String name = field.getName();
 
-				String nameUpper = Character.toUpperCase(name.charAt(0)) + name.substring(1);
-				Method getMethod = null, setMethod = null;
-				try {
-					oneArg[0] = field.getType();
-					setMethod = type.getMethod("set" + nameUpper, oneArg);
-				} catch (Exception ignored) {
-				}
-				try {
-					getMethod = type.getMethod("get" + nameUpper, noArgs);
-				} catch (Exception ignored) {
-				}
-				if (getMethod == null && (field.getType().equals(Boolean.class) || field.getType().equals(boolean.class))) {
-					try {
-						getMethod = type.getMethod("is" + nameUpper, noArgs);
-					} catch (Exception ignored) {
-					}
-				}
-				if (getMethod != null && (setMethod != null || constructorProperty)) {
-					properties.add(new MethodProperty(name, setMethod, getMethod));
-					continue;
-				}
-			}
+            if (beanProperties) {
+                DeferredConstruction deferredConstruction = getDeferredConstruction(type, config);
+                boolean constructorProperty = deferredConstruction != null && deferredConstruction.hasParameter(name);
 
-			int modifiers = field.getModifiers();
-			if (Modifier.isStatic(modifiers) || Modifier.isTransient(modifiers)) continue;
-			if (!Modifier.isPublic(modifiers) && !privateFields) continue;
-			try {
-				field.setAccessible(true);
-			} catch (Exception ignored) {
-			}
-			properties.add(new FieldProperty(field));
-		}
-		return properties;
-	}
+                String nameUpper = Character.toUpperCase(name.charAt(0)) + name.substring(1);
+                Method getMethod = null, setMethod = null;
+                try {
+                    oneArg[0] = field.getType();
+                    setMethod = type.getMethod("set" + nameUpper, oneArg);
+                } catch (Exception ignored) {
+                }
+                try {
+                    getMethod = type.getMethod("get" + nameUpper, noArgs);
+                } catch (Exception ignored) {
+                }
+                if (getMethod == null && (field.getType().equals(Boolean.class) || field.getType().equals(boolean.class))) {
+                    try {
+                        getMethod = type.getMethod("is" + nameUpper, noArgs);
+                    } catch (Exception ignored) {
+                    }
+                }
+                if (getMethod != null && (setMethod != null || constructorProperty)) {
+                    properties.add(new MethodProperty(name, setMethod, getMethod));
+                    continue;
+                }
+            }
 
-	static private String toJavaIdentifier (String name) {
-		StringBuilder buffer = new StringBuilder();
-		for (int i = 0, n = name.length(); i < n; i++) {
-			char c = name.charAt(i);
-			if (Character.isJavaIdentifierPart(c)) buffer.append(c);
-		}
-		return buffer.toString();
-	}
+            int modifiers = field.getModifiers();
+            if (Modifier.isStatic(modifiers) || Modifier.isTransient(modifiers)) {
+                continue;
+            }
+            if (!Modifier.isPublic(modifiers) && !privateFields) {
+                continue;
+            }
+            try {
+                field.setAccessible(true);
+            } catch (Exception ignored) {
+            }
+            properties.add(new FieldProperty(field));
+        }
+        return properties;
+    }
 
-	static public Property getProperty (Class type, String name, boolean beanProperties, boolean privateFields,
-		YamlConfig config) {
-		if (type == null) throw new IllegalArgumentException("type cannot be null.");
-		if (name == null || name.length() == 0) throw new IllegalArgumentException("name cannot be null or empty.");
-		name = toJavaIdentifier(name);
+    static private String toJavaIdentifier(String name) {
+        StringBuilder buffer = new StringBuilder();
+        for (int i = 0, n = name.length(); i < n; i++) {
+            char c = name.charAt(i);
+            if (Character.isJavaIdentifierPart(c)) {
+                buffer.append(c);
+            }
+        }
+        return buffer.toString();
+    }
 
-		if (beanProperties) {
-			DeferredConstruction deferredConstruction = getDeferredConstruction(type, config);
-			boolean constructorProperty = deferredConstruction != null && deferredConstruction.hasParameter(name);
+    static public Property getProperty(Class type, String name, boolean beanProperties, boolean privateFields, YamlConfig config) {
+        if (type == null) {
+            throw new IllegalArgumentException("type cannot be null.");
+        }
+        if (name == null || name.length() == 0) {
+            throw new IllegalArgumentException("name cannot be null or empty.");
+        }
+        name = toJavaIdentifier(name);
 
-			String nameUpper = Character.toUpperCase(name.charAt(0)) + name.substring(1);
-			Method getMethod = null;
-			try {
-				getMethod = type.getMethod("get" + nameUpper);
-			} catch (Exception ignored) {
-			}
-			if (getMethod == null) {
-				try {
-					getMethod = type.getMethod("is" + nameUpper);
-				} catch (Exception ignored) {
-				}
-			}
-			if (getMethod != null) {
-				Method setMethod = null;
-				try {
-					setMethod = type.getMethod("set" + nameUpper, getMethod.getReturnType());
-				} catch (Exception ignored) {
-				}
-				if (getMethod != null && (setMethod != null || constructorProperty))
-					return new MethodProperty(name, setMethod, getMethod);
-			}
-		}
+        if (beanProperties) {
+            DeferredConstruction deferredConstruction = getDeferredConstruction(type, config);
+            boolean constructorProperty = deferredConstruction != null && deferredConstruction.hasParameter(name);
 
-		for (Field field : getAllFields(type)) {
-			if (!field.getName().equals(name)) continue;
-			int modifiers = field.getModifiers();
-			if (Modifier.isStatic(modifiers) || Modifier.isTransient(modifiers)) continue;
-			if (!Modifier.isPublic(modifiers) && !privateFields) continue;
-			try {
-				field.setAccessible(true);
-			} catch (Exception ignored) {
-			}
-			return new FieldProperty(field);
-		}
-		return null;
-	}
+            String nameUpper = Character.toUpperCase(name.charAt(0)) + name.substring(1);
+            Method getMethod = null;
+            try {
+                getMethod = type.getMethod("get" + nameUpper);
+            } catch (Exception ignored) {
+            }
+            if (getMethod == null) {
+                try {
+                    getMethod = type.getMethod("is" + nameUpper);
+                } catch (Exception ignored) {
+                }
+            }
+            if (getMethod != null) {
+                Method setMethod = null;
+                try {
+                    setMethod = type.getMethod("set" + nameUpper, getMethod.getReturnType());
+                } catch (Exception ignored) {
+                }
+                if (getMethod != null && (setMethod != null || constructorProperty))
+                    return new MethodProperty(name, setMethod, getMethod);
+            }
+        }
 
-	static private ArrayList<Field> getAllFields (Class type) {
-		ArrayList<Class> classes = new ArrayList();
-		Class nextClass = type;
-		while (nextClass != null && nextClass != Object.class) {
-			classes.add(nextClass);
-			nextClass = nextClass.getSuperclass();
-		}
-		ArrayList<Field> allFields = new ArrayList();
-		for (int i = classes.size() - 1; i >= 0; i--) {
-			Collections.addAll(allFields, classes.get(i).getDeclaredFields());
-		}
-		return allFields;
-	}
+        for (Field field : getAllFields(type)) {
+            if (!field.getName().equals(name)) continue;
+            int modifiers = field.getModifiers();
+            if (Modifier.isStatic(modifiers) || Modifier.isTransient(modifiers)) continue;
+            if (!Modifier.isPublic(modifiers) && !privateFields) continue;
+            try {
+                field.setAccessible(true);
+            } catch (Exception ignored) {
+            }
+            return new FieldProperty(field);
+        }
+        return null;
+    }
+
+    static private ArrayList<Field> getAllFields(Class type) {
+        ArrayList<Class> classes = new ArrayList();
+        Class nextClass = type;
+        while (nextClass != null && nextClass != Object.class) {
+            classes.add(nextClass);
+            nextClass = nextClass.getSuperclass();
+        }
+        ArrayList<Field> allFields = new ArrayList();
+        for (int i = classes.size() - 1; i >= 0; i--) {
+            Collections.addAll(allFields, classes.get(i).getDeclaredFields());
+        }
+        return allFields;
+    }
 
 }
