@@ -245,14 +245,15 @@ class Beans {
 
     static private Constructor tryCommonImplementationConstructor(Class type) throws InvocationTargetException {
         Constructor commonImplementationConstructor = null;
+        Class[] noArgs = new Class[0];
 
         try {
             if (List.class.isAssignableFrom(type)) {
-                commonImplementationConstructor = ArrayList.class.getConstructor(new Class[0]);
+                commonImplementationConstructor = ArrayList.class.getConstructor(noArgs);
             } else if (Set.class.isAssignableFrom(type)) {
-                commonImplementationConstructor = HashSet.class.getConstructor(new Class[0]);
+                commonImplementationConstructor = HashSet.class.getConstructor(noArgs);
             } else if (Map.class.isAssignableFrom(type)) {
-                commonImplementationConstructor = HashMap.class.getConstructor(new Class[0]);
+                commonImplementationConstructor = HashMap.class.getConstructor(noArgs);
             }
         } catch (Exception e) {
             throw new InvocationTargetException(e, "Error getting constructor for class: " + type.getName());
