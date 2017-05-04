@@ -51,7 +51,6 @@ public class Parser {
 	final Production[] table = new Production[46];
 	Event peekedEvent;
 
-	
 	static {
 		DEFAULT_TAGS_1_0.put("!", "tag:yaml.org,2002:");
 

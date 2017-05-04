@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public interface ProductionType {
+	
 	int P_STREAM = 0;
 	int P_STREAM_START = 1; // TERMINAL
 	int P_STREAM_END = 2; // TERMINAL
