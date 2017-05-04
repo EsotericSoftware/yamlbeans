@@ -203,9 +203,8 @@ public class Tokenizer {
 
 	private void forward () {
 		if (pointer + 2 >= buffer.length()) update(2);
-		char ch1 = buffer.charAt(pointer);
 		pointer++;
-		if (ch1 == '\n' || ch1 == '\u0085' || ch1 == '\r' && buffer.charAt(pointer) != '\n') {
+		if (buffer.charAt(pointer-1) == '\n' || buffer.charAt(pointer-1) == '\u0085' || buffer.charAt(pointer-1) == '\r' && buffer.charAt(pointer) != '\n') {
 			column = 0;
 			lineNumber++;
 		} else
