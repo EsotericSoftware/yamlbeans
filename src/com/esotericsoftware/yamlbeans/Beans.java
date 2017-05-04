@@ -64,47 +64,23 @@ class Beans {
     }
 
     static public Object createObject(Class type, boolean privateConstructors) throws InvocationTargetException {
-        // Use no-arg constructor.
-        Constructor constructor = null;
-        for (Constructor typeConstructor : type.getConstructors()) {
-            if (typeConstructor.getParameterTypes().length == 0) {
-                constructor = typeConstructor;
-                break;
-            }
-        }
+        Constructor constructor = getNoArgConstructor(type);
 
         if (constructor == null && privateConstructors) {
-            // Try a private constructor.
-            try {
-                constructor = type.getDeclaredConstructor();
-                constructor.setAccessible(true);
-            } catch (SecurityException ignored) {
-            } catch (NoSuchMethodException ignored) {
-            }
+            constructor = getPrivateConstructor(type);
         }
-
-        // Otherwise try to use a common implementation.
         if (constructor == null) {
-            try {
-                if (List.class.isAssignableFrom(type)) {
-                    constructor = ArrayList.class.getConstructor(new Class[0]);
-                } else if (Set.class.isAssignableFrom(type)) {
-                    constructor = HashSet.class.getConstructor(new Class[0]);
-                } else if (Map.class.isAssignableFrom(type)) {
-                    constructor = HashMap.class.getConstructor(new Class[0]);
-                }
-            } catch (Exception ex) {
-                throw new InvocationTargetException(ex, "Error getting constructor for class: " + type.getName());
-            }
+            constructor = tryCommonImplementationConstructor(type);
         }
 
-        if (constructor == null)
+        if (constructor == null) {
             throw new InvocationTargetException(null, "Unable to find a no-arg constructor for class: " + type.getName());
-
-        try {
-            return constructor.newInstance();
-        } catch (Exception ex) {
-            throw new InvocationTargetException(ex, "Error constructing instance of class: " + type.getName());
+        } else {
+            try {
+                return constructor.newInstance();
+            } catch (Exception e) {
+                throw new InvocationTargetException(e, "Error constructing instance of class: " + type.getName());
+            }
         }
     }
 
@@ -241,4 +217,51 @@ class Beans {
         return allFields;
     }
 
+    static private Constructor getNoArgConstructor(Class type) {
+        Constructor noArgConstructor = null;
+
+        for (Constructor typeConstructor : type.getConstructors()) {
+            if (isNoArgConstructor(typeConstructor)) {
+                noArgConstructor = typeConstructor;
+                break;
+            }
+        }
+
+        return noArgConstructor;
+    }
+
+    static private Constructor getPrivateConstructor(Class type) {
+        Constructor privateConstructor = null;
+
+        try {
+            privateConstructor = type.getDeclaredConstructor();
+            privateConstructor.setAccessible(true);
+        } catch (SecurityException ignored) {
+        } catch (NoSuchMethodException ignored) {
+        }
+
+        return privateConstructor;
+    }
+
+    static private Constructor tryCommonImplementationConstructor(Class type) throws InvocationTargetException {
+        Constructor commonImplementationConstructor = null;
+
+        try {
+            if (List.class.isAssignableFrom(type)) {
+                commonImplementationConstructor = ArrayList.class.getConstructor(new Class[0]);
+            } else if (Set.class.isAssignableFrom(type)) {
+                commonImplementationConstructor = HashSet.class.getConstructor(new Class[0]);
+            } else if (Map.class.isAssignableFrom(type)) {
+                commonImplementationConstructor = HashMap.class.getConstructor(new Class[0]);
+            }
+        } catch (Exception e) {
+            throw new InvocationTargetException(e, "Error getting constructor for class: " + type.getName());
+        }
+
+        return commonImplementationConstructor;
+    }
+
+    static private boolean isNoArgConstructor(Constructor constructor) {
+        return constructor.getParameterTypes().length == 0;
+    }
 }
