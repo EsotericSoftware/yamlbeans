@@ -198,7 +198,11 @@ public class Tokenizer {
 		for (int i = 0, j = buff.length(); i < j; i++) {
 			ch = buff.charAt(i);
 			pointer++;
-			if (LINEBR.indexOf(ch) != -1 || ch == '\r' && buff.charAt(i + 1) != '\n') {
+			
+			boolean isChIncludedInLINEBR = (LINEBR.indexOf(ch) != -1);
+			boolean isChNewlineChar = (ch == '\r' && buff.charAt(i + 1) != '\n');
+			
+			if (isChIncludedInLINEBR || isChNewlineChar) {
 				column = 0;
 				lineNumber++;
 			} else if (ch != '\uFEFF') column++;
