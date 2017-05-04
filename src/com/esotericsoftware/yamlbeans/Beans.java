@@ -38,23 +38,29 @@ class Beans {
     }
 
     static public DeferredConstruction getDeferredConstruction(Class type, YamlConfig config) {
+        DeferredConstruction deferredConstruction = null;
+
         ConstructorParameters parameters = config.readConfig.constructorParameters.get(type);
         if (parameters != null) {
-            return new DeferredConstruction(parameters.constructor, parameters.parameterNames);
+            deferredConstruction = new DeferredConstruction(parameters.constructor, parameters.parameterNames);
         }
         try {
             Class constructorProperties = Class.forName("java.beans.ConstructorProperties");
+
             for (Constructor typeConstructor : type.getConstructors()) {
                 Annotation annotation = typeConstructor.getAnnotation(constructorProperties);
                 if (annotation == null) {
                     continue;
                 }
+
                 String[] parameterNames = (String[]) constructorProperties.getMethod("value").invoke(annotation, (Object[]) null);
-                return new DeferredConstruction(typeConstructor, parameterNames);
+                deferredConstruction = new DeferredConstruction(typeConstructor, parameterNames);
+                break;
             }
         } catch (Exception ignored) {
         }
-        return null;
+
+        return deferredConstruction;
     }
 
     static public Object createObject(Class type, boolean privateConstructors) throws InvocationTargetException {
