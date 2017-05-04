@@ -124,19 +124,12 @@ class Beans {
                 }
             }
 
-            int modifiers = field.getModifiers();
-            if (Modifier.isStatic(modifiers) || Modifier.isTransient(modifiers)) {
-                continue;
-            }
-            if (!Modifier.isPublic(modifiers) && !privateFields) {
-                continue;
-            }
-            try {
+            if (isProperField(field, privateFields)) {
                 field.setAccessible(true);
-            } catch (Exception ignored) {
+                properties.add(new FieldProperty(field));
             }
-            properties.add(new FieldProperty(field));
         }
+
         return properties;
     }
 
@@ -190,18 +183,20 @@ class Beans {
             }
         }
 
+        FieldProperty fieldProperty = null;
         for (Field field : getAllFields(type)) {
-            if (!field.getName().equals(name)) continue;
-            int modifiers = field.getModifiers();
-            if (Modifier.isStatic(modifiers) || Modifier.isTransient(modifiers)) continue;
-            if (!Modifier.isPublic(modifiers) && !privateFields) continue;
-            try {
-                field.setAccessible(true);
-            } catch (Exception ignored) {
+            if (!field.getName().equals(name)) {
+                continue;
             }
-            return new FieldProperty(field);
+
+            if (isProperField(field, privateFields)) {
+                field.setAccessible(true);
+                fieldProperty = new FieldProperty(field);
+                break;
+            }
         }
-        return null;
+
+        return fieldProperty;
     }
 
     static private ArrayList<Field> getAllFields(Class type) {
@@ -268,5 +263,20 @@ class Beans {
 
     static private boolean isNoArgConstructor(Constructor constructor) {
         return constructor.getParameterTypes().length == 0;
+    }
+
+    static private boolean isProperField(Field field, boolean privateFields) {
+        boolean isProper;
+
+        int modifiers = field.getModifiers();
+        if (Modifier.isStatic(modifiers) || Modifier.isTransient(modifiers)) {
+            isProper = false;
+        } else if (!Modifier.isPublic(modifiers) && !privateFields) {
+            isProper = false;
+        } else {
+            isProper = true;
+        }
+
+        return isProper;
     }
 }
