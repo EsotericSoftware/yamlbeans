@@ -17,6 +17,7 @@
 package com.esotericsoftware.yamlbeans.parser;
 
 import static com.esotericsoftware.yamlbeans.tokenizer.TokenType.*;
+import static com.esotericsoftware.yamlbeans.parser.ProductionType.*;
 
 import com.esotericsoftware.yamlbeans.Version;
 import com.esotericsoftware.yamlbeans.tokenizer.AliasToken;
@@ -50,6 +51,16 @@ public class Parser {
 	final Production[] table = new Production[46];
 	Event peekedEvent;
 
+	
+	static private final Map<String, String> DEFAULT_TAGS_1_0 = new HashMap();
+	static private final Map<String, String> DEFAULT_TAGS_1_1 = new HashMap();
+	static {
+		DEFAULT_TAGS_1_0.put("!", "tag:yaml.org,2002:");
+
+		DEFAULT_TAGS_1_1.put("!", "!");
+		DEFAULT_TAGS_1_1.put("!!", "tag:yaml.org,2002:");
+	}
+	
 	public Parser (Reader reader) {
 		this(reader, new Version(1, 1));
 	}
@@ -620,61 +631,6 @@ public class Parser {
 		public Event produce ();
 	}
 
-	static private final int P_STREAM = 0;
-	static private final int P_STREAM_START = 1; // TERMINAL
-	static private final int P_STREAM_END = 2; // TERMINAL
-	static private final int P_IMPLICIT_DOCUMENT = 3;
-	static private final int P_EXPLICIT_DOCUMENT = 4;
-	static private final int P_DOCUMENT_START = 5;
-	static private final int P_DOCUMENT_START_IMPLICIT = 6;
-	static private final int P_DOCUMENT_END = 7;
-	static private final int P_BLOCK_NODE = 8;
-	static private final int P_BLOCK_CONTENT = 9;
-	static private final int P_PROPERTIES = 10;
-	static private final int P_PROPERTIES_END = 11;
-	static private final int P_FLOW_CONTENT = 12;
-	static private final int P_BLOCK_SEQUENCE = 13;
-	static private final int P_BLOCK_MAPPING = 14;
-	static private final int P_FLOW_SEQUENCE = 15;
-	static private final int P_FLOW_MAPPING = 16;
-	static private final int P_SCALAR = 17;
-	static private final int P_BLOCK_SEQUENCE_ENTRY = 18;
-	static private final int P_BLOCK_MAPPING_ENTRY = 19;
-	static private final int P_BLOCK_MAPPING_ENTRY_VALUE = 20;
-	static private final int P_BLOCK_NODE_OR_INDENTLESS_SEQUENCE = 21;
-	static private final int P_BLOCK_SEQUENCE_START = 22;
-	static private final int P_BLOCK_SEQUENCE_END = 23;
-	static private final int P_BLOCK_MAPPING_START = 24;
-	static private final int P_BLOCK_MAPPING_END = 25;
-	static private final int P_INDENTLESS_BLOCK_SEQUENCE = 26;
-	static private final int P_BLOCK_INDENTLESS_SEQUENCE_START = 27;
-	static private final int P_INDENTLESS_BLOCK_SEQUENCE_ENTRY = 28;
-	static private final int P_BLOCK_INDENTLESS_SEQUENCE_END = 29;
-	static private final int P_FLOW_SEQUENCE_START = 30;
-	static private final int P_FLOW_SEQUENCE_ENTRY = 31;
-	static private final int P_FLOW_SEQUENCE_END = 32;
-	static private final int P_FLOW_MAPPING_START = 33;
-	static private final int P_FLOW_MAPPING_ENTRY = 34;
-	static private final int P_FLOW_MAPPING_END = 35;
-	static private final int P_FLOW_INTERNAL_MAPPING_START = 36;
-	static private final int P_FLOW_INTERNAL_CONTENT = 37;
-	static private final int P_FLOW_INTERNAL_VALUE = 38;
-	static private final int P_FLOW_INTERNAL_MAPPING_END = 39;
-	static private final int P_FLOW_ENTRY_MARKER = 40;
-	static private final int P_FLOW_NODE = 41;
-	static private final int P_FLOW_MAPPING_INTERNAL_CONTENT = 42;
-	static private final int P_FLOW_MAPPING_INTERNAL_VALUE = 43;
-	static private final int P_ALIAS = 44;
-	static private final int P_EMPTY_SCALAR = 45;
-
-	static private final Map<String, String> DEFAULT_TAGS_1_0 = new HashMap();
-	static private final Map<String, String> DEFAULT_TAGS_1_1 = new HashMap();
-	static {
-		DEFAULT_TAGS_1_0.put("!", "tag:yaml.org,2002:");
-
-		DEFAULT_TAGS_1_1.put("!", "!");
-		DEFAULT_TAGS_1_1.put("!!", "tag:yaml.org,2002:");
-	}
 
 	public class ParserException extends RuntimeException {
 		public ParserException (String message) {
