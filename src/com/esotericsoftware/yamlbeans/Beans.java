@@ -101,20 +101,20 @@ class Beans {
                 DeferredConstruction deferredConstruction = getDeferredConstruction(type, config);
                 boolean constructorProperty = deferredConstruction != null && deferredConstruction.hasParameter(name);
 
-                String nameUpper = Character.toUpperCase(name.charAt(0)) + name.substring(1);
+                String upperName = getUpperName(name);
                 Method getMethod = null, setMethod = null;
                 try {
                     oneArg[0] = field.getType();
-                    setMethod = type.getMethod(SETTER + nameUpper, oneArg);
+                    setMethod = type.getMethod(SETTER + upperName, oneArg);
                 } catch (Exception ignored) {
                 }
                 try {
-                    getMethod = type.getMethod(GETTER + nameUpper, noArgs);
+                    getMethod = type.getMethod(GETTER + upperName, noArgs);
                 } catch (Exception ignored) {
                 }
                 if (getMethod == null && (field.getType().equals(Boolean.class) || field.getType().equals(boolean.class))) {
                     try {
-                        getMethod = type.getMethod(GETTER_BOOLEAN + nameUpper, noArgs);
+                        getMethod = type.getMethod(GETTER_BOOLEAN + upperName, noArgs);
                     } catch (Exception ignored) {
                     }
                 }
@@ -160,22 +160,22 @@ class Beans {
             DeferredConstruction deferredConstruction = getDeferredConstruction(type, config);
             boolean constructorProperty = deferredConstruction != null && deferredConstruction.hasParameter(name);
 
-            String nameUpper = Character.toUpperCase(name.charAt(0)) + name.substring(1);
+            String upperName = getUpperName(name);
             Method getMethod = null;
             try {
-                getMethod = type.getMethod(GETTER + nameUpper);
+                getMethod = type.getMethod(GETTER + upperName);
             } catch (Exception ignored) {
             }
             if (getMethod == null) {
                 try {
-                    getMethod = type.getMethod(GETTER_BOOLEAN + nameUpper);
+                    getMethod = type.getMethod(GETTER_BOOLEAN + upperName);
                 } catch (Exception ignored) {
                 }
             }
             if (getMethod != null) {
                 Method setMethod = null;
                 try {
-                    setMethod = type.getMethod(SETTER + nameUpper, getMethod.getReturnType());
+                    setMethod = type.getMethod(SETTER + upperName, getMethod.getReturnType());
                 } catch (Exception ignored) {
                 }
                 if (getMethod != null && (setMethod != null || constructorProperty))
@@ -263,6 +263,10 @@ class Beans {
 
     static private boolean isNoArgConstructor(Constructor constructor) {
         return constructor.getParameterTypes().length == 0;
+    }
+
+    static private String getUpperName(String name) {
+        return Character.toUpperCase(name.charAt(0)) + name.substring(1);
     }
 
     static private boolean isProperField(Field field, boolean privateFields) {
