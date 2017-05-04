@@ -25,7 +25,6 @@ import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
-import com.esotericsoftware.yamlbeans.Beans.Property;
 import com.esotericsoftware.yamlbeans.emitter.EmitterConfig;
 import com.esotericsoftware.yamlbeans.scalar.DateSerializer;
 import com.esotericsoftware.yamlbeans.scalar.ScalarSerializer;
@@ -270,4 +269,4 @@ public class YamlConfig {
 	public static enum WriteClassName {
 		ALWAYS, NEVER, AUTO
 	}
-}
+}

@@ -18,7 +18,6 @@ package com.esotericsoftware.yamlbeans;
 
 import static com.esotericsoftware.yamlbeans.parser.EventType.*;
 
-import com.esotericsoftware.yamlbeans.Beans.Property;
 import com.esotericsoftware.yamlbeans.parser.AliasEvent;
 import com.esotericsoftware.yamlbeans.parser.CollectionStartEvent;
 import com.esotericsoftware.yamlbeans.parser.Event;
@@ -430,4 +429,4 @@ public class YamlReader {
 		YamlReader reader = new YamlReader(new FileReader("test/test.yml"));
 		System.out.println(reader.read());
 	}
-}
+}

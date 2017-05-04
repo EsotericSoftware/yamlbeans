@@ -16,8 +16,6 @@
 
 package com.esotericsoftware.yamlbeans;
 
-import com.esotericsoftware.yamlbeans.Beans.Property;
-
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;

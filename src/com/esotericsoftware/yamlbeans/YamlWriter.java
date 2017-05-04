@@ -30,7 +30,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import com.esotericsoftware.yamlbeans.Beans.Property;
 import com.esotericsoftware.yamlbeans.YamlConfig.WriteClassName;
 import com.esotericsoftware.yamlbeans.YamlConfig.WriteConfig;
 import com.esotericsoftware.yamlbeans.emitter.Emitter;
