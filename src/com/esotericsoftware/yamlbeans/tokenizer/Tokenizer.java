@@ -153,7 +153,12 @@ public class Tokenizer {
 			}
 		};
 	}
-
+	
+	public int getFlowLevel(){
+		return flowLevel;
+	}
+	
+	
 	public int getLineNumber () {
 		return lineNumber;
 	}
@@ -272,10 +277,10 @@ public class Tokenizer {
 		case '"':
 			return fetchDouble();
 		case '?':
-			if (flowLevel != 0 || NULL_OR_OTHER.indexOf(peek(1)) != -1) return fetchKey();
+			if (getFlowLevel() != 0 || NULL_OR_OTHER.indexOf(peek(1)) != -1) return fetchKey();
 			break;
 		case ':':
-			if (flowLevel != 0 || NULL_OR_OTHER.indexOf(peek(1)) != -1) return fetchValue();
+			if (getFlowLevel() != 0 || NULL_OR_OTHER.indexOf(peek(1)) != -1) return fetchValue();
 			break;
 		case '%':
 			if (colz) return fetchDirective();
@@ -305,10 +310,10 @@ public class Tokenizer {
 		case '!':
 			return fetchTag();
 		case '|':
-			if (flowLevel == 0) return fetchLiteral();
+			if (getFlowLevel() == 0) return fetchLiteral();
 			break;
 		case '>':
-			if (flowLevel == 0) return fetchFolded();
+			if (getFlowLevel() == 0) return fetchFolded();
 			break;
 		}
 		if (BEG.matcher(prefix(2)).find()) return fetchPlain();
@@ -326,11 +331,11 @@ public class Tokenizer {
 	}
 
 	private void savePossibleSimpleKey () {
-		if (allowSimpleKey) possibleSimpleKeys.put(flowLevel, new SimpleKey(tokensTaken + tokens.size(), column));
+		if (allowSimpleKey) possibleSimpleKeys.put(getFlowLevel(), new SimpleKey(tokensTaken + tokens.size(), column));
 	}
 
 	private void unwindIndent (int col) {
-		if (flowLevel != 0) return;
+		if (getFlowLevel() != 0) return;
 
 		while (indent > col) {
 			indent = indents.remove(0);
@@ -428,7 +433,7 @@ public class Tokenizer {
 	}
 
 	private Token fetchBlockEntry () {
-		if (flowLevel == 0) {
+		if (getFlowLevel() == 0) {
 			if (!allowSimpleKey) throw new TokenizerException("Found a sequence entry where it is not allowed.");
 			if (addIndent(column)) tokens.add(Token.BLOCK_SEQUENCE_START);
 		}
@@ -439,24 +444,24 @@ public class Tokenizer {
 	}
 
 	private Token fetchKey () {
-		if (flowLevel == 0) {
+		if (getFlowLevel() == 0) {
 			if (!allowSimpleKey) throw new TokenizerException("Found a mapping key where it is not allowed.");
 			if (addIndent(column)) tokens.add(Token.BLOCK_MAPPING_START);
 		}
-		allowSimpleKey = flowLevel == 0;
+		allowSimpleKey = getFlowLevel() == 0;
 		forward();
 		tokens.add(Token.KEY);
 		return Token.KEY;
 	}
 
 	private Token fetchValue () {
-		SimpleKey key = possibleSimpleKeys.get(flowLevel);
+		SimpleKey key = possibleSimpleKeys.get(getFlowLevel());
 		if (null == key) {
-			if (flowLevel == 0 && !allowSimpleKey) throw new TokenizerException("Found a mapping value where it is not allowed.");
+			if (getFlowLevel() == 0 && !allowSimpleKey) throw new TokenizerException("Found a mapping value where it is not allowed.");
 		} else {
-			possibleSimpleKeys.remove(flowLevel);
+			possibleSimpleKeys.remove(getFlowLevel());
 			tokens.add(key.tokenNumber - tokensTaken, Token.KEY);
-			if (flowLevel == 0 && addIndent(key.column)) tokens.add(key.tokenNumber - tokensTaken, Token.BLOCK_MAPPING_START);
+			if (getFlowLevel() == 0 && addIndent(key.column)) tokens.add(key.tokenNumber - tokensTaken, Token.BLOCK_MAPPING_START);
 			allowSimpleKey = false;
 		}
 		forward();
@@ -534,7 +539,7 @@ public class Tokenizer {
 			if (peek() == '#') while (NULL_OR_LINEBR.indexOf(peek()) == -1)
 				forward();
 			if (scanLineBreak().length() != 0) {
-				if (flowLevel == 0) allowSimpleKey = true;
+				if (getFlowLevel() == 0) allowSimpleKey = true;
 			} else
 				break;
 		}
@@ -931,7 +936,7 @@ public class Tokenizer {
 		String spaces = "";
 		boolean f_nzero = true;
 		Pattern r_check = R_FLOWNONZERO;
-		if (flowLevel == 0) {
+		if (getFlowLevel() == 0) {
 			f_nzero = false;
 			r_check = R_FLOWZERO;
 		}
@@ -954,7 +959,7 @@ public class Tokenizer {
 			chunks.append(prefixForward(length));
 			// forward(length);
 			spaces = scanPlainSpaces();
-			if (spaces == null || flowLevel == 0 && column < ind) break;
+			if (spaces == null || getFlowLevel() == 0 && column < ind) break;
 		}
 		return new ScalarToken(chunks.toString(), true);
 	}
