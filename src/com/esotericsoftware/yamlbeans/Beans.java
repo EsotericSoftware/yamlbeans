@@ -173,7 +173,7 @@ class Beans {
 
         return builder.toString();
     }
-        
+
     static public Property getProperty(Class type, String name, boolean beanProperties, boolean privateFields, YamlConfig config) {
         if (type == null) {
             throw new IllegalArgumentException("type cannot be null.");
@@ -225,16 +225,19 @@ class Beans {
     }
 
     static private ArrayList<Field> getAllFields(Class type) {
-        ArrayList<Class> classes = new ArrayList();
+        ArrayList<Class> classes = new ArrayList<Class>();
+        ArrayList<Field> allFields = new ArrayList<Field>();
+
         Class nextClass = type;
         while (nextClass != null && nextClass != Object.class) {
             classes.add(nextClass);
             nextClass = nextClass.getSuperclass();
         }
-        ArrayList<Field> allFields = new ArrayList();
+
         for (int i = classes.size() - 1; i >= 0; i--) {
             Collections.addAll(allFields, classes.get(i).getDeclaredFields());
         }
+
         return allFields;
     }
 
