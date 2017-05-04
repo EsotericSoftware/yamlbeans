@@ -101,13 +101,13 @@ public class BeansTest {
 
     @Test
     public void getPropertiesWithBeanProperties() throws Exception {
-        final Set<Beans.Property> properties = Beans.getProperties(MockClass.class, true, false, yamlConfig);
+        final Set<Property> properties = Beans.getProperties(MockClass.class, true, false, yamlConfig);
         assertEquals(9, properties.size());
     }
 
     @Test
     public void getPropertiesWithPrivateFields() throws Exception {
-        final Set<Beans.Property> properties = Beans.getProperties(MockClass.class, false, true, yamlConfig);
+        final Set<Property> properties = Beans.getProperties(MockClass.class, false, true, yamlConfig);
         assertEquals(9, properties.size());
     }
 
@@ -139,14 +139,13 @@ public class BeansTest {
         } catch (IllegalArgumentException e) {
             // nothing
         }
-
     }
 
     @Test
     public void getPropertyBooleanTypeWithBeanProperties() throws Exception {
-        final Beans.Property booleanTypeProperty = Beans.getProperty(MockClass.class, "booleanType", true, false, yamlConfig);
+        final Property booleanTypeProperty = Beans.getProperty(MockClass.class, "booleanType", true, false, yamlConfig);
 
-        assertTrue(booleanTypeProperty instanceof Beans.MethodProperty);
+        assertTrue(booleanTypeProperty instanceof MethodProperty);
         assertEquals(MockClass.class, booleanTypeProperty.getDeclaringClass());
         assertEquals("booleanType", booleanTypeProperty.getName());
         assertEquals(boolean.class, booleanTypeProperty.getType());
@@ -163,9 +162,9 @@ public class BeansTest {
 
     @Test
     public void getPropertyCharTypeWithBeanProperties() throws Exception {
-        final Beans.Property charTypeProperty = Beans.getProperty(MockClass.class, "charType", true, false, yamlConfig);
+        final Property charTypeProperty = Beans.getProperty(MockClass.class, "charType", true, false, yamlConfig);
 
-        assertTrue(charTypeProperty instanceof Beans.MethodProperty);
+        assertTrue(charTypeProperty instanceof MethodProperty);
         assertEquals(MockClass.class, charTypeProperty.getDeclaringClass());
         assertEquals("charType", charTypeProperty.getName());
         assertEquals(char.class, charTypeProperty.getType());
@@ -185,9 +184,9 @@ public class BeansTest {
 
     @Test
     public void getPropertyByteTypeWithBeanProperties() throws Exception {
-        final Beans.Property byteTypeProperty = Beans.getProperty(MockClass.class, "byteType", true, false, yamlConfig);
+        final Property byteTypeProperty = Beans.getProperty(MockClass.class, "byteType", true, false, yamlConfig);
 
-        assertTrue(byteTypeProperty instanceof Beans.MethodProperty);
+        assertTrue(byteTypeProperty instanceof MethodProperty);
         assertEquals(MockClass.class, byteTypeProperty.getDeclaringClass());
         assertEquals("byteType", byteTypeProperty.getName());
         assertEquals(byte.class, byteTypeProperty.getType());
@@ -207,9 +206,9 @@ public class BeansTest {
 
     @Test
     public void getPropertyShortTypeWithBeanProperties() throws Exception {
-        final Beans.Property shortTypeProperty = Beans.getProperty(MockClass.class, "shortType", true, false, yamlConfig);
+        final Property shortTypeProperty = Beans.getProperty(MockClass.class, "shortType", true, false, yamlConfig);
 
-        assertTrue(shortTypeProperty instanceof Beans.MethodProperty);
+        assertTrue(shortTypeProperty instanceof MethodProperty);
         assertEquals(MockClass.class, shortTypeProperty.getDeclaringClass());
         assertEquals("shortType", shortTypeProperty.getName());
         assertEquals(short.class, shortTypeProperty.getType());
@@ -229,9 +228,9 @@ public class BeansTest {
 
     @Test
     public void getPropertyIntTypeWithBeanProperties() throws Exception {
-        final Beans.Property intTypeProperty = Beans.getProperty(MockClass.class, "intType", true, false, yamlConfig);
+        final Property intTypeProperty = Beans.getProperty(MockClass.class, "intType", true, false, yamlConfig);
 
-        assertTrue(intTypeProperty instanceof Beans.MethodProperty);
+        assertTrue(intTypeProperty instanceof MethodProperty);
         assertEquals(MockClass.class, intTypeProperty.getDeclaringClass());
         assertEquals("intType", intTypeProperty.getName());
         assertEquals(int.class, intTypeProperty.getType());
@@ -251,9 +250,9 @@ public class BeansTest {
 
     @Test
     public void getPropertyLongTypeWithBeanProperties() throws Exception {
-        final Beans.Property longTypeProperty = Beans.getProperty(MockClass.class, "longType", true, false, yamlConfig);
+        final Property longTypeProperty = Beans.getProperty(MockClass.class, "longType", true, false, yamlConfig);
 
-        assertTrue(longTypeProperty instanceof Beans.MethodProperty);
+        assertTrue(longTypeProperty instanceof MethodProperty);
         assertEquals(MockClass.class, longTypeProperty.getDeclaringClass());
         assertEquals("longType", longTypeProperty.getName());
         assertEquals(long.class, longTypeProperty.getType());
@@ -273,9 +272,9 @@ public class BeansTest {
 
     @Test
     public void getPropertyFloatTypeWithBeanProperties() throws Exception {
-        final Beans.Property floatTypeProperty = Beans.getProperty(MockClass.class, "floatType", true, false, yamlConfig);
+        final Property floatTypeProperty = Beans.getProperty(MockClass.class, "floatType", true, false, yamlConfig);
 
-        assertTrue(floatTypeProperty instanceof Beans.MethodProperty);
+        assertTrue(floatTypeProperty instanceof MethodProperty);
         assertEquals(MockClass.class, floatTypeProperty.getDeclaringClass());
         assertEquals("floatType", floatTypeProperty.getName());
         assertEquals(float.class, floatTypeProperty.getType());
@@ -295,9 +294,9 @@ public class BeansTest {
 
     @Test
     public void getPropertyDoubleTypeWithBeanProperties() throws Exception {
-        final Beans.Property doubleTypeProperty = Beans.getProperty(MockClass.class, "doubleType", true, false, yamlConfig);
+        final Property doubleTypeProperty = Beans.getProperty(MockClass.class, "doubleType", true, false, yamlConfig);
 
-        assertTrue(doubleTypeProperty instanceof Beans.MethodProperty);
+        assertTrue(doubleTypeProperty instanceof MethodProperty);
         assertEquals(MockClass.class, doubleTypeProperty.getDeclaringClass());
         assertEquals("doubleType", doubleTypeProperty.getName());
         assertEquals(double.class, doubleTypeProperty.getType());
@@ -317,9 +316,9 @@ public class BeansTest {
 
     @Test
     public void getPropertyStringTypeWithBeanProperties() throws Exception {
-        final Beans.Property stringTypeProperty = Beans.getProperty(MockClass.class, "stringType", true, false, yamlConfig);
+        final Property stringTypeProperty = Beans.getProperty(MockClass.class, "stringType", true, false, yamlConfig);
 
-        assertTrue(stringTypeProperty instanceof Beans.MethodProperty);
+        assertTrue(stringTypeProperty instanceof MethodProperty);
         assertEquals(MockClass.class, stringTypeProperty.getDeclaringClass());
         assertEquals("stringType", stringTypeProperty.getName());
         assertEquals(String.class, stringTypeProperty.getType());
@@ -336,16 +335,16 @@ public class BeansTest {
 
     @Test
     public void getPropertyNullWithBeanProperties() throws Exception {
-        final Beans.Property nullProperty = Beans.getProperty(MockClass.class, "nullType", true, false, yamlConfig);
+        final Property nullProperty = Beans.getProperty(MockClass.class, "nullType", true, false, yamlConfig);
 
         assertNull(nullProperty);
     }
 
     @Test
     public void getPropertyBooleanTypeWithPrivateFields() throws Exception {
-        final Beans.Property booleanTypeProperty = Beans.getProperty(MockClass.class, "booleanType", false, true, null);
+        final Property booleanTypeProperty = Beans.getProperty(MockClass.class, "booleanType", false, true, null);
 
-        assertTrue(booleanTypeProperty instanceof Beans.FieldProperty);
+        assertTrue(booleanTypeProperty instanceof FieldProperty);
         assertEquals(MockClass.class, booleanTypeProperty.getDeclaringClass());
         assertEquals("booleanType", booleanTypeProperty.getName());
         assertEquals(boolean.class, booleanTypeProperty.getType());
@@ -362,9 +361,9 @@ public class BeansTest {
 
     @Test
     public void getPropertyCharTypeWithPrivateFields() throws Exception {
-        final Beans.Property charTypeProperty = Beans.getProperty(MockClass.class, "charType", false, true, yamlConfig);
+        final Property charTypeProperty = Beans.getProperty(MockClass.class, "charType", false, true, yamlConfig);
 
-        assertTrue(charTypeProperty instanceof Beans.FieldProperty);
+        assertTrue(charTypeProperty instanceof FieldProperty);
         assertEquals(MockClass.class, charTypeProperty.getDeclaringClass());
         assertEquals("charType", charTypeProperty.getName());
         assertEquals(char.class, charTypeProperty.getType());
@@ -384,9 +383,9 @@ public class BeansTest {
 
     @Test
     public void getPropertyByteTypeWithPrivateFields() throws Exception {
-        final Beans.Property byteTypeProperty = Beans.getProperty(MockClass.class, "byteType", false, true, yamlConfig);
+        final Property byteTypeProperty = Beans.getProperty(MockClass.class, "byteType", false, true, yamlConfig);
 
-        assertTrue(byteTypeProperty instanceof Beans.FieldProperty);
+        assertTrue(byteTypeProperty instanceof FieldProperty);
         assertEquals(MockClass.class, byteTypeProperty.getDeclaringClass());
         assertEquals("byteType", byteTypeProperty.getName());
         assertEquals(byte.class, byteTypeProperty.getType());
@@ -406,9 +405,9 @@ public class BeansTest {
 
     @Test
     public void getPropertyShortTypeWithPrivateFields() throws Exception {
-        final Beans.Property shortTypeProperty = Beans.getProperty(MockClass.class, "shortType", false, true, yamlConfig);
+        final Property shortTypeProperty = Beans.getProperty(MockClass.class, "shortType", false, true, yamlConfig);
 
-        assertTrue(shortTypeProperty instanceof Beans.FieldProperty);
+        assertTrue(shortTypeProperty instanceof FieldProperty);
         assertEquals(MockClass.class, shortTypeProperty.getDeclaringClass());
         assertEquals("shortType", shortTypeProperty.getName());
         assertEquals(short.class, shortTypeProperty.getType());
@@ -428,9 +427,9 @@ public class BeansTest {
 
     @Test
     public void getPropertyIntTypeWithPrivateFields() throws Exception {
-        final Beans.Property intTypeProperty = Beans.getProperty(MockClass.class, "intType", false, true, yamlConfig);
+        final Property intTypeProperty = Beans.getProperty(MockClass.class, "intType", false, true, yamlConfig);
 
-        assertTrue(intTypeProperty instanceof Beans.FieldProperty);
+        assertTrue(intTypeProperty instanceof FieldProperty);
         assertEquals(MockClass.class, intTypeProperty.getDeclaringClass());
         assertEquals("intType", intTypeProperty.getName());
         assertEquals(int.class, intTypeProperty.getType());
@@ -450,9 +449,9 @@ public class BeansTest {
 
     @Test
     public void getPropertyLongTypeWithPrivateFields() throws Exception {
-        final Beans.Property longTypeProperty = Beans.getProperty(MockClass.class, "longType", false, true, yamlConfig);
+        final Property longTypeProperty = Beans.getProperty(MockClass.class, "longType", false, true, yamlConfig);
 
-        assertTrue(longTypeProperty instanceof Beans.FieldProperty);
+        assertTrue(longTypeProperty instanceof FieldProperty);
         assertEquals(MockClass.class, longTypeProperty.getDeclaringClass());
         assertEquals("longType", longTypeProperty.getName());
         assertEquals(long.class, longTypeProperty.getType());
@@ -472,9 +471,9 @@ public class BeansTest {
 
     @Test
     public void getPropertyFloatTypeWithPrivateFields() throws Exception {
-        final Beans.Property floatTypeProperty = Beans.getProperty(MockClass.class, "floatType", false, true, yamlConfig);
+        final Property floatTypeProperty = Beans.getProperty(MockClass.class, "floatType", false, true, yamlConfig);
 
-        assertTrue(floatTypeProperty instanceof Beans.FieldProperty);
+        assertTrue(floatTypeProperty instanceof FieldProperty);
         assertEquals(MockClass.class, floatTypeProperty.getDeclaringClass());
         assertEquals("floatType", floatTypeProperty.getName());
         assertEquals(float.class, floatTypeProperty.getType());
@@ -494,9 +493,9 @@ public class BeansTest {
 
     @Test
     public void getPropertyDoubleTypeWithPrivateFields() throws Exception {
-        final Beans.Property doubleTypeProperty = Beans.getProperty(MockClass.class, "doubleType", false, true, yamlConfig);
+        final Property doubleTypeProperty = Beans.getProperty(MockClass.class, "doubleType", false, true, yamlConfig);
 
-        assertTrue(doubleTypeProperty instanceof Beans.FieldProperty);
+        assertTrue(doubleTypeProperty instanceof FieldProperty);
         assertEquals(MockClass.class, doubleTypeProperty.getDeclaringClass());
         assertEquals("doubleType", doubleTypeProperty.getName());
         assertEquals(double.class, doubleTypeProperty.getType());
@@ -516,9 +515,9 @@ public class BeansTest {
 
     @Test
     public void getPropertyStringTypeWithPrivateFields() throws Exception {
-        final Beans.Property stringTypeProperty = Beans.getProperty(MockClass.class, "stringType", false, true, yamlConfig);
+        final Property stringTypeProperty = Beans.getProperty(MockClass.class, "stringType", false, true, yamlConfig);
 
-        assertTrue(stringTypeProperty instanceof Beans.FieldProperty);
+        assertTrue(stringTypeProperty instanceof FieldProperty);
         assertEquals(MockClass.class, stringTypeProperty.getDeclaringClass());
         assertEquals("stringType", stringTypeProperty.getName());
         assertEquals(String.class, stringTypeProperty.getType());
@@ -535,7 +534,7 @@ public class BeansTest {
 
     @Test
     public void getPropertyNullWithPrivateFields() throws Exception {
-        final Beans.Property nullProperty = Beans.getProperty(MockClass.class, "nullType", false, true, yamlConfig);
+        final Property nullProperty = Beans.getProperty(MockClass.class, "nullType", false, true, yamlConfig);
 
         assertNull(nullProperty);
     }
