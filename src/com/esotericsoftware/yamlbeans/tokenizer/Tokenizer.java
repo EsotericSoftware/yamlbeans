@@ -672,6 +672,11 @@ public class Tokenizer {
 		if (NON_ALPHA_OR_NUM.indexOf(peek()) == -1)
 			throw new TokenizerException("While scanning an " + name + ", expected an alpha or numeric character but found: "
 				+ ch(peek()));
+		setTokenInstanceName(tok, value);
+		return tok;
+	}
+	
+	private Token setTokenInstanceName(Token tok, String value){
 		if (tok instanceof AnchorToken)
 			((AnchorToken)tok).setInstanceName(value);
 		else
