@@ -161,16 +161,19 @@ class Beans {
     }
 
     static private String toJavaIdentifier(String name) {
-        StringBuilder buffer = new StringBuilder();
-        for (int i = 0, n = name.length(); i < n; i++) {
+        StringBuilder builder = new StringBuilder();
+
+        for (int i = 0; i < name.length(); i++) {
             char c = name.charAt(i);
+
             if (Character.isJavaIdentifierPart(c)) {
-                buffer.append(c);
+                builder.append(c);
             }
         }
-        return buffer.toString();
-    }
 
+        return builder.toString();
+    }
+        
     static public Property getProperty(Class type, String name, boolean beanProperties, boolean privateFields, YamlConfig config) {
         if (type == null) {
             throw new IllegalArgumentException("type cannot be null.");
