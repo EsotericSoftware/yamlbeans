@@ -152,7 +152,7 @@ public class Parser {
 				Token token = tokenizer.peekNextToken();
 				DocumentStartEvent documentStartEvent = processDirectives(true);
 				if (tokenizer.peekNextTokenType() != DOCUMENT_START)
-					throw new ParserException("Expected 'document start' but found: " + token.type);
+					throw new ParserException("Expected 'document start' but found: " + token.getType());
 				tokenizer.getNextToken();
 				return documentStartEvent;
 			}

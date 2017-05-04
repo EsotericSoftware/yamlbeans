@@ -124,7 +124,7 @@ public class Tokenizer {
 	public TokenType peekNextTokenType () throws TokenizerException {
 		Token token = peekNextToken();
 		if (token == null) return null;
-		return token.type;
+		return token.getType();
 	}
 
 	public Token getNextToken () throws TokenizerException {
@@ -492,6 +492,7 @@ public class Tokenizer {
 		tokens.add(tok);
 		return tok;
 	}
+	
 
 	private Token fetchLiteral () {
 		return fetchBlockScalar('|');

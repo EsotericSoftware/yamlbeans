@@ -34,7 +34,11 @@ public class Token {
 	final static Token STREAM_END = new Token(TokenType.STREAM_END);
 	final static Token STREAM_START = new Token(TokenType.STREAM_START);
 
-	public final TokenType type;
+	final TokenType type;
+	
+	public TokenType getType(){
+		return type;
+	}
 
 	public Token (TokenType type) {
 		this.type = type;
