@@ -92,8 +92,16 @@ class Beans {
         if (type == null) {
             throw new IllegalArgumentException("type cannot be null.");
         }
-        Class[] noArgs = new Class[0], oneArg = new Class[1];
-        Set<Property> properties = config.writeConfig.keepBeanPropertyOrder ? new LinkedHashSet() : new TreeSet();
+        Class[] noArgs = new Class[0];
+        Class[] oneArg = new Class[1];
+
+        Set<Property> properties;
+        if (config.writeConfig.keepBeanPropertyOrder) {
+            properties = new LinkedHashSet<Property>();
+        } else {
+            properties = new TreeSet<Property>();
+        }
+
         for (Field field : getAllFields(type)) {
             String name = field.getName();
 
@@ -102,7 +110,9 @@ class Beans {
                 boolean constructorProperty = deferredConstruction != null && deferredConstruction.hasParameter(name);
 
                 String upperName = getUpperName(name);
-                Method getMethod = null, setMethod = null;
+                Method getMethod = null;
+                Method setMethod = null;
+
                 try {
                     oneArg[0] = field.getType();
                     setMethod = type.getMethod(SETTER + upperName, oneArg);
@@ -162,6 +172,8 @@ class Beans {
 
             String upperName = getUpperName(name);
             Method getMethod = null;
+            Method setMethod = null;
+
             try {
                 getMethod = type.getMethod(GETTER + upperName);
             } catch (Exception ignored) {
@@ -173,7 +185,6 @@ class Beans {
                 }
             }
             if (getMethod != null) {
-                Method setMethod = null;
                 try {
                     setMethod = type.getMethod(SETTER + upperName, getMethod.getReturnType());
                 } catch (Exception ignored) {
