@@ -29,6 +29,10 @@ import java.util.*;
  */
 class Beans {
 
+    static private final String GETTER = "get";
+    static private final String GETTER_BOOLEAN = "is";
+    static private final String SETTER = "set";
+
     private Beans() {
     }
 
@@ -101,16 +105,16 @@ class Beans {
                 Method getMethod = null, setMethod = null;
                 try {
                     oneArg[0] = field.getType();
-                    setMethod = type.getMethod("set" + nameUpper, oneArg);
+                    setMethod = type.getMethod(SETTER + nameUpper, oneArg);
                 } catch (Exception ignored) {
                 }
                 try {
-                    getMethod = type.getMethod("get" + nameUpper, noArgs);
+                    getMethod = type.getMethod(GETTER + nameUpper, noArgs);
                 } catch (Exception ignored) {
                 }
                 if (getMethod == null && (field.getType().equals(Boolean.class) || field.getType().equals(boolean.class))) {
                     try {
-                        getMethod = type.getMethod("is" + nameUpper, noArgs);
+                        getMethod = type.getMethod(GETTER_BOOLEAN + nameUpper, noArgs);
                     } catch (Exception ignored) {
                     }
                 }
@@ -166,19 +170,19 @@ class Beans {
             String nameUpper = Character.toUpperCase(name.charAt(0)) + name.substring(1);
             Method getMethod = null;
             try {
-                getMethod = type.getMethod("get" + nameUpper);
+                getMethod = type.getMethod(GETTER + nameUpper);
             } catch (Exception ignored) {
             }
             if (getMethod == null) {
                 try {
-                    getMethod = type.getMethod("is" + nameUpper);
+                    getMethod = type.getMethod(GETTER_BOOLEAN + nameUpper);
                 } catch (Exception ignored) {
                 }
             }
             if (getMethod != null) {
                 Method setMethod = null;
                 try {
-                    setMethod = type.getMethod("set" + nameUpper, getMethod.getReturnType());
+                    setMethod = type.getMethod(SETTER + nameUpper, getMethod.getReturnType());
                 } catch (Exception ignored) {
                 }
                 if (getMethod != null && (setMethod != null || constructorProperty))
