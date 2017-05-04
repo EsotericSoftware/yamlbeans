@@ -52,8 +52,6 @@ public class Parser {
 	Event peekedEvent;
 
 	
-	static private final Map<String, String> DEFAULT_TAGS_1_0 = new HashMap();
-	static private final Map<String, String> DEFAULT_TAGS_1_1 = new HashMap();
 	static {
 		DEFAULT_TAGS_1_0.put("!", "tag:yaml.org,2002:");
 
