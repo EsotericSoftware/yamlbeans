@@ -85,6 +85,8 @@ public class Tokenizer {
 		ESCAPE_CODES.put('u', 4);
 		ESCAPE_CODES.put('U', 8);
 	}
+	
+	
 
 	private boolean done = false;
 	private int flowLevel = 0;
@@ -267,59 +269,131 @@ public class Tokenizer {
 			return false;
 		}
 	}
+	
+	private enum chars {
+		 nc('\0'){
+			 public Token fetch(Tokenizer tokenizer, boolean colz, boolean docStart){
+				 return tokenizer.fetchStreamEnd();			
+			 }
+		 },
+		 ap('\''){
+			 public Token fetch(Tokenizer tokenizer, boolean colz, boolean docStart){
+				 return tokenizer.fetchSingle();
+			 }
+		 },
+		 dq('"'){
+			 public Token fetch(Tokenizer tokenizer, boolean colz, boolean docStart){
+				 return tokenizer.fetchDouble();
+			 }
+		 },
+		 qm('?'){
+			 public Token fetch(Tokenizer tokenizer, boolean colz, boolean docStart){
+				 if (tokenizer.getFlowLevel() != 0 || NULL_OR_OTHER.indexOf(tokenizer.peek(1)) != -1) return tokenizer.fetchKey();
+				 return null;
+			 }
+		 },
+		 co(':'){
+			 public Token fetch(Tokenizer tokenizer, boolean colz, boolean docStart){
+				 if (tokenizer.getFlowLevel() != 0 || NULL_OR_OTHER.indexOf(tokenizer.peek(1)) != -1) return tokenizer.fetchValue();
+				 return null;
+			 }
+		 },
+		 pc('%'){
+			 public Token fetch(Tokenizer tokenizer, boolean colz, boolean docStart){
+				 if (colz) return tokenizer.fetchDirective();
+				 return null;
+			 }
+		 },
+		 hy('-'){
+			 public Token fetch(Tokenizer tokenizer, boolean colz, boolean docStart){
+				 if ((colz || docStart) && ENDING.matcher(tokenizer.prefix(4)).matches()) return tokenizer.fetchDocumentStart();
+					else if (NULL_OR_OTHER.indexOf(tokenizer.peek(1)) != -1) return tokenizer.fetchBlockEntry();
+				 return null;
+			 }
+		 },
+		 dot('.'){
+			 public Token fetch(Tokenizer tokenizer, boolean colz, boolean docStart){
+				 if (colz && START.matcher(tokenizer.prefix(4)).matches()) return tokenizer.fetchDocumentEnd();
+				 return null;
+			 }
+		 },
+		 lsb('['){
+			 public Token fetch(Tokenizer tokenizer, boolean colz, boolean docStart){
+				 return tokenizer.fetchFlowSequenceStart();
+			 }
+		 },
+		 lb('{'){
+			 public Token fetch(Tokenizer tokenizer, boolean colz, boolean docStart){
+				 return tokenizer.fetchFlowMappingStart();
+			 }
+		 },
+		 rsb(']'){
+			 public Token fetch(Tokenizer tokenizer, boolean colz, boolean docStart){
+				 return tokenizer.fetchFlowSequenceEnd();
+			 }
+		 },
+		 rl('}'){
+			 public Token fetch(Tokenizer tokenizer, boolean colz, boolean docStart){
+				 return tokenizer.fetchFlowMappingEnd();
+			 }
+		 },
+		 comm(','){
+			 public Token fetch(Tokenizer tokenizer, boolean colz, boolean docStart){
+				 return tokenizer.fetchFlowEntry();
+			 }
+		 },
+		 st('*'){
+			 public Token fetch(Tokenizer tokenizer, boolean colz, boolean docStart){
+				 return tokenizer.fetchAlias();
+			 }
+		 },
+		 and('&'){
+			 public Token fetch(Tokenizer tokenizer, boolean colz, boolean docStart){
+				 return tokenizer.fetchAnchor();
+			 }
+		 },
+		 em('!'){
+			 public Token fetch(Tokenizer tokenizer, boolean colz, boolean docStart){
+				 return tokenizer.fetchTag();
+			 }
+		 },
+		 or('|'){
+			 public Token fetch(Tokenizer tokenizer, boolean colz, boolean docStart){
+				 if (tokenizer.getFlowLevel() == 0) return tokenizer.fetchLiteral();
+				 return null;
+			 }
+		 },
+		 gr('>'){
+			 public Token fetch(Tokenizer tokenizer, boolean colz, boolean docStart){
+				 if (tokenizer.getFlowLevel() == 0) return tokenizer.fetchFolded();
+				 return null;
+			 }
+		 };
+		
+		private char span;
+		 
+		private chars(char value){
+			span = value;
+		}
+		public char getSpan(){
+			return span;
+		}
+		
+		public abstract Token fetch(Tokenizer tokenizer, boolean colz, boolean docStart);
+	}
 
 	private Token fetchMoreTokens () {
 		scanToNextToken();
 		unwindIndent(column);
 		char ch = peek();
 		boolean colz = column == 0;
-		switch (ch) {
-		case '\0':
-			return fetchStreamEnd();
-		case '\'':
-			return fetchSingle();
-		case '"':
-			return fetchDouble();
-		case '?':
-			if (getFlowLevel() != 0 || NULL_OR_OTHER.indexOf(peek(1)) != -1) return fetchKey();
-			break;
-		case ':':
-			if (getFlowLevel() != 0 || NULL_OR_OTHER.indexOf(peek(1)) != -1) return fetchValue();
-			break;
-		case '%':
-			if (colz) return fetchDirective();
-			break;
-		case '-':
-			if ((colz || docStart) && ENDING.matcher(prefix(4)).matches())
-				return fetchDocumentStart();
-			else if (NULL_OR_OTHER.indexOf(peek(1)) != -1) return fetchBlockEntry();
-			break;
-		case '.':
-			if (colz && START.matcher(prefix(4)).matches()) return fetchDocumentEnd();
-			break;
-		case '[':
-			return fetchFlowSequenceStart();
-		case '{':
-			return fetchFlowMappingStart();
-		case ']':
-			return fetchFlowSequenceEnd();
-		case '}':
-			return fetchFlowMappingEnd();
-		case ',':
-			return fetchFlowEntry();
-		case '*':
-			return fetchAlias();
-		case '&':
-			return fetchAnchor();
-		case '!':
-			return fetchTag();
-		case '|':
-			if (getFlowLevel() == 0) return fetchLiteral();
-			break;
-		case '>':
-			if (getFlowLevel() == 0) return fetchFolded();
-			break;
+		
+		for(chars char1: chars.values()){
+			if(char1.getSpan() == ch){
+				return char1.fetch(this, colz, docStart);
+			}
 		}
+		
 		if (BEG.matcher(prefix(2)).find()) return fetchPlain();
 		if (ch == '\t') throw new TokenizerException("Tabs cannot be used for indentation.");
 		throw new TokenizerException("While scanning for the next token, a character that cannot begin a token was found: "
