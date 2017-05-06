@@ -127,6 +127,8 @@ public class GenericTest extends TestCase {
         public Map<String, Struct> structMap;
         public List<Integer> integerList;
         public List<Struct> structList;
+        public Map<String, List<String>> multiMap;
+        public Map<String, ?> wildMap;
 
         @Override
         public boolean equals(Object o) {
@@ -151,6 +153,12 @@ public class GenericTest extends TestCase {
             if (structMap != null ? !structMap.equals(test.structMap) : test.structMap != null) {
                 return false;
             }
+            if (multiMap != null ? !multiMap.equals(test.multiMap) : test.multiMap != null) {
+                return false;
+            }
+            if (wildMap != null ? !wildMap.equals(test.wildMap) : test.wildMap != null) {
+                return false;
+            }
 
             return true;
         }
@@ -161,6 +169,8 @@ public class GenericTest extends TestCase {
             result = 31 * result + (structMap != null ? structMap.hashCode() : 0);
             result = 31 * result + (integerList != null ? integerList.hashCode() : 0);
             result = 31 * result + (structList != null ? structList.hashCode() : 0);
+            result = 31 * result + (multiMap != null ? multiMap.hashCode() : 0);
+            result = 31 * result + (wildMap != null ? wildMap.hashCode() : 0);
             return result;
         }
     }
