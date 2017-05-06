@@ -110,8 +110,8 @@ public class Parser {
 	public void close () throws IOException {
 		tokenizer.close();
 	}
-
-	private void initProductionTable () {
+	
+	public int addTable_pStream() {
 		table[P_STREAM] = new Production() {
 			public Event produce () {
 				parseStack.add(0, table[P_STREAM_END]);
@@ -121,18 +121,40 @@ public class Parser {
 				return null;
 			}
 		};
+		if(table[P_STREAM] == null)
+			return P_ALLOCATION_FAIL;
+		
+		return P_ALLOCATION_SUCESS;
+	}
+	
+	public int addTable_pStreamStart() {
 		table[P_STREAM_START] = new Production() {
 			public Event produce () {
 				tokenizer.getNextToken();
 				return Event.STREAM_START;
 			}
 		};
+		if(table[P_STREAM_START] == null)
+			return P_ALLOCATION_FAIL;
+		
+		return P_ALLOCATION_SUCESS;
+	}
+	
+	public int addTable_pStreamEnd() {
 		table[P_STREAM_END] = new Production() {
 			public Event produce () {
 				tokenizer.getNextToken();
 				return Event.STREAM_END;
 			}
 		};
+		
+		if(table[P_STREAM_END] == null)
+			return P_ALLOCATION_FAIL;
+		
+		return P_ALLOCATION_SUCESS;
+	}
+	
+	public int addTable_pImplicitDoucment() {
 		table[P_IMPLICIT_DOCUMENT] = new Production() {
 			public Event produce () {
 				TokenType type = tokenizer.peekNextTokenType();
@@ -144,6 +166,15 @@ public class Parser {
 				return null;
 			}
 		};
+		
+		if(table[P_IMPLICIT_DOCUMENT] == null)
+			return P_ALLOCATION_FAIL;
+		
+		return P_ALLOCATION_SUCESS;
+	}
+	
+	
+	public int addTable_pExplicitDoucment() {
 		table[P_EXPLICIT_DOCUMENT] = new Production() {
 			public Event produce () {
 				if (tokenizer.peekNextTokenType() != STREAM_END) {
@@ -155,6 +186,14 @@ public class Parser {
 				return null;
 			}
 		};
+		
+		if(table[P_EXPLICIT_DOCUMENT] == null)
+			return P_ALLOCATION_FAIL;
+		
+		return P_ALLOCATION_SUCESS;
+	}
+	
+	public int addTable_pDocumentStart() {
 		table[P_DOCUMENT_START] = new Production() {
 			public Event produce () {
 				Token token = tokenizer.peekNextToken();
@@ -165,11 +204,28 @@ public class Parser {
 				return documentStartEvent;
 			}
 		};
+		
+		if(table[P_DOCUMENT_START] == null)
+			return P_ALLOCATION_FAIL;
+		
+		return P_ALLOCATION_SUCESS;
+	}
+	
+	public int addTable_pDocument_StartImplict() {
 		table[P_DOCUMENT_START_IMPLICIT] = new Production() {
 			public Event produce () {
 				return processDirectives(false);
 			}
 		};
+		
+		if(table[P_DOCUMENT_START_IMPLICIT] == null)
+			return P_ALLOCATION_FAIL;
+		
+		return P_ALLOCATION_SUCESS;
+	}
+	
+	
+	public int addTable_pDoucmentEnd() {
 		table[P_DOCUMENT_END] = new Production() {
 			public Event produce () {
 				boolean explicit = false;
@@ -180,6 +236,14 @@ public class Parser {
 				return explicit ? Event.DOCUMENT_END_TRUE : Event.DOCUMENT_END_FALSE;
 			}
 		};
+		
+		if(table[P_DOCUMENT_END] == null)
+			return P_ALLOCATION_FAIL;
+		
+		return P_ALLOCATION_SUCESS;
+	}
+	
+	public int addTable_pBlockNode() {
 		table[P_BLOCK_NODE] = new Production() {
 			public Event produce () {
 				TokenType type = tokenizer.peekNextTokenType();
@@ -195,6 +259,14 @@ public class Parser {
 				return null;
 			}
 		};
+		
+		if(table[P_BLOCK_NODE] == null)
+			return P_ALLOCATION_FAIL;
+		
+		return P_ALLOCATION_SUCESS;
+	}
+	
+	public int addTable_pBlockContent() {
 		table[P_BLOCK_CONTENT] = new Production() {
 			public Event produce () {
 				TokenType type = tokenizer.peekNextTokenType();
@@ -213,6 +285,14 @@ public class Parser {
 				return null;
 			}
 		};
+		
+		if(table[P_BLOCK_CONTENT] == null)
+			return P_ALLOCATION_FAIL;
+		
+		return P_ALLOCATION_SUCESS;
+	}
+	
+	public int addTable_pProperties() {
 		table[P_PROPERTIES] = new Production() {
 			public Event produce () {
 				String anchor = null, tagHandle = null, tagSuffix = null;
@@ -240,6 +320,14 @@ public class Parser {
 				return null;
 			}
 		};
+		
+		if(table[P_PROPERTIES] == null)
+			return P_ALLOCATION_FAIL;
+		
+		return P_ALLOCATION_SUCESS;
+	}
+	
+	public int addTable_pPropertiesEnd() {
 		table[P_PROPERTIES_END] = new Production() {
 			public Event produce () {
 				anchors.remove(0);
@@ -247,6 +335,14 @@ public class Parser {
 				return null;
 			}
 		};
+		
+		if(table[P_PROPERTIES_END] == null)
+			return P_ALLOCATION_FAIL;
+		
+		return P_ALLOCATION_SUCESS;
+	}
+	
+	public int addTable_pFlowContent() {
 		table[P_FLOW_CONTENT] = new Production() {
 			public Event produce () {
 				TokenType type = tokenizer.peekNextTokenType();
@@ -261,6 +357,14 @@ public class Parser {
 				return null;
 			}
 		};
+		
+		if(table[P_FLOW_CONTENT] == null)
+			return P_ALLOCATION_FAIL;
+		
+		return P_ALLOCATION_SUCESS;
+	}
+	
+	public int addTable_pBlockSequence() {
 		table[P_BLOCK_SEQUENCE] = new Production() {
 			public Event produce () {
 				parseStack.add(0, table[P_BLOCK_SEQUENCE_END]);
@@ -269,6 +373,14 @@ public class Parser {
 				return null;
 			}
 		};
+		
+		if(table[P_BLOCK_SEQUENCE] == null)
+			return P_ALLOCATION_FAIL;
+		
+		return P_ALLOCATION_SUCESS;
+	}
+	
+	public int addTable_pBlockMapping() {
 		table[P_BLOCK_MAPPING] = new Production() {
 			public Event produce () {
 				parseStack.add(0, table[P_BLOCK_MAPPING_END]);
@@ -277,6 +389,13 @@ public class Parser {
 				return null;
 			}
 		};
+		if(table[P_BLOCK_MAPPING] == null)
+			return P_ALLOCATION_FAIL;
+		
+		return P_ALLOCATION_SUCESS;
+	}
+	
+	public int addTable_pFlowSequence() {
 		table[P_FLOW_SEQUENCE] = new Production() {
 			public Event produce () {
 				parseStack.add(0, table[P_FLOW_SEQUENCE_END]);
@@ -285,6 +404,14 @@ public class Parser {
 				return null;
 			}
 		};
+		
+		if(table[P_FLOW_SEQUENCE] == null)
+			return P_ALLOCATION_FAIL;
+		
+		return P_ALLOCATION_SUCESS;
+	}
+	
+	public int addTable_pFlowMapping() {
 		table[P_FLOW_MAPPING] = new Production() {
 			public Event produce () {
 				parseStack.add(0, table[P_FLOW_MAPPING_END]);
@@ -293,6 +420,14 @@ public class Parser {
 				return null;
 			}
 		};
+		
+		if(table[P_FLOW_MAPPING] == null)
+			return P_ALLOCATION_FAIL;
+		
+		return P_ALLOCATION_SUCESS;
+	}
+	
+	public int addTable_pScalar() {
 		table[P_SCALAR] = new Production() {
 			public Event produce () {
 				ScalarToken token = (ScalarToken)tokenizer.getNextToken();
@@ -306,6 +441,15 @@ public class Parser {
 				return new ScalarEvent(anchors.get(0), tags.get(0), implicit, token.getValue(), token.getStyle());
 			}
 		};
+		
+		if(table[P_SCALAR] == null)
+			return P_ALLOCATION_FAIL;
+		
+		return P_ALLOCATION_SUCESS;
+	}
+	
+	
+	public int addTable_pBlockSequecne_Entry() {
 		table[P_BLOCK_SEQUENCE_ENTRY] = new Production() {
 			public Event produce () {
 				if (tokenizer.peekNextTokenType() == BLOCK_ENTRY) {
@@ -322,6 +466,14 @@ public class Parser {
 				return null;
 			}
 		};
+		
+		if(table[P_BLOCK_SEQUENCE_ENTRY] == null)
+			return P_ALLOCATION_FAIL;
+		
+		return P_ALLOCATION_SUCESS;
+	}
+	
+	public int addTable_pBlockMapping_Entry() {
 		table[P_BLOCK_MAPPING_ENTRY] = new Production() {
 			public Event produce () {
 				TokenType type = tokenizer.peekNextTokenType();
@@ -346,6 +498,15 @@ public class Parser {
 				return null;
 			}
 		};
+		
+		if(table[P_BLOCK_MAPPING_ENTRY] == null)
+			return P_ALLOCATION_FAIL;
+		
+		return P_ALLOCATION_SUCESS;
+	}
+	
+	
+	public int addTable_pBlockMapping_EntryValue() {
 		table[P_BLOCK_MAPPING_ENTRY_VALUE] = new Production() {
 			public Event produce () {
 				TokenType type = tokenizer.peekNextTokenType();
@@ -362,6 +523,14 @@ public class Parser {
 				return null;
 			}
 		};
+		
+		if(table[P_BLOCK_MAPPING_ENTRY_VALUE] == null)
+			return P_ALLOCATION_FAIL;
+		
+		return P_ALLOCATION_SUCESS;
+	}
+	
+	public int addTable_pBlockNode_Or_IndentlessSequence() {
 		table[P_BLOCK_NODE_OR_INDENTLESS_SEQUENCE] = new Production() {
 			public Event produce () {
 				TokenType type = tokenizer.peekNextTokenType();
@@ -375,6 +544,14 @@ public class Parser {
 				return null;
 			}
 		};
+		
+		if(table[P_BLOCK_NODE_OR_INDENTLESS_SEQUENCE] == null)
+			return P_ALLOCATION_FAIL;
+		
+		return P_ALLOCATION_SUCESS;
+	}
+	
+	public int addTable_pBlockSequecne_Start() {
 		table[P_BLOCK_SEQUENCE_START] = new Production() {
 			public Event produce () {
 				boolean implicit = tags.get(0) == null || tags.get(0).equals("!");
@@ -382,6 +559,14 @@ public class Parser {
 				return new SequenceStartEvent(anchors.get(0), tags.get(0), implicit, false);
 			}
 		};
+		
+		if(table[P_BLOCK_SEQUENCE_START] == null)
+			return P_ALLOCATION_FAIL;
+		
+		return P_ALLOCATION_SUCESS;
+	}
+	
+	public int addTable_pBlockSequecne_End() {
 		table[P_BLOCK_SEQUENCE_END] = new Production() {
 			public Event produce () {
 				if (tokenizer.peekNextTokenType() != BLOCK_END)
@@ -390,6 +575,14 @@ public class Parser {
 				return Event.SEQUENCE_END;
 			}
 		};
+		
+		if(table[P_BLOCK_SEQUENCE_END] == null)
+			return P_ALLOCATION_FAIL;
+		
+		return P_ALLOCATION_SUCESS;
+	}
+	
+	public int addTable_pBlockMapping_Start() {
 		table[P_BLOCK_MAPPING_START] = new Production() {
 			public Event produce () {
 				boolean implicit = tags.get(0) == null || tags.get(0).equals("!");
@@ -397,6 +590,16 @@ public class Parser {
 				return new MappingStartEvent(anchors.get(0), tags.get(0), implicit, false);
 			}
 		};
+		
+		if(table[P_BLOCK_MAPPING_START] == null)
+			return P_ALLOCATION_FAIL;
+		
+		return P_ALLOCATION_SUCESS;
+	}
+	
+
+	
+	public int addTable_pBlockMapping_End() {
 		table[P_BLOCK_MAPPING_END] = new Production() {
 			public Event produce () {
 				if (tokenizer.peekNextTokenType() != BLOCK_END)
@@ -405,6 +608,15 @@ public class Parser {
 				return Event.MAPPING_END;
 			}
 		};
+		
+		if(table[P_BLOCK_MAPPING_END] == null)
+			return P_ALLOCATION_FAIL;
+		
+		return P_ALLOCATION_SUCESS;
+	}
+	
+	
+	public int addTable_pIndentless_BlockSequence() {
 		table[P_INDENTLESS_BLOCK_SEQUENCE] = new Production() {
 			public Event produce () {
 				parseStack.add(0, table[P_BLOCK_INDENTLESS_SEQUENCE_END]);
@@ -413,12 +625,29 @@ public class Parser {
 				return null;
 			}
 		};
+		
+		if(table[P_INDENTLESS_BLOCK_SEQUENCE] == null)
+			return P_ALLOCATION_FAIL;
+		
+		return P_ALLOCATION_SUCESS;
+	}
+	
+	public int addTable_pIndentless_BlockSequence_Start() {
 		table[P_BLOCK_INDENTLESS_SEQUENCE_START] = new Production() {
 			public Event produce () {
 				boolean implicit = tags.get(0) == null || tags.get(0).equals("!");
 				return new SequenceStartEvent(anchors.get(0), tags.get(0), implicit, false);
 			}
 		};
+		
+		if(table[P_BLOCK_INDENTLESS_SEQUENCE_START] == null)
+			return P_ALLOCATION_FAIL;
+		
+		return P_ALLOCATION_SUCESS;
+	}
+	
+	
+	public int addTable_pIndentless_BlockSequence_Entry() {
 		table[P_INDENTLESS_BLOCK_SEQUENCE_ENTRY] = new Production() {
 			public Event produce () {
 				if (tokenizer.peekNextTokenType() == BLOCK_ENTRY) {
@@ -435,11 +664,29 @@ public class Parser {
 				return null;
 			}
 		};
+		
+		if(table[P_INDENTLESS_BLOCK_SEQUENCE_ENTRY] == null)
+			return P_ALLOCATION_FAIL;
+		
+		return P_ALLOCATION_SUCESS;
+	}
+	
+	
+	public int addTable_pIndentless_BlockSequence_End() {
 		table[P_BLOCK_INDENTLESS_SEQUENCE_END] = new Production() {
 			public Event produce () {
 				return Event.SEQUENCE_END;
 			}
 		};
+		
+		if(table[P_BLOCK_INDENTLESS_SEQUENCE_END] == null)
+			return P_ALLOCATION_FAIL;
+		
+		return P_ALLOCATION_SUCESS;
+	}
+	
+	
+	public int addTable_pFlowSequence_Start() {
 		table[P_FLOW_SEQUENCE_START] = new Production() {
 			public Event produce () {
 				boolean implicit = tags.get(0) == null || tags.get(0).equals("!");
@@ -447,6 +694,15 @@ public class Parser {
 				return new SequenceStartEvent(anchors.get(0), tags.get(0), implicit, true);
 			}
 		};
+		
+		if(table[P_FLOW_SEQUENCE_START] == null)
+			return P_ALLOCATION_FAIL;
+		
+		return P_ALLOCATION_SUCESS;
+	}
+	
+	
+	public int addTable_pFlowSequence_Entry() {
 		table[P_FLOW_SEQUENCE_ENTRY] = new Production() {
 			public Event produce () {
 				if (tokenizer.peekNextTokenType() != FLOW_SEQUENCE_END) {
@@ -466,12 +722,29 @@ public class Parser {
 				return null;
 			}
 		};
+		
+		if(table[P_FLOW_SEQUENCE_ENTRY] == null)
+			return P_ALLOCATION_FAIL;
+		
+		return P_ALLOCATION_SUCESS;
+	}
+	
+	
+	public int addTable_pFlowSequence_End() {
 		table[P_FLOW_SEQUENCE_END] = new Production() {
 			public Event produce () {
 				tokenizer.getNextToken();
 				return Event.SEQUENCE_END;
 			}
 		};
+		
+		if(table[P_FLOW_SEQUENCE_END] == null)
+			return P_ALLOCATION_FAIL;
+		
+		return P_ALLOCATION_SUCESS;
+	}
+	
+	public int addTable_pFlowMapping_Start() {
 		table[P_FLOW_MAPPING_START] = new Production() {
 			public Event produce () {
 				boolean implicit = tags.get(0) == null || tags.get(0).equals("!");
@@ -479,6 +752,14 @@ public class Parser {
 				return new MappingStartEvent(anchors.get(0), tags.get(0), implicit, true);
 			}
 		};
+		
+		if(table[P_FLOW_MAPPING_START] == null)
+			return P_ALLOCATION_FAIL;
+		
+		return P_ALLOCATION_SUCESS;
+	}
+	
+	public int addTable_pFlowMapping_Entry() {
 		table[P_FLOW_MAPPING_ENTRY] = new Production() {
 			public Event produce () {
 				if (tokenizer.peekNextTokenType() != FLOW_MAPPING_END) {
@@ -496,18 +777,42 @@ public class Parser {
 				return null;
 			}
 		};
+		
+		if(table[P_FLOW_MAPPING_ENTRY] == null)
+			return P_ALLOCATION_FAIL;
+		
+		return P_ALLOCATION_SUCESS;
+	}
+	
+	public int addTable_pFlowMapping_End() {
 		table[P_FLOW_MAPPING_END] = new Production() {
 			public Event produce () {
 				tokenizer.getNextToken();
 				return Event.MAPPING_END;
 			}
 		};
+		
+		if(table[P_FLOW_MAPPING_END] == null)
+			return P_ALLOCATION_FAIL;
+		
+		return P_ALLOCATION_SUCESS;
+	}
+	
+	public int addTable_pFlowInternal_MappingStart() {
 		table[P_FLOW_INTERNAL_MAPPING_START] = new Production() {
 			public Event produce () {
 				tokenizer.getNextToken();
 				return new MappingStartEvent(null, null, true, true);
 			}
 		};
+		
+		if(table[P_FLOW_INTERNAL_MAPPING_START] == null)
+			return P_ALLOCATION_FAIL;
+		
+		return P_ALLOCATION_SUCESS;
+	}
+	
+	public int addTable_pFlowInternal_Content() {
 		table[P_FLOW_INTERNAL_CONTENT] = new Production() {
 			public Event produce () {
 				TokenType type = tokenizer.peekNextTokenType();
@@ -518,6 +823,14 @@ public class Parser {
 				return null;
 			}
 		};
+		
+		if(table[P_FLOW_INTERNAL_CONTENT] == null)
+			return P_ALLOCATION_FAIL;
+		
+		return P_ALLOCATION_SUCESS;
+	}
+	
+	public int addTable_pFlowInternal_Value() {
 		table[P_FLOW_INTERNAL_VALUE] = new Production() {
 			public Event produce () {
 				if (tokenizer.peekNextTokenType() == VALUE) {
@@ -531,17 +844,42 @@ public class Parser {
 				return null;
 			}
 		};
+		
+		if(table[P_FLOW_INTERNAL_VALUE] == null)
+			return P_ALLOCATION_FAIL;
+		
+		return P_ALLOCATION_SUCESS;
+	}
+	
+	public int addTable_pFlowInternal_MappingEnd() {
 		table[P_FLOW_INTERNAL_MAPPING_END] = new Production() {
 			public Event produce () {
 				return Event.MAPPING_END;
 			}
 		};
+		
+		if(table[P_FLOW_INTERNAL_MAPPING_END] == null)
+			return P_ALLOCATION_FAIL;
+		
+		return P_ALLOCATION_SUCESS;
+	}
+	
+	
+	public int addTable_pFlowEntry_Maker() {
 		table[P_FLOW_ENTRY_MARKER] = new Production() {
 			public Event produce () {
 				if (tokenizer.peekNextTokenType() == FLOW_ENTRY) tokenizer.getNextToken();
 				return null;
 			}
 		};
+		
+		if(table[P_FLOW_ENTRY_MARKER] == null)
+			return P_ALLOCATION_FAIL;
+		
+		return P_ALLOCATION_SUCESS;
+	}
+	
+	public int addTable_pFlowNode() {
 		table[P_FLOW_NODE] = new Production() {
 			public Event produce () {
 				if (tokenizer.peekNextTokenType() == ALIAS)
@@ -554,6 +892,15 @@ public class Parser {
 				return null;
 			}
 		};
+		
+		if(table[P_FLOW_NODE] == null)
+			return P_ALLOCATION_FAIL;
+		
+		return P_ALLOCATION_SUCESS;
+	}
+
+	
+	public int addTable_pFlowMapping_InternalContent() {
 		table[P_FLOW_MAPPING_INTERNAL_CONTENT] = new Production() {
 			public Event produce () {
 				TokenType type = tokenizer.peekNextTokenType();
@@ -566,6 +913,15 @@ public class Parser {
 				return null;
 			}
 		};
+		
+		if(table[P_FLOW_MAPPING_INTERNAL_CONTENT] == null)
+			return P_ALLOCATION_FAIL;
+		
+		return P_ALLOCATION_SUCESS;
+	}
+	
+	
+	public int addTable_pFlowMapping_InternalValue() {
 		table[P_FLOW_MAPPING_INTERNAL_VALUE] = new Production() {
 			public Event produce () {
 				if (tokenizer.peekNextTokenType() == VALUE) {
@@ -579,17 +935,99 @@ public class Parser {
 				return null;
 			}
 		};
+		
+		if(table[P_FLOW_MAPPING_INTERNAL_VALUE] == null)
+			return P_ALLOCATION_FAIL;
+		
+		return P_ALLOCATION_SUCESS;
+	}
+	
+	public int addTable_pAlias() {
 		table[P_ALIAS] = new Production() {
 			public Event produce () {
 				AliasToken token = (AliasToken)tokenizer.getNextToken();
 				return new AliasEvent(token.getInstanceName());
 			}
 		};
+		
+		if(table[P_ALIAS] == null)
+			return P_ALLOCATION_FAIL;
+		
+		return P_ALLOCATION_SUCESS;
+	}
+	
+	public int addTable_pEmptyScalar() {
 		table[P_EMPTY_SCALAR] = new Production() {
 			public Event produce () {
 				return new ScalarEvent(null, null, new boolean[] {true, false}, null, (char)0);
 			}
 		};
+		if(table[P_EMPTY_SCALAR] == null)
+			return P_ALLOCATION_FAIL;
+		
+		return P_ALLOCATION_SUCESS;
+	}
+	
+
+
+	private void initProductionTable () {
+		addTable_pStream();
+		addTable_pStreamStart();
+		addTable_pStreamEnd();
+		
+		addTable_pImplicitDoucment();
+		addTable_pExplicitDoucment();
+		addTable_pDocumentStart();
+		addTable_pDocument_StartImplict(); 
+		addTable_pDoucmentEnd();
+		
+		addTable_pBlockNode();
+		addTable_pBlockContent();
+		
+		addTable_pProperties();
+		addTable_pPropertiesEnd();
+		
+		addTable_pFlowContent();
+		
+		addTable_pBlockSequence(); 
+		addTable_pBlockMapping(); 
+		
+		addTable_pFlowSequence();
+		addTable_pFlowMapping(); 
+		
+		addTable_pScalar();
+		addTable_pBlockSequecne_Entry();
+		addTable_pBlockMapping_Entry();
+		
+		addTable_pBlockMapping_EntryValue();
+		addTable_pBlockNode_Or_IndentlessSequence();
+		addTable_pBlockSequecne_Start();
+		addTable_pBlockSequecne_End();
+		addTable_pBlockMapping_Start();
+		addTable_pBlockMapping_End();
+		
+		addTable_pIndentless_BlockSequence(); 
+		addTable_pIndentless_BlockSequence_Start();
+		addTable_pIndentless_BlockSequence_Entry();
+		addTable_pIndentless_BlockSequence_End();
+		
+		addTable_pFlowSequence_Start();
+		addTable_pFlowSequence_Entry();
+		addTable_pFlowSequence_End();
+		addTable_pFlowMapping_Start();
+		addTable_pFlowMapping_Entry();
+		addTable_pFlowMapping_End();
+		addTable_pFlowInternal_MappingStart();
+		addTable_pFlowInternal_Content();
+		addTable_pFlowInternal_Value();
+		addTable_pFlowInternal_MappingEnd();
+		addTable_pFlowEntry_Maker();
+		addTable_pFlowNode();
+		addTable_pFlowMapping_InternalContent();
+		addTable_pFlowMapping_InternalValue();
+		
+		addTable_pAlias(); 
+		addTable_pEmptyScalar();
 	}
 
 	DocumentStartEvent processDirectives (boolean explicit) {
@@ -624,7 +1062,7 @@ public class Parser {
 		return new DocumentStartEvent(explicit, version, tags);
 	}
 
-	static interface Production {
+	interface Production {
 		public Event produce ();
 	}
 
