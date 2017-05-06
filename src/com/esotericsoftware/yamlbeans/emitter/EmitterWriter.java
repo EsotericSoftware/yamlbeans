@@ -74,7 +74,8 @@ class EmitterWriter {
 	public void writeIndent (int indent) throws IOException {
 		if (indent == -1) indent = 0;
 
-		if (!indentation || column > indent || column == indent && !whitespace) writeLineBreak(null);
+		if (!indentation || column > indent || column == indent && !whitespace)
+			writeLineBreak(null);
 
 		if (column < indent) {
 			whitespace = true;
@@ -104,7 +105,8 @@ class EmitterWriter {
 		String data = null;
 		while (ending <= text.length()) {
 			int ch = 0;
-			if (ending < text.length()) ch = text.codePointAt(ending);
+			if (ending < text.length())
+				ch = text.codePointAt(ending);
 			if (ch == 0 || "\"\\\u0085".indexOf(ch) != -1 || !('\u0020' <= ch && ch <= '\u007E')) {
 				if (start < ending) {
 					data = text.substring(start, ending);
@@ -140,7 +142,8 @@ class EmitterWriter {
 					data = text.substring(start, ending) + '\\';
 				else
 					data = "\\";
-				if (start < ending) start = ending;
+				if (start < ending)
+					start = ending;
 				column += data.length();
 				writer.write(data);
 				writeIndent(indent);
@@ -167,7 +170,8 @@ class EmitterWriter {
 		String data = null;
 		while (ending <= text.length()) {
 			ceh = 0;
-			if (ending < text.length()) ceh = text.charAt(ending);
+			if (ending < text.length())
+				ceh = text.charAt(ending);
 			if (spaces) {
 				if (ceh == 0 || ceh != 32) {
 					if (start + 1 == ending && column > wrapColumn && split && start != 0 && ending != text.length())
@@ -180,7 +184,7 @@ class EmitterWriter {
 					start = ending;
 				}
 			} else if (breaks) {
-				if (ceh == 0 || !('\n' == ceh || '\u0085' == ceh)) {
+				if (ceh == 0 || !(ceh == '\n' || ceh == '\u0085')) {
 					data = text.substring(start, ending);
 					for (int i = 0, j = data.length(); i < j; i++) {
 						char cha = data.charAt(i);
@@ -192,7 +196,7 @@ class EmitterWriter {
 					writeIndent(indent);
 					start = ending;
 				}
-			} else if (ceh == 0 || !('\n' == ceh || '\u0085' == ceh)) {
+			} else if (ceh == 0 || !(ceh == '\n' || ceh == '\u0085')) {
 				if (start < ending) {
 					data = text.substring(start, ending);
 					column += data.length();
@@ -226,20 +230,23 @@ class EmitterWriter {
 		String data = null;
 		while (ending <= text.length()) {
 			char ceh = 0;
-			if (ending < text.length()) ceh = text.charAt(ending);
+			if (ending < text.length())
+				ceh = text.charAt(ending);
 			if (breaks) {
-				if (ceh == 0 || !('\n' == ceh || '\u0085' == ceh)) {
-					if (!leadingSpace && ceh != 0 && ceh != ' ' && text.charAt(start) == '\n') writeLineBreak(null);
+				if (ceh == 0 || !(ceh == '\n' || ceh == '\u0085')) {
+					if (!leadingSpace && ceh != 0 && ceh != ' ' && text.charAt(start) == '\n')
+						writeLineBreak(null);
 					leadingSpace = ceh == ' ';
 					data = text.substring(start, ending);
 					for (int i = 0, j = data.length(); i < j; i++) {
 						char cha = data.charAt(i);
-						if ('\n' == cha)
+						if (cha == '\n')
 							writeLineBreak(null);
 						else
 							writeLineBreak("" + cha);
 					}
-					if (ceh != 0) writeIndent(indent);
+					if (ceh != 0)
+						writeIndent(indent);
 					start = ending;
 				}
 			} else if (spaces) {
@@ -253,14 +260,15 @@ class EmitterWriter {
 					}
 					start = ending;
 				}
-			} else if (ceh == 0 || ' ' == ceh || '\n' == ceh || '\u0085' == ceh) {
+			} else if (ceh == 0 || ceh == ' ' || ceh == '\n' || ceh == '\u0085') {
 				data = text.substring(start, ending);
 				writer.write(data);
-				if (ceh == 0) writeLineBreak(null);
+				if (ceh == 0)
+					writeLineBreak(null);
 				start = ending;
 			}
 			if (ceh != 0) {
-				breaks = '\n' == ceh || '\u0085' == ceh;
+				breaks = ceh == '\n' || ceh == '\u0085';
 				spaces = ceh == ' ';
 			}
 			ending++;
@@ -276,9 +284,10 @@ class EmitterWriter {
 		String data = null;
 		while (ending <= text.length()) {
 			char ceh = 0;
-			if (ending < text.length()) ceh = text.charAt(ending);
+			if (ending < text.length())
+				ceh = text.charAt(ending);
 			if (breaks) {
-				if (ceh == 0 || !('\n' == ceh || '\u0085' == ceh)) {
+				if (ceh == 0 || !(ceh == '\n' || ceh == '\u0085')) {
 					data = text.substring(start, ending);
 					for (int i = 0, j = data.length(); i < j; i++) {
 						char cha = data.charAt(i);
@@ -287,16 +296,19 @@ class EmitterWriter {
 						else
 							writeLineBreak("" + cha);
 					}
-					if (ceh != 0) writeIndent(indent);
+					if (ceh != 0)
+						writeIndent(indent);
 					start = ending;
 				}
-			} else if (ceh == 0 || '\n' == ceh || '\u0085' == ceh) {
+			} else if (ceh == 0 || ceh == '\n' || ceh == '\u0085') {
 				data = text.substring(start, ending);
 				writer.write(data);
-				if (ceh == 0) writeLineBreak(null);
+				if (ceh == 0)
+					writeLineBreak(null);
 				start = ending;
 			}
-			if (ceh != 0) breaks = '\n' == ceh || '\u0085' == ceh;
+			if (ceh != 0) 
+				breaks = ceh == '\n' || ceh == '\u0085';
 			ending++;
 		}
 	}
@@ -315,7 +327,8 @@ class EmitterWriter {
 		int start = 0, ending = 0;
 		while (ending <= text.length()) {
 			char ceh = 0;
-			if (ending < text.length()) ceh = text.charAt(ending);
+			if (ending < text.length())
+				ceh = text.charAt(ending);
 			if (spaces) {
 				if (ceh != ' ') {
 					if (start + 1 == ending && column > wrapColumn && split) {
@@ -331,7 +344,8 @@ class EmitterWriter {
 				}
 			} else if (breaks) {
 				if (ceh != '\n' && ceh != '\u0085') {
-					if (text.charAt(start) == '\n') writeLineBreak(null);
+					if (text.charAt(start) == '\n')
+						writeLineBreak(null);
 					data = text.substring(start, ending);
 					for (int i = 0, j = data.length(); i < j; i++) {
 						char cha = data.charAt(i);
@@ -345,7 +359,7 @@ class EmitterWriter {
 					indentation = false;
 					start = ending;
 				}
-			} else if (ceh == 0 || ' ' == ceh || '\n' == ceh || '\u0085' == ceh) {
+			} else if (ceh == 0 || ceh == ' ' || ceh == '\n' || ceh == '\u0085') {
 				data = text.substring(start, ending);
 				column += data.length();
 				writer.write(data);
@@ -360,7 +374,8 @@ class EmitterWriter {
 	}
 
 	public void writeLineBreak (String data) throws IOException {
-		if (data == null) data = "\n";
+		if (data == null)
+			data = "\n";
 		whitespace = true;
 		indentation = true;
 		column = 0;
