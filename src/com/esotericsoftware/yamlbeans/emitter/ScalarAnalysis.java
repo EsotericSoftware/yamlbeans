@@ -26,14 +26,14 @@ class ScalarAnalysis {
 	static private final String SPECIAL_INDICATOR = "#,[]{}#&*!|>'\"%@`";
 	static private final String FLOW_INDICATOR = ",?[]{}";
 
-	public final String scalar;
-	public final boolean empty;
-	public final boolean multiline;
-	public final boolean allowFlowPlain;
-	public final boolean allowBlockPlain;
-	public final boolean allowSingleQuoted;
-	public final boolean allowDoubleQuoted;
-	public final boolean allowBlock;
+	private final String scalar;
+	private final boolean empty;
+	private final boolean multiline;
+	private final boolean allowFlowPlain;
+	private final boolean allowBlockPlain;
+	private final boolean allowSingleQuoted;
+	private final boolean allowDoubleQuoted;
+	private final boolean allowBlock;
 
 	private ScalarAnalysis (String scalar, boolean empty, boolean multiline, boolean allowFlowPlain, boolean allowBlockPlain,
 		boolean allowSingleQuoted, boolean allowDoubleQuoted, boolean allowBlock) {
@@ -190,5 +190,37 @@ class ScalarAnalysis {
 
 		return new ScalarAnalysis(scalar, false, lineBreaks, allowFlowPlain, allowBlockPlain, allowSingleQuoted, allowDoubleQuoted,
 			allowBlock);
+	}
+
+	public String getScalar() {
+		return scalar;
+	}
+
+	public boolean isEmpty() {
+		return empty;
+	}
+
+	public boolean isMultiline() {
+		return multiline;
+	}
+
+	public boolean isAllowFlowPlain() {
+		return allowFlowPlain;
+	}
+
+	public boolean isAllowBlockPlain() {
+		return allowBlockPlain;
+	}
+
+	public boolean isAllowSingleQuoted() {
+		return allowSingleQuoted;
+	}
+
+	public boolean isAllowDoubleQuoted() {
+		return allowDoubleQuoted;
+	}
+
+	public boolean isAllowBlock() {
+		return allowBlock;
 	}
 }
