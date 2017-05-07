@@ -49,23 +49,23 @@ public class Emitter {
 	static private final Pattern HANDLE_FORMAT = Pattern.compile("^![-\\w]*!$");
 	static private final Pattern ANCHOR_FORMAT = Pattern.compile("^[-\\w]*$");
 
-	final EmitterConfig config;
-	final EmitterWriter writer;
-	final EmitterState[] table = new EmitterState[18];
-	int state = S_STREAM_START;
-	final List<Integer> states = new ArrayList();
-	final List<Event> events = new ArrayList();
-	final List<Integer> indents = new ArrayList();
-	boolean isVersion10 = false;
-	Event event;
-	int flowLevel = 0;
-	int indent = -1;
-	boolean mappingContext = false;
-	boolean simpleKeyContext = false;
-	Map<String, String> tagPrefixes;
-	String preparedTag, preparedAnchor;
-	ScalarAnalysis analysis;
-	char style = 0;
+	private final EmitterConfig config;
+	private final EmitterWriter writer;
+	private final EmitterState[] table = new EmitterState[18];
+	private int state = S_STREAM_START;
+	private final List<Integer> states = new ArrayList();
+	private final List<Event> events = new ArrayList();
+	private final List<Integer> indents = new ArrayList();
+	private boolean isVersion10 = false;
+	private Event event;
+	private int flowLevel = 0;
+	private int indent = -1;
+	private boolean mappingContext = false;
+	private boolean simpleKeyContext = false;
+	private Map<String, String> tagPrefixes;
+	private String preparedTag, preparedAnchor;
+	private ScalarAnalysis analysis;
+	private char style = 0;
 
 	public Emitter (Writer writer) {
 		this(writer, new EmitterConfig());
@@ -203,7 +203,7 @@ public class Emitter {
 					writer.writeIndicator("]", false, false, false);
 					state = states.remove(0);
 				} else {
-					if (config.canonical || writer.column > config.wrapColumn) writer.writeIndent(indent);
+					if (config.canonical || writer.getColumn() > config.wrapColumn) writer.writeIndent(indent);
 					states.add(0, S_FLOW_SEQUENCE_ITEM);
 					expectNode(false, true, false, false);
 				}
@@ -222,7 +222,7 @@ public class Emitter {
 					state = states.remove(0);
 				} else {
 					writer.writeIndicator(",", false, false, false);
-					if (config.canonical || writer.column > config.wrapColumn) writer.writeIndent(indent);
+					if (config.canonical || writer.getColumn() > config.wrapColumn) writer.writeIndent(indent);
 					states.add(0, S_FLOW_SEQUENCE_ITEM);
 					expectNode(false, true, false, false);
 				}
@@ -236,7 +236,7 @@ public class Emitter {
 					writer.writeIndicator("}", false, false, false);
 					state = states.remove(0);
 				} else {
-					if (config.canonical || writer.column > config.wrapColumn) writer.writeIndent(indent);
+					if (config.canonical || writer.getColumn() > config.wrapColumn) writer.writeIndent(indent);
 					if (!config.canonical && checkSimpleKey()) {
 						states.add(0, S_FLOW_MAPPING_SIMPLE_VALUE);
 						expectNode(false, false, true, true);
@@ -257,7 +257,7 @@ public class Emitter {
 		};
 		table[S_FLOW_MAPPING_VALUE] = new EmitterState() {
 			public void expect () throws IOException {
-				if (config.canonical || writer.column > config.wrapColumn) writer.writeIndent(indent);
+				if (config.canonical || writer.getColumn() > config.wrapColumn) writer.writeIndent(indent);
 				writer.writeIndicator(": ", false, true, false);
 				states.add(0, S_FLOW_MAPPING_KEY);
 				expectNode(false, false, true, false);
@@ -276,7 +276,7 @@ public class Emitter {
 					state = states.remove(0);
 				} else {
 					writer.writeIndicator(",", false, false, false);
-					if (config.canonical || writer.column > config.wrapColumn) writer.writeIndent(indent);
+					if (config.canonical || writer.getColumn() > config.wrapColumn) writer.writeIndent(indent);
 					if (!config.canonical && checkSimpleKey()) {
 						states.add(0, S_FLOW_MAPPING_SIMPLE_VALUE);
 						expectNode(false, false, true, true);
@@ -335,7 +335,7 @@ public class Emitter {
 		} else if (!indentless) indent += config.indentSize;
 	}
 
-	void expectDocumentStart (boolean first) throws IOException {
+	private void expectDocumentStart (boolean first) throws IOException {
 		if (event.type == DOCUMENT_START) {
 			DocumentStartEvent ev = (DocumentStartEvent)event;
 			boolean implicit = first && !ev.isExplicit && !config.canonical && ev.version == null && ev.tags == null
@@ -353,7 +353,7 @@ public class Emitter {
 			throw new EmitterException("Expected 'document start' but found: " + event);
 	}
 
-	void expectBlockSequenceItem (boolean first) throws IOException {
+	private void expectBlockSequenceItem (boolean first) throws IOException {
 		if (!first && event.type == SEQUENCE_END) {
 			indent = indents.remove(0);
 			state = states.remove(0);
@@ -365,7 +365,7 @@ public class Emitter {
 		}
 	}
 
-	void expectBlockMappingKey (boolean first) throws IOException {
+	private void expectBlockMappingKey (boolean first) throws IOException {
 		if (!first && event.type == MAPPING_END) {
 			indent = indents.remove(0);
 			state = states.remove(0);
@@ -382,7 +382,7 @@ public class Emitter {
 		}
 	}
 
-	void expectNode (boolean root, boolean sequence, boolean mapping, boolean simpleKey) throws IOException {
+	private void expectNode (boolean root, boolean sequence, boolean mapping, boolean simpleKey) throws IOException {
 		mappingContext = mapping;
 		simpleKeyContext = simpleKey;
 		if (event.type == ALIAS)
@@ -427,7 +427,7 @@ public class Emitter {
 	}
 
 	private void expectBlockSequence () {
-		increaseIndent(false, mappingContext && !writer.indentation);
+		increaseIndent(false, mappingContext && !writer.getIndentation());
 		state = S_FIRST_BLOCK_SEQUENCE_ITEM;
 	}
 
@@ -581,7 +581,7 @@ public class Emitter {
 			return "!" + suffixText;
 	}
 
-	String prepareTagHandle (String handle) {
+	private String prepareTagHandle (String handle) {
 		if (handle == null || "".equals(handle))
 			throw new EmitterException("Tag handle cannot be empty.");
 		else if (handle.charAt(0) != '!' || handle.charAt(handle.length() - 1) != '!')
@@ -591,7 +591,7 @@ public class Emitter {
 		return handle;
 	}
 
-	String prepareTagPrefix (String prefix) {
+	private String prepareTagPrefix (String prefix) {
 		if (prefix == null || "".equals(prefix)) throw new EmitterException("Tag prefix cannot be empty.");
 		StringBuilder chunks = new StringBuilder();
 		int start = 0, ending = 0;

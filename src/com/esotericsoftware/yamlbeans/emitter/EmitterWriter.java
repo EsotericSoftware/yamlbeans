@@ -44,8 +44,8 @@ class EmitterWriter {
 	private final Writer writer;
 	private boolean whitespace = true;
 
-	int column = 0;
-	boolean indentation = true;
+	private int column = 0;
+	private boolean indentation = true;
 
 	public EmitterWriter (Writer stream) {
 		this.writer = stream;
@@ -63,22 +63,22 @@ class EmitterWriter {
 		else
 			data = " " + indicator;
 		this.whitespace = whitespace;
-		this.indentation = this.indentation && indentation;
-		column += data.length();
+		this.setIndentation(this.getIndentation() && indentation);
+		setColumn(getColumn() + data.length());
 		writer.write(data);
 	}
 
 	public void writeIndent (int indent) throws IOException {
 		if (indent == -1)
 			indent = 0;
-		if (!indentation || column > indent || column == indent && !whitespace)
+		if (!getIndentation() || getColumn() > indent || getColumn() == indent && !whitespace)
 			writeLineBreak(null);
-		if (column < indent) {
+		if (getColumn() < indent) {
 			whitespace = true;
 			StringBuffer data = new StringBuffer();
-			for (int i = 0, j = indent - column; i < j; i++)
+			for (int i = 0, j = indent - getColumn(); i < j; i++)
 				data.append(" ");
-			column = indent;
+			setColumn(indent);
 			writer.write(data.toString());
 		}
 	}
@@ -106,7 +106,7 @@ class EmitterWriter {
 			if (ch == 0 || "\"\\\u0085".indexOf(ch) != -1 || !isSpaceToTilde(ch)) {
 				if (start < ending) {
 					data = text.substring(start, ending);
-					column += data.length();
+					setColumn(getColumn() + data.length());
 					writer.write(data);
 					start = ending;
 				}
@@ -116,27 +116,27 @@ class EmitterWriter {
 					else {
 						data = unicodeCaseByLength(escapeUnicode, ch);
 					}
-					column += data.length();
+					setColumn(getColumn() + data.length());
 					writer.write(data);
 					start = ending + 1;
 				}
 			}
 			if ((0 < ending && ending < (text.length() - 1)) && (ch == ' ' || start <= ending)
-				&& (column + (ending - start)) > wrapColumn && split) {
-				if (start < ending)
+				&& (getColumn() + (ending - start)) > wrapColumn && split) {
+				if (start < ending) {
 					data = text.substring(start, ending) + '\\';
+					start = ending;
+				}
 				else
 					data = "\\";
-				if (start < ending)
-					start = ending;
-				column += data.length();
+				setColumn(getColumn() + data.length());
 				writer.write(data);
 				writeIndent(indent);
 				whitespace = false;
-				indentation = false;
+				setIndentation(false);
 				if (isSpace(text.charAt(start))) {
 					data = "\\";
-					column += data.length();
+					setColumn(getColumn() + data.length());
 					writer.write(data);
 				}
 			}
@@ -180,11 +180,11 @@ class EmitterWriter {
 				ceh = text.charAt(ending);
 			if (spaces) {
 				if (isZero(ceh) || ceh != 32) {
-					if (start + 1 == ending && column > wrapColumn && split && start != 0 && ending != text.length())
+					if (start + 1 == ending && getColumn() > wrapColumn && split && start != 0 && ending != text.length())
 						writeIndent(indent);
 					else {
 						data = text.substring(start, ending);
-						column += data.length();
+						setColumn(getColumn() + data.length());
 						writer.write(data);
 					}
 					start = ending;
@@ -192,27 +192,21 @@ class EmitterWriter {
 			} else if (breaks) {
 				if (isZero(ceh) || !(isNewLine(ceh) || isNextLine(ceh))) {
 					data = text.substring(start, ending);
-					for (int i = 0, j = data.length(); i < j; i++) {
-						char cha = data.charAt(i);
-						if (isNewLine(cha))
-							writeLineBreak(null);
-						else
-							writeLineBreak("" + cha);
-					}
+					setLineBreak(data);
 					writeIndent(indent);
 					start = ending;
 				}
 			} else if (isZero(ceh) || !(isNewLine(ceh) || isNextLine(ceh))) {
 				if (start < ending) {
 					data = text.substring(start, ending);
-					column += data.length();
+					setColumn(getColumn() + data.length());
 					writer.write(data);
 					start = ending;
 				}
 			}
 			if (ceh == '\'') {
 				data = "''";
-				column += 2;
+				setColumn(getColumn() + 2);
 				writer.write(data);
 				start = ending + 1;
 			}
@@ -260,24 +254,18 @@ class EmitterWriter {
 						writeLineBreak(null);
 					leadingSpace = isSpace(ceh);
 					data = text.substring(start, ending);
-					for (int i = 0, j = data.length(); i < j; i++) {
-						char cha = data.charAt(i);
-						if (isNewLine(cha))
-							writeLineBreak(null);
-						else
-							writeLineBreak("" + cha);
-					}
+					setLineBreak(data);
 					if (isNotZero(ceh))
 						writeIndent(indent);
 					start = ending;
 				}
 			} else if (spaces) {
 				if (isNotSpace(ceh)) {
-					if (start + 1 == ending && column > wrapColumn)
+					if (start + 1 == ending && getColumn() > wrapColumn)
 						writeIndent(indent);
 					else {
 						data = text.substring(start, ending);
-						column += data.length();
+						setColumn(getColumn() + data.length());
 						writer.write(data);
 					}
 					start = ending;
@@ -315,13 +303,7 @@ class EmitterWriter {
 			if (breaks) {
 				if (isZero(ceh) || !(isNewLine(ceh) || isNextLine(ceh))) {
 					data = text.substring(start, ending);
-					for (int i = 0, j = data.length(); i < j; i++) {
-						char cha = data.charAt(i);
-						if (isNewLine(cha))
-							writeLineBreak(null);
-						else
-							writeLineBreak("" + cha);
-					}
+					setLineBreak(data);
 					if (isNotZero(ceh))
 						writeIndent(indent);
 					start = ending;
@@ -344,11 +326,11 @@ class EmitterWriter {
 		String data = null;
 		if (!whitespace) {
 			data = " ";
-			column += data.length();
+			setColumn(getColumn() + data.length());
 			writer.write(data);
 		}
 		whitespace = false;
-		indentation = false;
+		setIndentation(false);
 		boolean spaces = false, breaks = false;
 		int start = 0, ending = 0;
 		while (ending <= text.length()) {
@@ -357,13 +339,13 @@ class EmitterWriter {
 				ceh = text.charAt(ending);
 			if (spaces) {
 				if (isNotSpace(ceh)) {
-					if (start + 1 == ending && column > wrapColumn && split) {
+					if (start + 1 == ending && getColumn() > wrapColumn && split) {
 						writeIndent(indent);
 						whitespace = false;
-						indentation = false;
+						setIndentation(false);
 					} else {
 						data = text.substring(start, ending);
-						column += data.length();
+						setColumn(getColumn() + data.length());
 						writer.write(data);
 					}
 					start = ending;
@@ -373,21 +355,15 @@ class EmitterWriter {
 					if (isNewLine(text.charAt(start)))
 						writeLineBreak(null);
 					data = text.substring(start, ending);
-					for (int i = 0, j = data.length(); i < j; i++) {
-						char cha = data.charAt(i);
-						if (isNewLine(cha))
-							writeLineBreak(null);
-						else
-							writeLineBreak("" + cha);
-					}
+					setLineBreak(data);
 					writeIndent(indent);
 					whitespace = false;
-					indentation = false;
+					setIndentation(false);
 					start = ending;
 				}
 			} else if (isZero(ceh) || isSpace(ceh) || isNewLine(ceh) || isNextLine(ceh)) {
 				data = text.substring(start, ending);
-				column += data.length();
+				setColumn(getColumn() + data.length());
 				writer.write(data);
 				start = ending;
 			}
@@ -396,6 +372,16 @@ class EmitterWriter {
 				breaks = isNewLine(ceh) || isNextLine(ceh);
 			}
 			ending++;
+		}
+	}
+
+	private void setLineBreak(String data) throws IOException {
+		for (int i = 0, j = data.length(); i < j; i++) {
+			char cha = data.charAt(i);
+			if (isNewLine(cha))
+				writeLineBreak(null);
+			else
+				writeLineBreak("" + cha);
 		}
 	}
 
@@ -415,8 +401,8 @@ class EmitterWriter {
 		if (data == null)
 			data = "\n";
 		whitespace = true;
-		indentation = true;
-		column = 0;
+		setIndentation(true);
+		setColumn(0);
 		writer.write(data);
 	}
 
@@ -435,5 +421,21 @@ class EmitterWriter {
 
 	public void close () throws IOException {
 		writer.close();
+	}
+
+	public boolean getIndentation() {
+		return indentation;
+	}
+
+	public void setIndentation(boolean indentation) {
+		this.indentation = indentation;
+	}
+
+	public int getColumn() {
+		return column;
+	}
+
+	public void setColumn(int column) {
+		this.column = column;
 	}
 }
