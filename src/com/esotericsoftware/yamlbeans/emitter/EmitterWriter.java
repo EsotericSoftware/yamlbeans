@@ -118,18 +118,7 @@ class EmitterWriter {
 					if (ESCAPE_REPLACEMENTS.containsKey(ch))
 						data = "\\" + ESCAPE_REPLACEMENTS.get(ch);
 					else {
-						if (escapeUnicode) {
-							data = Integer.toString(ch, 16);
-							if (data.length() == 1)
-								data = "000" + data;
-							else if (data.length() == 2)
-								data = "00" + data;
-							else if (data.length() == 3) {
-								data = "0" + data;
-							}
-							data = "\\u" + data;
-						} else
-							data = new String(Character.toChars(ch));
+						data = unicodeCaseByLength(escapeUnicode, ch);
 					}
 					column += data.length();
 					writer.write(data);
@@ -159,6 +148,23 @@ class EmitterWriter {
 		}
 
 		writeIndicator("\"", false, false, false);
+	}
+
+	private String unicodeCaseByLength(boolean escapeUnicode, int ch) {
+		String data;
+		if (escapeUnicode) {
+			data = Integer.toString(ch, 16);
+			if (data.length() == 1)
+				data = "000" + data;
+			else if (data.length() == 2)
+				data = "00" + data;
+			else if (data.length() == 3) {
+				data = "0" + data;
+			}
+			data = "\\u" + data;
+		} else
+			data = new String(Character.toChars(ch));
+		return data;
 	}
 
 	public void writeSingleQuoted (String text, boolean split, int indent, int wrapColumn) throws IOException {
