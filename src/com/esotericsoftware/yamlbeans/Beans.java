@@ -128,6 +128,7 @@ class Beans {
                     } catch (Exception ignored) {
                     }
                 }
+
                 if (getMethod != null && (setMethod != null || constructorProperty)) {
                     properties.add(new MethodProperty(name, setMethod, getMethod));
                     continue;
@@ -184,13 +185,15 @@ class Beans {
                 } catch (Exception ignored) {
                 }
             }
+
             if (getMethod != null) {
                 try {
                     setMethod = type.getMethod(SETTER + upperName, getMethod.getReturnType());
                 } catch (Exception ignored) {
                 }
-                if (getMethod != null && (setMethod != null || constructorProperty))
+                if (setMethod != null || constructorProperty) {
                     return new MethodProperty(name, setMethod, getMethod);
+                }
             }
         }
 
