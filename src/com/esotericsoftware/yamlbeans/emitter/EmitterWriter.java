@@ -72,11 +72,10 @@ class EmitterWriter {
 	}
 
 	public void writeIndent (int indent) throws IOException {
-		if (indent == -1) indent = 0;
-
+		if (indent == -1)
+			indent = 0;
 		if (!indentation || column > indent || column == indent && !whitespace)
 			writeLineBreak(null);
-
 		if (column < indent) {
 			whitespace = true;
 			StringBuffer data = new StringBuffer();
@@ -107,7 +106,7 @@ class EmitterWriter {
 			int ch = 0;
 			if (ending < text.length())
 				ch = text.codePointAt(ending);
-			if (ch == 0 || "\"\\\u0085".indexOf(ch) != -1 || !('\u0020' <= ch && ch <= '\u007E')) {
+			if (ch == 0 || "\"\\\u0085".indexOf(ch) != -1 || !isSpaceToTilde(ch)) {
 				if (start < ending) {
 					data = text.substring(start, ending);
 					column += data.length();
@@ -138,7 +137,7 @@ class EmitterWriter {
 				writeIndent(indent);
 				whitespace = false;
 				indentation = false;
-				if (text.charAt(start) == ' ') {
+				if (isSpace(text.charAt(start))) {
 					data = "\\";
 					column += data.length();
 					writer.write(data);
@@ -148,6 +147,10 @@ class EmitterWriter {
 		}
 
 		writeIndicator("\"", false, false, false);
+	}
+
+	private boolean isSpaceToTilde(int ch) {
+		return '\u0020' <= ch && ch <= '\u007E';
 	}
 
 	private String unicodeCaseByLength(boolean escapeUnicode, int ch) {
@@ -179,7 +182,7 @@ class EmitterWriter {
 			if (ending < text.length())
 				ceh = text.charAt(ending);
 			if (spaces) {
-				if (ceh == 0 || ceh != 32) {
+				if (isZero(ceh) || ceh != 32) {
 					if (start + 1 == ending && column > wrapColumn && split && start != 0 && ending != text.length())
 						writeIndent(indent);
 					else {
@@ -190,11 +193,11 @@ class EmitterWriter {
 					start = ending;
 				}
 			} else if (breaks) {
-				if (ceh == 0 || !(ceh == '\n' || ceh == '\u0085')) {
+				if (isZero(ceh) || !(isNewLine(ceh) || isNextLine(ceh))) {
 					data = text.substring(start, ending);
 					for (int i = 0, j = data.length(); i < j; i++) {
 						char cha = data.charAt(i);
-						if ('\n' == cha)
+						if (isNewLine(cha))
 							writeLineBreak(null);
 						else
 							writeLineBreak("" + cha);
@@ -202,7 +205,7 @@ class EmitterWriter {
 					writeIndent(indent);
 					start = ending;
 				}
-			} else if (ceh == 0 || !(ceh == '\n' || ceh == '\u0085')) {
+			} else if (isZero(ceh) || !(isNewLine(ceh) || isNextLine(ceh))) {
 				if (start < ending) {
 					data = text.substring(start, ending);
 					column += data.length();
@@ -216,13 +219,29 @@ class EmitterWriter {
 				writer.write(data);
 				start = ending + 1;
 			}
-			if (ceh != 0) {
-				spaces = ceh == ' ';
-				breaks = ceh == '\n' || ceh == '\u0085';
+			if (isNotZero(ceh)) {
+				spaces = isSpace(ceh);
+				breaks = isNewLine(ceh) || isNextLine(ceh);
 			}
 			ending++;
 		}
 		writeIndicator("'", false, false, false);
+	}
+
+	private boolean isNotZero(char ceh) {
+		return ceh != 0;
+	}
+
+	private boolean isNextLine(char ceh) {
+		return ceh == '\u0085';
+	}
+
+	private boolean isNewLine(char ceh) {
+		return ceh == '\n';
+	}
+
+	private boolean isZero(char ceh) {
+		return ceh == 0;
 	}
 
 	public void writeFolded (String text, int indent, int wrapColumn) throws IOException {
@@ -239,24 +258,24 @@ class EmitterWriter {
 			if (ending < text.length())
 				ceh = text.charAt(ending);
 			if (breaks) {
-				if (ceh == 0 || !(ceh == '\n' || ceh == '\u0085')) {
-					if (!leadingSpace && ceh != 0 && ceh != ' ' && text.charAt(start) == '\n')
+				if (isZero(ceh) || !(isNewLine(ceh) || isNextLine(ceh))) {
+					if (!leadingSpace && isNotZero(ceh) && isNotSpace(ceh) && isNewLine(text.charAt(start)))
 						writeLineBreak(null);
-					leadingSpace = ceh == ' ';
+					leadingSpace = isSpace(ceh);
 					data = text.substring(start, ending);
 					for (int i = 0, j = data.length(); i < j; i++) {
 						char cha = data.charAt(i);
-						if (cha == '\n')
+						if (isNewLine(cha))
 							writeLineBreak(null);
 						else
 							writeLineBreak("" + cha);
 					}
-					if (ceh != 0)
+					if (isNotZero(ceh))
 						writeIndent(indent);
 					start = ending;
 				}
 			} else if (spaces) {
-				if (ceh != ' ') {
+				if (isNotSpace(ceh)) {
 					if (start + 1 == ending && column > wrapColumn)
 						writeIndent(indent);
 					else {
@@ -266,19 +285,23 @@ class EmitterWriter {
 					}
 					start = ending;
 				}
-			} else if (ceh == 0 || ceh == ' ' || ceh == '\n' || ceh == '\u0085') {
+			} else if (isZero(ceh) || isSpace(ceh) || isNewLine(ceh) || isNextLine(ceh)) {
 				data = text.substring(start, ending);
 				writer.write(data);
-				if (ceh == 0)
+				if (isZero(ceh))
 					writeLineBreak(null);
 				start = ending;
 			}
-			if (ceh != 0) {
-				breaks = ceh == '\n' || ceh == '\u0085';
-				spaces = ceh == ' ';
+			if (isNotZero(ceh)) {
+				breaks = isNewLine(ceh) || isNextLine(ceh);
+				spaces = isSpace(ceh);
 			}
 			ending++;
 		}
+	}
+
+	private boolean isSpace(char ceh) {
+		return ceh == ' ';
 	}
 
 	public void writeLiteral (String text, int indent) throws IOException {
@@ -293,28 +316,28 @@ class EmitterWriter {
 			if (ending < text.length())
 				ceh = text.charAt(ending);
 			if (breaks) {
-				if (ceh == 0 || !(ceh == '\n' || ceh == '\u0085')) {
+				if (isZero(ceh) || !(isNewLine(ceh) || isNextLine(ceh))) {
 					data = text.substring(start, ending);
 					for (int i = 0, j = data.length(); i < j; i++) {
 						char cha = data.charAt(i);
-						if ('\n' == cha)
+						if (isNewLine(cha))
 							writeLineBreak(null);
 						else
 							writeLineBreak("" + cha);
 					}
-					if (ceh != 0)
+					if (isNotZero(ceh))
 						writeIndent(indent);
 					start = ending;
 				}
-			} else if (ceh == 0 || ceh == '\n' || ceh == '\u0085') {
+			} else if (isZero(ceh) || isNewLine(ceh) || isNextLine(ceh)) {
 				data = text.substring(start, ending);
 				writer.write(data);
-				if (ceh == 0)
+				if (isZero(ceh))
 					writeLineBreak(null);
 				start = ending;
 			}
-			if (ceh != 0) 
-				breaks = ceh == '\n' || ceh == '\u0085';
+			if (isNotZero(ceh)) 
+				breaks = isNewLine(ceh) || isNextLine(ceh);
 			ending++;
 		}
 	}
@@ -336,7 +359,7 @@ class EmitterWriter {
 			if (ending < text.length())
 				ceh = text.charAt(ending);
 			if (spaces) {
-				if (ceh != ' ') {
+				if (isNotSpace(ceh)) {
 					if (start + 1 == ending && column > wrapColumn && split) {
 						writeIndent(indent);
 						whitespace = false;
@@ -349,13 +372,13 @@ class EmitterWriter {
 					start = ending;
 				}
 			} else if (breaks) {
-				if (ceh != '\n' && ceh != '\u0085') {
-					if (text.charAt(start) == '\n')
+				if (isNotNewLine(ceh) && isNotNextLine(ceh)) {
+					if (isNewLine(text.charAt(start)))
 						writeLineBreak(null);
 					data = text.substring(start, ending);
 					for (int i = 0, j = data.length(); i < j; i++) {
 						char cha = data.charAt(i);
-						if ('\n' == cha)
+						if (isNewLine(cha))
 							writeLineBreak(null);
 						else
 							writeLineBreak("" + cha);
@@ -365,18 +388,30 @@ class EmitterWriter {
 					indentation = false;
 					start = ending;
 				}
-			} else if (ceh == 0 || ceh == ' ' || ceh == '\n' || ceh == '\u0085') {
+			} else if (isZero(ceh) || isSpace(ceh) || isNewLine(ceh) || isNextLine(ceh)) {
 				data = text.substring(start, ending);
 				column += data.length();
 				writer.write(data);
 				start = ending;
 			}
-			if (ceh != 0) {
-				spaces = ceh == ' ';
-				breaks = ceh == '\n' || ceh == '\u0085';
+			if (isNotZero(ceh)) {
+				spaces = isSpace(ceh);
+				breaks = isNewLine(ceh) || isNextLine(ceh);
 			}
 			ending++;
 		}
+	}
+
+	private boolean isNotNextLine(char ceh) {
+		return ceh != '\u0085';
+	}
+
+	private boolean isNotNewLine(char ceh) {
+		return ceh != '\n';
+	}
+
+	private boolean isNotSpace(char ceh) {
+		return ceh != ' ';
 	}
 
 	public void writeLineBreak (String data) throws IOException {
@@ -398,7 +433,7 @@ class EmitterWriter {
 			tail = " " + tail;
 		char ceh = tail.charAt(tail.length() - 1);
 		char ceh2 = tail.charAt(tail.length() - 2);
-		return ceh == '\n' || ceh == '\u0085' ? ceh2 == '\n' || ceh2 == '\u0085' ? "+" : "" : "-";
+		return isNewLine(ceh) || isNextLine(ceh) ? isNewLine(ceh2) || isNextLine(ceh2) ? "+" : "" : "-";
 	}
 
 	public void close () throws IOException {
