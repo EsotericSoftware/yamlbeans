@@ -847,16 +847,12 @@ public class Tokenizer {
 			ch = peek();
 			if (Character.isDigit(ch)) {
 				increment = Integer.parseInt(("" + ch));
-				if (increment == 0)
-					throw new TokenizerException(
-						"While scanning a black scaler, expected indentation indicator between 1 and 9 but found: 0");
+				checkIncrement(increment);
 				forward();
 			}
 		} else if (Character.isDigit(ch)) {
 			increment = Integer.parseInt(("" + ch));
-			if (increment == 0)
-				throw new TokenizerException(
-					"While scanning a black scaler, expected indentation indicator between 1 and 9 but found: 0");
+			checkIncrement(increment);
 			forward();
 			ch = peek();
 			if (ch == '-' || ch == '+') {
@@ -868,6 +864,12 @@ public class Tokenizer {
 			throw new TokenizerException("While scanning a block scalar, expected chomping or indentation indicators but found: "
 				+ ch(peek()));
 		return new Object[] {Boolean.valueOf(chomping), increment};
+	}
+	
+	private void checkIncrement(int increment){
+		if (increment == 0)
+			throw new TokenizerException(
+				"While scanning a black scaler, expected indentation indicator between 1 and 9 but found: 0");
 	}
 
 	private String scanBlockScalarIgnoredLine () {
