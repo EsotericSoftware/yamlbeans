@@ -1140,14 +1140,15 @@ public class Tokenizer {
 		// '\x85' : '\n'
 		// default : ''
 		char val = peek();
+		String res = "";
 		if (FULL_LINEBR.indexOf(val) != -1) {
 			if (RN.equals(prefix(2)))
 				forward(2);
 			else
 				forward();
-			return "\n";
+			res = "\n";
 		}
-		return "";
+		return res;
 	}
 
 	private String ch (char ch) {
