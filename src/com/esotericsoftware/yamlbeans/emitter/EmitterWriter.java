@@ -322,8 +322,7 @@ class EmitterWriter {
 	}
 
 	public void writePlain (String text, boolean split, int indent, int wrapColumn) throws IOException {
-		if (text == null || "".equals(text))
-			return;
+		if (text == null || "".equals(text)) return;
 		String data = null;
 		if (!whitespace) {
 			data = " ";
@@ -398,7 +397,7 @@ class EmitterWriter {
 		return ceh != ' ';
 	}
 
-	private void writeLineBreak (String data) throws IOException {
+	public void writeLineBreak (String data) throws IOException {
 		if (data == null)
 			data = "\n";
 		whitespace = true;

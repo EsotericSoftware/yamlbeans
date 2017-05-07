@@ -458,7 +458,7 @@ public class Emitter {
 			&& ((ScalarEvent)ev).implicit != null && ((ScalarEvent)ev).value.equals("");
 	}
 
-	private boolean checkSimpleKey () {
+	boolean checkSimpleKey () {
 		int length = 0;
 		if (event instanceof NodeEvent && ((NodeEvent)event).anchor != null) {
 			if (preparedAnchor == null) preparedAnchor = prepareAnchor(((NodeEvent)event).anchor);
@@ -631,8 +631,8 @@ public class Emitter {
 	static private final int S_BLOCK_MAPPING_KEY = 16;
 	static private final int S_FIRST_BLOCK_SEQUENCE_ITEM = 17;
 
-	static private final Map<String, String> DEFAULT_TAG_PREFIXES_1_0 = new HashMap();
-	static private final Map<String, String> DEFAULT_TAG_PREFIXES_1_1 = new HashMap();
+	static final Map<String, String> DEFAULT_TAG_PREFIXES_1_0 = new HashMap();
+	static final Map<String, String> DEFAULT_TAG_PREFIXES_1_1 = new HashMap();
 	static {
 		DEFAULT_TAG_PREFIXES_1_0.put("tag:yaml.org,2002:", "!");
 
