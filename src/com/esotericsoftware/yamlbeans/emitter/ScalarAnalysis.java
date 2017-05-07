@@ -26,6 +26,10 @@ class ScalarAnalysis {
 	static private final String SPECIAL_INDICATOR = "#,[]{}#&*!|>'\"%@`";
 	static private final String FLOW_INDICATOR = ",?[]{}";
 
+	static private final char UNICODE_NEXT_LINE = '\u0085';
+	static private final char UNICODE_SPACE = '\u0020';
+	static private final char UNICODE_TILDE = '\u007E';
+
 	private final String scalar;
 	private final boolean empty;
 	private final boolean multiline;
@@ -106,11 +110,11 @@ class ScalarAnalysis {
 					blockIndicators = true;
 				}
 			}
-			if (ceh == '\n' || '\u0085' == ceh) lineBreaks = true;
+			if (ceh == '\n' || UNICODE_NEXT_LINE == ceh) lineBreaks = true;
 			if (escapeUnicode) {
-				if (ceh != '\n' && ceh != '\t' && !('\u0020' <= ceh && ceh <= '\u007E')) specialCharacters = true;
+				if (ceh != '\n' && ceh != '\t' && !( UNICODE_SPACE <= ceh && ceh <= UNICODE_TILDE)) specialCharacters = true;
 			}
-			if (' ' == ceh || '\n' == ceh || '\u0085' == ceh) {
+			if (' ' == ceh || '\n' == ceh || UNICODE_NEXT_LINE == ceh) {
 				if (spaces && breaks) {
 					if (ceh != ' ') mixed = true;
 				} else if (spaces) {
