@@ -1062,11 +1062,6 @@ public class Parser {
 		return new DocumentStartEvent(explicit, version, tags);
 	}
 
-	interface Production {
-		public Event produce ();
-	}
-
-
 	public class ParserException extends RuntimeException {
 		public ParserException (String message) {
 			super("Line " + tokenizer.getLineNumber() + ", column " + tokenizer.getColumn() + ": " + message);
