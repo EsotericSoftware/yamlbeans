@@ -144,20 +144,6 @@ class Beans {
         return properties;
     }
 
-    static private String toJavaIdentifier(String name) {
-        StringBuilder builder = new StringBuilder();
-
-        for (int i = 0; i < name.length(); i++) {
-            char c = name.charAt(i);
-
-            if (Character.isJavaIdentifierPart(c)) {
-                builder.append(c);
-            }
-        }
-
-        return builder.toString();
-    }
-
     static public Property getProperty(Class type, String name, boolean beanProperties, boolean privateFields, YamlConfig config) {
         if (type == null) {
             throw new IllegalArgumentException("type cannot be null.");
@@ -213,21 +199,18 @@ class Beans {
         return fieldProperty;
     }
 
-    static private ArrayList<Field> getAllFields(Class type) {
-        ArrayList<Class> classes = new ArrayList<Class>();
-        ArrayList<Field> allFields = new ArrayList<Field>();
+    static private String toJavaIdentifier(String name) {
+        StringBuilder builder = new StringBuilder();
 
-        Class nextClass = type;
-        while (nextClass != null && nextClass != Object.class) {
-            classes.add(nextClass);
-            nextClass = nextClass.getSuperclass();
+        for (int i = 0; i < name.length(); i++) {
+            char c = name.charAt(i);
+
+            if (Character.isJavaIdentifierPart(c)) {
+                builder.append(c);
+            }
         }
 
-        for (int i = classes.size() - 1; i >= 0; i--) {
-            Collections.addAll(allFields, classes.get(i).getDeclaredFields());
-        }
-
-        return allFields;
+        return builder.toString();
     }
 
     static private Constructor getNoArgConstructor(Class type) {
@@ -241,6 +224,10 @@ class Beans {
         }
 
         return noArgConstructor;
+    }
+
+    static private boolean isNoArgConstructor(Constructor constructor) {
+        return constructor.getParameterTypes().length == 0;
     }
 
     static private Constructor getPrivateConstructor(Class type) {
@@ -275,12 +262,29 @@ class Beans {
         return commonImplementationConstructor;
     }
 
-    static private boolean isNoArgConstructor(Constructor constructor) {
-        return constructor.getParameterTypes().length == 0;
+    static private ArrayList<Field> getAllFields(Class type) {
+        ArrayList<Class> classes = new ArrayList<Class>();
+        ArrayList<Field> allFields = new ArrayList<Field>();
+
+        Class nextClass = type;
+        while (nextClass != null && nextClass != Object.class) {
+            classes.add(nextClass);
+            nextClass = nextClass.getSuperclass();
+        }
+
+        for (int i = classes.size() - 1; i >= 0; i--) {
+            Collections.addAll(allFields, classes.get(i).getDeclaredFields());
+        }
+
+        return allFields;
     }
 
     static private String getUpperName(String name) {
         return Character.toUpperCase(name.charAt(0)) + name.substring(1);
+    }
+
+    static private boolean isBooleanType(Field field) {
+        return field.getType().equals(Boolean.class) || field.getType().equals(boolean.class);
     }
 
     static private boolean isProperField(Field field, boolean privateFields) {
@@ -296,9 +300,5 @@ class Beans {
         }
 
         return isProper;
-    }
-
-    static private boolean isBooleanType(Field field) {
-        return field.getType().equals(Boolean.class) || field.getType().equals(boolean.class);
     }
 }
