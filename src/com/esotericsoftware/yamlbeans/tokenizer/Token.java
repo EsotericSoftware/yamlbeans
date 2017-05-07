@@ -47,4 +47,6 @@ public class Token {
 	public String toString () {
 		return "<" + type + ">";
 	}
+	
+	public void setInstanceName (String instanceName){}
 }
