@@ -122,7 +122,7 @@ class Beans {
                     getMethod = type.getMethod(GETTER + upperName, noArgs);
                 } catch (Exception ignored) {
                 }
-                if (getMethod == null && (field.getType().equals(Boolean.class) || field.getType().equals(boolean.class))) {
+                if (getMethod == null && isBooleanType(field)) {
                     try {
                         getMethod = type.getMethod(GETTER_BOOLEAN + upperName, noArgs);
                     } catch (Exception ignored) {
@@ -293,5 +293,9 @@ class Beans {
         }
 
         return isProper;
+    }
+
+    static private boolean isBooleanType(Field field) {
+        return field.getType().equals(Boolean.class) || field.getType().equals(boolean.class);
     }
 }
