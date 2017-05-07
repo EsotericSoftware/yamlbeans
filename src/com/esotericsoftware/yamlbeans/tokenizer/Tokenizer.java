@@ -134,8 +134,7 @@ public class Tokenizer {
 			fetchMoreTokens();
 		if (!tokens.isEmpty()) {
 			tokensTaken++;
-			Token token = tokens.remove(0);
-			return token;
+			return tokens.remove(0);
 		}
 		return null;
 	}
