@@ -474,11 +474,11 @@ public class Emitter {
 		}
 		if (event.type == SCALAR && analysis == null) {
 			analysis = ScalarAnalysis.analyze(((ScalarEvent)event).value, config.escapeUnicode);
-			length += analysis.scalar.length();
+			length += analysis.getScalar().length();
 		}
 
 		return length < 128
-			&& (event.type == ALIAS || event.type == SCALAR && !analysis.empty && !analysis.multiline || checkEmptySequence() || checkEmptyMapping());
+			&& (event.type == ALIAS || event.type == SCALAR && !analysis.isEmpty() && !analysis.isMultiline() || checkEmptySequence() || checkEmptyMapping());
 	}
 
 	private void processAnchor (String indicator) throws IOException {
@@ -525,14 +525,14 @@ public class Emitter {
 		ScalarEvent ev = (ScalarEvent)event;
 		if (analysis == null) analysis = ScalarAnalysis.analyze(ev.value, config.escapeUnicode);
 		if (ev.style == '"' || config.canonical) return '"';
-		if (ev.style == 0 && !(simpleKeyContext && (analysis.empty || analysis.multiline))
-			&& (flowLevel != 0 && analysis.allowFlowPlain || flowLevel == 0 && analysis.allowBlockPlain)) return 0;
-		if (ev.style == 0 && ev.implicit[0] && !(simpleKeyContext && (analysis.empty || analysis.multiline))
-			&& (flowLevel != 0 && analysis.allowFlowPlain || flowLevel == 0 && analysis.allowBlockPlain)) return 0;
-		if ((ev.style == '|' || ev.style == '>') && flowLevel == 0 && analysis.allowBlock) return '\'';
-		if ((ev.style == 0 || ev.style == '\'') && analysis.allowSingleQuoted && !(simpleKeyContext && analysis.multiline))
+		if (ev.style == 0 && !(simpleKeyContext && (analysis.isEmpty() || analysis.isMultiline()))
+			&& (flowLevel != 0 && analysis.isAllowFlowPlain() || flowLevel == 0 && analysis.isAllowBlockPlain())) return 0;
+		if (ev.style == 0 && ev.implicit[0] && !(simpleKeyContext && (analysis.isEmpty() || analysis.isMultiline()))
+			&& (flowLevel != 0 && analysis.isAllowFlowPlain() || flowLevel == 0 && analysis.isAllowBlockPlain())) return 0;
+		if ((ev.style == '|' || ev.style == '>') && flowLevel == 0 && analysis.isAllowBlock()) return '\'';
+		if ((ev.style == 0 || ev.style == '\'') && analysis.isAllowSingleQuoted() && !(simpleKeyContext && analysis.isMultiline()))
 			return '\'';
-		if (ev.style == 0 && analysis.multiline && flowLevel == 0 && analysis.allowBlock) return '|';
+		if (ev.style == 0 && analysis.isMultiline() && flowLevel == 0 && analysis.isAllowBlock()) return '|';
 		return '"';
 	}
 
@@ -542,15 +542,15 @@ public class Emitter {
 		if (style == 0) style = chooseScalarStyle();
 		boolean split = !simpleKeyContext;
 		if (style == '"')
-			writer.writeDoubleQuoted(analysis.scalar, split, indent, config.wrapColumn, config.escapeUnicode);
+			writer.writeDoubleQuoted(analysis.getScalar(), split, indent, config.wrapColumn, config.escapeUnicode);
 		else if (style == '\'')
-			writer.writeSingleQuoted(analysis.scalar, split, indent, config.wrapColumn);
+			writer.writeSingleQuoted(analysis.getScalar(), split, indent, config.wrapColumn);
 		else if (style == '>')
-			writer.writeFolded(analysis.scalar, indent, config.wrapColumn);
+			writer.writeFolded(analysis.getScalar(), indent, config.wrapColumn);
 		else if (style == '|')
-			writer.writeLiteral(analysis.scalar, indent);
+			writer.writeLiteral(analysis.getScalar(), indent);
 		else
-			writer.writePlain(analysis.scalar, split, indent, config.wrapColumn);
+			writer.writePlain(analysis.getScalar(), split, indent, config.wrapColumn);
 		analysis = null;
 		style = 0;
 	}
