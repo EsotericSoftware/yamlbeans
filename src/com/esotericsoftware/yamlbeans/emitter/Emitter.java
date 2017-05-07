@@ -129,7 +129,6 @@ public class Emitter {
 		table[S_STREAM_START] = new EmitterState() {
 			public void expect () {
 				if (event.type == STREAM_START) {
-					writer.writeStreamStart();
 					state = S_FIRST_DOCUMENT_START;
 				} else
 					throw new EmitterException("Expected 'stream start' but found: " + event);

@@ -51,9 +51,6 @@ class EmitterWriter {
 		this.writer = stream;
 	}
 
-	public void writeStreamStart () {
-	}
-
 	public void writeStreamEnd () throws IOException {
 		flushStream();
 	}
