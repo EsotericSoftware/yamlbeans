@@ -74,7 +74,8 @@ public class Emitter {
 	public Emitter (Writer writer, EmitterConfig config) {
 		this.config = config;
 		if (writer == null) throw new IllegalArgumentException("stream cannot be null.");
-		if (!(writer instanceof BufferedWriter)) writer = new BufferedWriter(writer);
+		if (!(writer instanceof BufferedWriter))
+			writer = new BufferedWriter(writer);
 		this.writer = new EmitterWriter(writer);
 		initStateTable();
 	}
@@ -94,9 +95,11 @@ public class Emitter {
 	}
 
 	private boolean needMoreEvents () {
-		if (events.isEmpty()) return true;
+		if (events.isEmpty())
+			return true;
 		event = events.get(0);
-		if (event == null) return false;
+		if (event == null) 
+			return false;
 		switch (event.type) {
 		case DOCUMENT_START:
 			return needEvents(1);
@@ -119,21 +122,247 @@ public class Emitter {
 				level++;
 			else if (curr.type == DOCUMENT_END || curr.type == MAPPING_END || curr.type == SEQUENCE_END)
 				level--;
-			else if (curr.type == STREAM_END) level = -1;
-			if (level < 0) return false;
+			else if (curr.type == STREAM_END)
+				level = -1;
+			if (level < 0) 
+				return false;
 		}
 		return events.size() < count + 1;
 	}
 
 	private void initStateTable () {
-		table[S_STREAM_START] = new EmitterState() {
-			public void expect () {
-				if (event.type == STREAM_START) {
-					state = S_FIRST_DOCUMENT_START;
-				} else
-					throw new EmitterException("Expected 'stream start' but found: " + event);
+		tableStreamStart();
+		tableFirstDocStart();
+		tableDocRoot();
+		tableNothing();
+		tableDocStart();
+		tableDocEnd();
+		tableFirstFlowSeqItem();
+		tableFlowSeqItem();
+		tableFirstFlowMappingKey();
+		tableFlowMappingSimpleVal();
+		tableFlowMappingVal();
+		tableFlowMappingKey();
+		tableBlockSeqItem();
+		tableFirstBlockMappingKey();
+		tableBlockMappingSimpleVal();
+		tableBlockMappingVal();
+		tableBlockMappingKey();
+		tableFirstBlockSeqItem();
+	}
+
+	private void tableFirstBlockSeqItem() {
+		table[S_FIRST_BLOCK_SEQUENCE_ITEM] = new EmitterState() {
+			public void expect () throws IOException {
+				expectBlockSequenceItem(true);
 			}
 		};
+	}
+
+	private void tableBlockMappingKey() {
+		table[S_BLOCK_MAPPING_KEY] = new EmitterState() {
+			public void expect () throws IOException {
+				expectBlockMappingKey(false);
+			}
+		};
+	}
+
+	private void tableBlockMappingVal() {
+		table[S_BLOCK_MAPPING_VALUE] = new EmitterState() {
+			public void expect () throws IOException {
+				writer.writeIndent(indent);
+				writer.writeIndicator(": ", true, true, true);
+				states.add(0, S_BLOCK_MAPPING_KEY);
+				expectNode(false, false, true, false);
+			}
+		};
+	}
+
+	private void tableBlockMappingSimpleVal() {
+		table[S_BLOCK_MAPPING_SIMPLE_VALUE] = new EmitterState() {
+			public void expect () throws IOException {
+				writer.writeIndicator(": ", false, true, false);
+				states.add(0, S_BLOCK_MAPPING_KEY);
+				expectNode(false, false, true, false);
+			}
+		};
+	}
+
+	private void tableFirstBlockMappingKey() {
+		table[S_FIRST_BLOCK_MAPPING_KEY] = new EmitterState() {
+			public void expect () throws IOException {
+				expectBlockMappingKey(true);
+			}
+		};
+	}
+
+	private void tableBlockSeqItem() {
+		table[S_BLOCK_SEQUENCE_ITEM] = new EmitterState() {
+			public void expect () throws IOException {
+				expectBlockSequenceItem(false);
+			}
+		};
+	}
+
+	private void tableFlowMappingKey() {
+		table[S_FLOW_MAPPING_KEY] = new EmitterState() {
+			public void expect () throws IOException {
+				if (event.type == MAPPING_END) {
+					indent = indents.remove(0);
+					flowLevel--;
+					if (config.canonical) {
+						writer.writeIndicator(",", false, false, false);
+						writer.writeIndent(indent);
+					}
+					writer.writeIndicator("}", false, false, false);
+					state = states.remove(0);
+				} else {
+					writer.writeIndicator(",", false, false, false);
+					if (config.canonical || writer.getColumn() > config.wrapColumn) 
+						writer.writeIndent(indent);
+					if (!config.canonical && checkSimpleKey()) {
+						states.add(0, S_FLOW_MAPPING_SIMPLE_VALUE);
+						expectNode(false, false, true, true);
+					} else {
+						writer.writeIndicator("?", true, false, false);
+						states.add(0, S_FLOW_MAPPING_VALUE);
+						expectNode(false, false, true, false);
+					}
+				}
+			}
+		};
+	}
+
+	private void tableFlowMappingVal() {
+		table[S_FLOW_MAPPING_VALUE] = new EmitterState() {
+			public void expect () throws IOException {
+				if (config.canonical || writer.getColumn() > config.wrapColumn) 
+					writer.writeIndent(indent);
+				writer.writeIndicator(": ", false, true, false);
+				states.add(0, S_FLOW_MAPPING_KEY);
+				expectNode(false, false, true, false);
+			}
+		};
+	}
+
+	private void tableFlowMappingSimpleVal() {
+		table[S_FLOW_MAPPING_SIMPLE_VALUE] = new EmitterState() {
+			public void expect () throws IOException {
+				writer.writeIndicator(": ", false, true, false);
+				states.add(0, S_FLOW_MAPPING_KEY);
+				expectNode(false, false, true, false);
+			}
+		};
+	}
+
+	private void tableFirstFlowMappingKey() {
+		table[S_FIRST_FLOW_MAPPING_KEY] = new EmitterState() {
+			public void expect () throws IOException {
+				if (event.type == MAPPING_END) {
+					indent = indents.remove(0);
+					flowLevel--;
+					writer.writeIndicator("}", false, false, false);
+					state = states.remove(0);
+				} else {
+					if (config.canonical || writer.getColumn() > config.wrapColumn) 
+						writer.writeIndent(indent);
+					if (!config.canonical && checkSimpleKey()) {
+						states.add(0, S_FLOW_MAPPING_SIMPLE_VALUE);
+						expectNode(false, false, true, true);
+					} else {
+						writer.writeIndicator("?", true, false, false);
+						states.add(0, S_FLOW_MAPPING_VALUE);
+						expectNode(false, false, true, false);
+					}
+				}
+			}
+		};
+	}
+
+	private void tableFlowSeqItem() {
+		table[S_FLOW_SEQUENCE_ITEM] = new EmitterState() {
+			public void expect () throws IOException {
+				if (event.type == SEQUENCE_END) {
+					indent = indents.remove(0);
+					flowLevel--;
+					if (config.canonical) {
+						writer.writeIndicator(",", false, false, false);
+						writer.writeIndent(indent);
+					}
+					writer.writeIndicator("]", false, false, false);
+					state = states.remove(0);
+				} else {
+					writer.writeIndicator(",", false, false, false);
+					if (config.canonical || writer.getColumn() > config.wrapColumn) 
+						writer.writeIndent(indent);
+					states.add(0, S_FLOW_SEQUENCE_ITEM);
+					expectNode(false, true, false, false);
+				}
+			}
+		};
+	}
+
+	private void tableFirstFlowSeqItem() {
+		table[S_FIRST_FLOW_SEQUENCE_ITEM] = new EmitterState() {
+			public void expect () throws IOException {
+				if (event.type == SEQUENCE_END) {
+					indent = indents.remove(0);
+					flowLevel--;
+					writer.writeIndicator("]", false, false, false);
+					state = states.remove(0);
+				} else {
+					if (config.canonical || writer.getColumn() > config.wrapColumn) 
+						writer.writeIndent(indent);
+					states.add(0, S_FLOW_SEQUENCE_ITEM);
+					expectNode(false, true, false, false);
+				}
+			}
+		};
+	}
+
+	private void tableDocEnd() {
+		table[S_DOCUMENT_END] = new EmitterState() {
+			public void expect () throws IOException {
+				if (event.type == DOCUMENT_END) {
+					writer.writeIndent(indent);
+					if (((DocumentEndEvent)event).isExplicit) {
+						writer.writeIndicator("...", true, false, false);
+						writer.writeIndent(indent);
+					}
+					writer.flushStream();
+					state = S_DOCUMENT_START;
+				} else
+					throw new EmitterException("Expected 'document end' but found: " + event);
+			}
+		};
+	}
+
+	private void tableDocStart() {
+		table[S_DOCUMENT_START] = new EmitterState() {
+			public void expect () throws IOException {
+				expectDocumentStart(false);
+			}
+		};
+	}
+
+	private void tableNothing() {
+		table[S_NOTHING] = new EmitterState() {
+			public void expect () {
+				throw new EmitterException("Expected no event but found: " + event);
+			}
+		};
+	}
+
+	private void tableDocRoot() {
+		table[S_DOCUMENT_ROOT] = new EmitterState() {
+			public void expect () throws IOException {
+				states.add(0, S_DOCUMENT_END);
+				expectNode(true, false, false, false);
+			}
+		};
+	}
+
+	private void tableFirstDocStart() {
 		table[S_FIRST_DOCUMENT_START] = new EmitterState() {
 			public void expect () throws IOException {
 				if (event.type == DOCUMENT_START) {
@@ -165,162 +394,15 @@ public class Emitter {
 				expectDocumentStart(true);
 			}
 		};
-		table[S_DOCUMENT_ROOT] = new EmitterState() {
-			public void expect () throws IOException {
-				states.add(0, S_DOCUMENT_END);
-				expectNode(true, false, false, false);
-			}
-		};
-		table[S_NOTHING] = new EmitterState() {
+	}
+
+	private void tableStreamStart() {
+		table[S_STREAM_START] = new EmitterState() {
 			public void expect () {
-				throw new EmitterException("Expected no event but found: " + event);
-			}
-		};
-		table[S_DOCUMENT_START] = new EmitterState() {
-			public void expect () throws IOException {
-				expectDocumentStart(false);
-			}
-		};
-		table[S_DOCUMENT_END] = new EmitterState() {
-			public void expect () throws IOException {
-				if (event.type == DOCUMENT_END) {
-					writer.writeIndent(indent);
-					if (((DocumentEndEvent)event).isExplicit) {
-						writer.writeIndicator("...", true, false, false);
-						writer.writeIndent(indent);
-					}
-					writer.flushStream();
-					state = S_DOCUMENT_START;
+				if (event.type == STREAM_START) {
+					state = S_FIRST_DOCUMENT_START;
 				} else
-					throw new EmitterException("Expected 'document end' but found: " + event);
-			}
-		};
-		table[S_FIRST_FLOW_SEQUENCE_ITEM] = new EmitterState() {
-			public void expect () throws IOException {
-				if (event.type == SEQUENCE_END) {
-					indent = indents.remove(0);
-					flowLevel--;
-					writer.writeIndicator("]", false, false, false);
-					state = states.remove(0);
-				} else {
-					if (config.canonical || writer.getColumn() > config.wrapColumn) writer.writeIndent(indent);
-					states.add(0, S_FLOW_SEQUENCE_ITEM);
-					expectNode(false, true, false, false);
-				}
-			}
-		};
-		table[S_FLOW_SEQUENCE_ITEM] = new EmitterState() {
-			public void expect () throws IOException {
-				if (event.type == SEQUENCE_END) {
-					indent = indents.remove(0);
-					flowLevel--;
-					if (config.canonical) {
-						writer.writeIndicator(",", false, false, false);
-						writer.writeIndent(indent);
-					}
-					writer.writeIndicator("]", false, false, false);
-					state = states.remove(0);
-				} else {
-					writer.writeIndicator(",", false, false, false);
-					if (config.canonical || writer.getColumn() > config.wrapColumn) writer.writeIndent(indent);
-					states.add(0, S_FLOW_SEQUENCE_ITEM);
-					expectNode(false, true, false, false);
-				}
-			}
-		};
-		table[S_FIRST_FLOW_MAPPING_KEY] = new EmitterState() {
-			public void expect () throws IOException {
-				if (event.type == MAPPING_END) {
-					indent = indents.remove(0);
-					flowLevel--;
-					writer.writeIndicator("}", false, false, false);
-					state = states.remove(0);
-				} else {
-					if (config.canonical || writer.getColumn() > config.wrapColumn) writer.writeIndent(indent);
-					if (!config.canonical && checkSimpleKey()) {
-						states.add(0, S_FLOW_MAPPING_SIMPLE_VALUE);
-						expectNode(false, false, true, true);
-					} else {
-						writer.writeIndicator("?", true, false, false);
-						states.add(0, S_FLOW_MAPPING_VALUE);
-						expectNode(false, false, true, false);
-					}
-				}
-			}
-		};
-		table[S_FLOW_MAPPING_SIMPLE_VALUE] = new EmitterState() {
-			public void expect () throws IOException {
-				writer.writeIndicator(": ", false, true, false);
-				states.add(0, S_FLOW_MAPPING_KEY);
-				expectNode(false, false, true, false);
-			}
-		};
-		table[S_FLOW_MAPPING_VALUE] = new EmitterState() {
-			public void expect () throws IOException {
-				if (config.canonical || writer.getColumn() > config.wrapColumn) writer.writeIndent(indent);
-				writer.writeIndicator(": ", false, true, false);
-				states.add(0, S_FLOW_MAPPING_KEY);
-				expectNode(false, false, true, false);
-			}
-		};
-		table[S_FLOW_MAPPING_KEY] = new EmitterState() {
-			public void expect () throws IOException {
-				if (event.type == MAPPING_END) {
-					indent = indents.remove(0);
-					flowLevel--;
-					if (config.canonical) {
-						writer.writeIndicator(",", false, false, false);
-						writer.writeIndent(indent);
-					}
-					writer.writeIndicator("}", false, false, false);
-					state = states.remove(0);
-				} else {
-					writer.writeIndicator(",", false, false, false);
-					if (config.canonical || writer.getColumn() > config.wrapColumn) writer.writeIndent(indent);
-					if (!config.canonical && checkSimpleKey()) {
-						states.add(0, S_FLOW_MAPPING_SIMPLE_VALUE);
-						expectNode(false, false, true, true);
-					} else {
-						writer.writeIndicator("?", true, false, false);
-						states.add(0, S_FLOW_MAPPING_VALUE);
-						expectNode(false, false, true, false);
-					}
-				}
-			}
-		};
-		table[S_BLOCK_SEQUENCE_ITEM] = new EmitterState() {
-			public void expect () throws IOException {
-				expectBlockSequenceItem(false);
-			}
-		};
-		table[S_FIRST_BLOCK_MAPPING_KEY] = new EmitterState() {
-			public void expect () throws IOException {
-				expectBlockMappingKey(true);
-			}
-		};
-		table[S_BLOCK_MAPPING_SIMPLE_VALUE] = new EmitterState() {
-			public void expect () throws IOException {
-				writer.writeIndicator(": ", false, true, false);
-				states.add(0, S_BLOCK_MAPPING_KEY);
-				expectNode(false, false, true, false);
-			}
-		};
-		table[S_BLOCK_MAPPING_VALUE] = new EmitterState() {
-			public void expect () throws IOException {
-				writer.writeIndent(indent);
-				writer.writeIndicator(": ", true, true, true);
-				states.add(0, S_BLOCK_MAPPING_KEY);
-				expectNode(false, false, true, false);
-			}
-		};
-		table[S_BLOCK_MAPPING_KEY] = new EmitterState() {
-			public void expect () throws IOException {
-				expectBlockMappingKey(false);
-			}
-		};
-		table[S_FIRST_BLOCK_SEQUENCE_ITEM] = new EmitterState() {
-			public void expect () throws IOException {
-				expectBlockSequenceItem(true);
+					throw new EmitterException("Expected 'stream start' but found: " + event);
 			}
 		};
 	}
@@ -332,7 +414,8 @@ public class Emitter {
 				indent = config.indentSize;
 			else
 				indent = 0;
-		} else if (!indentless) indent += config.indentSize;
+		} else if (!indentless) 
+			indent += config.indentSize;
 	}
 
 	private void expectDocumentStart (boolean first) throws IOException {
@@ -343,7 +426,8 @@ public class Emitter {
 			if (!implicit) {
 				writer.writeIndent(indent);
 				writer.writeIndicator("--- ", true, true, false);
-				if (config.canonical) writer.writeIndent(indent);
+				if (config.canonical) 
+					writer.writeIndent(indent);
 			}
 			state = S_DOCUMENT_ROOT;
 		} else if (event.type == STREAM_END) {
@@ -452,24 +536,28 @@ public class Emitter {
 	}
 
 	private boolean checkEmptyDocument () {
-		if (event.type != DOCUMENT_START || events.isEmpty()) return false;
+		if (event.type != DOCUMENT_START || events.isEmpty()) 
+			return false;
 		Event ev = events.get(0);
 		return ev.type == SCALAR && ((ScalarEvent)ev).anchor == null && ((ScalarEvent)ev).tag == null
 			&& ((ScalarEvent)ev).implicit != null && ((ScalarEvent)ev).value.equals("");
 	}
 
-	boolean checkSimpleKey () {
+	private boolean checkSimpleKey () {
 		int length = 0;
 		if (event instanceof NodeEvent && ((NodeEvent)event).anchor != null) {
-			if (preparedAnchor == null) preparedAnchor = prepareAnchor(((NodeEvent)event).anchor);
+			if (preparedAnchor == null) 
+				preparedAnchor = prepareAnchor(((NodeEvent)event).anchor);
 			length += preparedAnchor.length();
 		}
 		String tag = null;
 		if (event.type == SCALAR)
 			tag = ((ScalarEvent)event).tag;
-		else if (event.type == MAPPING_START || event.type == SEQUENCE_START) tag = ((CollectionStartEvent)event).tag;
+		else if (event.type == MAPPING_START || event.type == SEQUENCE_START) 
+			tag = ((CollectionStartEvent)event).tag;
 		if (tag != null) {
-			if (preparedTag == null) preparedTag = prepareTag(tag);
+			if (preparedTag == null) 
+				preparedTag = prepareTag(tag);
 			length += preparedTag.length();
 		}
 		if (event.type == SCALAR && analysis == null) {
@@ -487,7 +575,8 @@ public class Emitter {
 			preparedAnchor = null;
 			return;
 		}
-		if (preparedAnchor == null) preparedAnchor = prepareAnchor(ev.anchor);
+		if (preparedAnchor == null) 
+			preparedAnchor = prepareAnchor(ev.anchor);
 		if (preparedAnchor != null && !"".equals(preparedAnchor))
 			writer.writeIndicator(indicator + preparedAnchor, true, false, false);
 		preparedAnchor = null;
@@ -498,7 +587,8 @@ public class Emitter {
 		if (event.type == SCALAR) {
 			ScalarEvent ev = (ScalarEvent)event;
 			tag = ev.tag;
-			if (style == 0) style = chooseScalarStyle();
+			if (style == 0) 
+				style = chooseScalarStyle();
 			if ((!config.canonical || tag == null) && ((0 == style && ev.implicit[0]) || (0 != style && ev.implicit[1]))) {
 				preparedTag = null;
 				return;
@@ -516,30 +606,40 @@ public class Emitter {
 			}
 		}
 		if (tag == null) throw new EmitterException("Tag is not specified.");
-		if (preparedTag == null) preparedTag = prepareTag(tag);
-		if (preparedTag != null && !"".equals(preparedTag)) writer.writeIndicator(preparedTag, true, false, false);
+		if (preparedTag == null) 
+			preparedTag = prepareTag(tag);
+		if (preparedTag != null && !"".equals(preparedTag)) 
+			writer.writeIndicator(preparedTag, true, false, false);
 		preparedTag = null;
 	}
 
 	private char chooseScalarStyle () {
 		ScalarEvent ev = (ScalarEvent)event;
-		if (analysis == null) analysis = ScalarAnalysis.analyze(ev.value, config.escapeUnicode);
-		if (ev.style == '"' || config.canonical) return '"';
+		if (analysis == null) 
+			analysis = ScalarAnalysis.analyze(ev.value, config.escapeUnicode);
+		if (ev.style == '"' || config.canonical) 
+			return '"';
 		if (ev.style == 0 && !(simpleKeyContext && (analysis.empty || analysis.multiline))
-			&& (flowLevel != 0 && analysis.allowFlowPlain || flowLevel == 0 && analysis.allowBlockPlain)) return 0;
+			&& (flowLevel != 0 && analysis.allowFlowPlain || flowLevel == 0 && analysis.allowBlockPlain)) 
+			return 0;
 		if (ev.style == 0 && ev.implicit[0] && !(simpleKeyContext && (analysis.empty || analysis.multiline))
-			&& (flowLevel != 0 && analysis.allowFlowPlain || flowLevel == 0 && analysis.allowBlockPlain)) return 0;
-		if ((ev.style == '|' || ev.style == '>') && flowLevel == 0 && analysis.allowBlock) return '\'';
+			&& (flowLevel != 0 && analysis.allowFlowPlain || flowLevel == 0 && analysis.allowBlockPlain)) 
+			return 0;
+		if ((ev.style == '|' || ev.style == '>') && flowLevel == 0 && analysis.allowBlock) 
+			return '\'';
 		if ((ev.style == 0 || ev.style == '\'') && analysis.allowSingleQuoted && !(simpleKeyContext && analysis.multiline))
 			return '\'';
-		if (ev.style == 0 && analysis.multiline && flowLevel == 0 && analysis.allowBlock) return '|';
+		if (ev.style == 0 && analysis.multiline && flowLevel == 0 && analysis.allowBlock) 
+			return '|';
 		return '"';
 	}
 
 	private void processScalar () throws IOException {
 		ScalarEvent ev = (ScalarEvent)event;
-		if (analysis == null) analysis = ScalarAnalysis.analyze(ev.value, config.escapeUnicode);
-		if (style == 0) style = chooseScalarStyle();
+		if (analysis == null) 
+			analysis = ScalarAnalysis.analyze(ev.value, config.escapeUnicode);
+		if (style == 0) 
+			style = chooseScalarStyle();
 		boolean split = !simpleKeyContext;
 		if (style == '"')
 			writer.writeDoubleQuoted(analysis.scalar, split, indent, config.wrapColumn, config.escapeUnicode);
@@ -557,7 +657,8 @@ public class Emitter {
 
 	private String prepareTag (String tag) {
 		if (tag == null || "".equals(tag)) throw new EmitterException("Tag cannot be empty.");
-		if (tag.equals("!")) return tag;
+		if (tag.equals("!")) 
+			return tag;
 		String handle = null;
 		String suffix = tag;
 		for (Iterator iter = tagPrefixes.keySet().iterator(); iter.hasNext();) {
@@ -571,10 +672,13 @@ public class Emitter {
 		int start = 0, ending = 0;
 		while (ending < suffix.length())
 			ending++;
-		if (start < ending) chunks.append(suffix.substring(start, ending));
+		if (start < ending) 
+			chunks.append(suffix.substring(start, ending));
 		String suffixText = chunks.toString();
-		if (tag.charAt(0) == '!' && isVersion10) return tag;
-		if (handle != null) return handle + suffixText;
+		if (tag.charAt(0) == '!' && isVersion10) 
+			return tag;
+		if (handle != null) 
+			return handle + suffixText;
 		if (config.useVerbatimTags)
 			return "!<" + suffixText + ">";
 		else
@@ -595,10 +699,12 @@ public class Emitter {
 		if (prefix == null || "".equals(prefix)) throw new EmitterException("Tag prefix cannot be empty.");
 		StringBuilder chunks = new StringBuilder();
 		int start = 0, ending = 0;
-		if (prefix.charAt(0) == '!') ending = 1;
+		if (prefix.charAt(0) == '!') 
+			ending = 1;
 		while (ending < prefix.length())
 			ending++;
-		if (start < ending) chunks.append(prefix.substring(start, ending));
+		if (start < ending) 
+			chunks.append(prefix.substring(start, ending));
 		return chunks.toString();
 	}
 
@@ -631,8 +737,8 @@ public class Emitter {
 	static private final int S_BLOCK_MAPPING_KEY = 16;
 	static private final int S_FIRST_BLOCK_SEQUENCE_ITEM = 17;
 
-	static final Map<String, String> DEFAULT_TAG_PREFIXES_1_0 = new HashMap();
-	static final Map<String, String> DEFAULT_TAG_PREFIXES_1_1 = new HashMap();
+	static private final Map<String, String> DEFAULT_TAG_PREFIXES_1_0 = new HashMap();
+	static private final Map<String, String> DEFAULT_TAG_PREFIXES_1_1 = new HashMap();
 	static {
 		DEFAULT_TAG_PREFIXES_1_0.put("tag:yaml.org,2002:", "!");
 
