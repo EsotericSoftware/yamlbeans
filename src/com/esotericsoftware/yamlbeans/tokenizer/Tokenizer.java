@@ -85,6 +85,8 @@ public class Tokenizer {
 		ESCAPE_CODES.put('u', 4);
 		ESCAPE_CODES.put('U', 8);
 	}
+	
+	
 
 	private boolean done = false;
 	private int flowLevel = 0;
@@ -124,7 +126,7 @@ public class Tokenizer {
 	public TokenType peekNextTokenType () throws TokenizerException {
 		Token token = peekNextToken();
 		if (token == null) return null;
-		return token.type;
+		return token.getType();
 	}
 
 	public Token getNextToken () throws TokenizerException {
@@ -132,8 +134,7 @@ public class Tokenizer {
 			fetchMoreTokens();
 		if (!tokens.isEmpty()) {
 			tokensTaken++;
-			Token token = tokens.remove(0);
-			return token;
+			return tokens.remove(0);
 		}
 		return null;
 	}
@@ -153,7 +154,12 @@ public class Tokenizer {
 			}
 		};
 	}
-
+	
+	public int getFlowLevel(){
+		return flowLevel;
+	}
+	
+	
 	public int getLineNumber () {
 		return lineNumber;
 	}
@@ -193,7 +199,11 @@ public class Tokenizer {
 		for (int i = 0, j = buff.length(); i < j; i++) {
 			ch = buff.charAt(i);
 			pointer++;
-			if (LINEBR.indexOf(ch) != -1 || ch == '\r' && buff.charAt(i + 1) != '\n') {
+			
+			boolean isChIncludedInLINEBR = (LINEBR.indexOf(ch) != -1);
+			boolean isChNewlineChar = (ch == '\r' && buff.charAt(i + 1) != '\n');
+			
+			if (isChIncludedInLINEBR || isChNewlineChar) {
 				column = 0;
 				lineNumber++;
 			} else if (ch != '\uFEFF') column++;
@@ -203,9 +213,8 @@ public class Tokenizer {
 
 	private void forward () {
 		if (pointer + 2 >= buffer.length()) update(2);
-		char ch1 = buffer.charAt(pointer);
 		pointer++;
-		if (ch1 == '\n' || ch1 == '\u0085' || ch1 == '\r' && buffer.charAt(pointer) != '\n') {
+		if (buffer.charAt(pointer-1) == '\n' || buffer.charAt(pointer-1) == '\u0085' || buffer.charAt(pointer-1) == '\r' && buffer.charAt(pointer) != '\n') {
 			column = 0;
 			lineNumber++;
 		} else
@@ -253,7 +262,123 @@ public class Tokenizer {
 
 	private boolean needMoreTokens () {
 		if (done) return false;
-		return tokens.isEmpty() || nextPossibleSimpleKey() == tokensTaken;
+		try{
+			return tokens.isEmpty() || nextPossibleSimpleKey() == tokensTaken;
+		}catch(TokenizerException e){
+			return false;
+		}
+	}
+	
+	private enum chars {
+		 nc('\0'){
+			 public Token fetch(Tokenizer tokenizer, boolean colz, boolean docStart){
+				 return tokenizer.fetchStreamEnd();			
+			 }
+		 },
+		 ap('\''){
+			 public Token fetch(Tokenizer tokenizer, boolean colz, boolean docStart){
+				 return tokenizer.fetchSingle();
+			 }
+		 },
+		 dq('"'){
+			 public Token fetch(Tokenizer tokenizer, boolean colz, boolean docStart){
+				 return tokenizer.fetchDouble();
+			 }
+		 },
+		 qm('?'){
+			 public Token fetch(Tokenizer tokenizer, boolean colz, boolean docStart){
+				 if (tokenizer.getFlowLevel() != 0 || NULL_OR_OTHER.indexOf(tokenizer.peek(1)) != -1) return tokenizer.fetchKey();
+				 return null;
+			 }
+		 },
+		 co(':'){
+			 public Token fetch(Tokenizer tokenizer, boolean colz, boolean docStart){
+				 if (tokenizer.getFlowLevel() != 0 || NULL_OR_OTHER.indexOf(tokenizer.peek(1)) != -1) return tokenizer.fetchValue();
+				 return null;
+			 }
+		 },
+		 pc('%'){
+			 public Token fetch(Tokenizer tokenizer, boolean colz, boolean docStart){
+				 if (colz) return tokenizer.fetchDirective();
+				 return null;
+			 }
+		 },
+		 hy('-'){
+			 public Token fetch(Tokenizer tokenizer, boolean colz, boolean docStart){
+				 if ((colz || docStart) && ENDING.matcher(tokenizer.prefix(4)).matches()) return tokenizer.fetchDocumentStart();
+					else if (NULL_OR_OTHER.indexOf(tokenizer.peek(1)) != -1) return tokenizer.fetchBlockEntry();
+				 return null;
+			 }
+		 },
+		 dot('.'){
+			 public Token fetch(Tokenizer tokenizer, boolean colz, boolean docStart){
+				 if (colz && START.matcher(tokenizer.prefix(4)).matches()) return tokenizer.fetchDocumentEnd();
+				 return null;
+			 }
+		 },
+		 lsb('['){
+			 public Token fetch(Tokenizer tokenizer, boolean colz, boolean docStart){
+				 return tokenizer.fetchFlowSequenceStart();
+			 }
+		 },
+		 lb('{'){
+			 public Token fetch(Tokenizer tokenizer, boolean colz, boolean docStart){
+				 return tokenizer.fetchFlowMappingStart();
+			 }
+		 },
+		 rsb(']'){
+			 public Token fetch(Tokenizer tokenizer, boolean colz, boolean docStart){
+				 return tokenizer.fetchFlowSequenceEnd();
+			 }
+		 },
+		 rl('}'){
+			 public Token fetch(Tokenizer tokenizer, boolean colz, boolean docStart){
+				 return tokenizer.fetchFlowMappingEnd();
+			 }
+		 },
+		 comm(','){
+			 public Token fetch(Tokenizer tokenizer, boolean colz, boolean docStart){
+				 return tokenizer.fetchFlowEntry();
+			 }
+		 },
+		 st('*'){
+			 public Token fetch(Tokenizer tokenizer, boolean colz, boolean docStart){
+				 return tokenizer.fetchAlias();
+			 }
+		 },
+		 and('&'){
+			 public Token fetch(Tokenizer tokenizer, boolean colz, boolean docStart){
+				 return tokenizer.fetchAnchor();
+			 }
+		 },
+		 em('!'){
+			 public Token fetch(Tokenizer tokenizer, boolean colz, boolean docStart){
+				 return tokenizer.fetchTag();
+			 }
+		 },
+		 or('|'){
+			 public Token fetch(Tokenizer tokenizer, boolean colz, boolean docStart){
+				 if (tokenizer.getFlowLevel() == 0) return tokenizer.fetchLiteral();
+				 return null;
+			 }
+		 },
+		 gr('>'){
+			 public Token fetch(Tokenizer tokenizer, boolean colz, boolean docStart){
+				 if (tokenizer.getFlowLevel() == 0) return tokenizer.fetchFolded();
+				 return null;
+			 }
+		 };
+		
+		private char span;
+		 
+		private chars(char value){
+			span = value;
+		}
+		public char getSpan(){
+			return span;
+		}
+		
+		public abstract Token fetch(Tokenizer tokenizer, boolean colz, boolean docStart);
 	}
 
 	private Token fetchMoreTokens () {
@@ -261,53 +386,13 @@ public class Tokenizer {
 		unwindIndent(column);
 		char ch = peek();
 		boolean colz = column == 0;
-		switch (ch) {
-		case '\0':
-			return fetchStreamEnd();
-		case '\'':
-			return fetchSingle();
-		case '"':
-			return fetchDouble();
-		case '?':
-			if (flowLevel != 0 || NULL_OR_OTHER.indexOf(peek(1)) != -1) return fetchKey();
-			break;
-		case ':':
-			if (flowLevel != 0 || NULL_OR_OTHER.indexOf(peek(1)) != -1) return fetchValue();
-			break;
-		case '%':
-			if (colz) return fetchDirective();
-			break;
-		case '-':
-			if ((colz || docStart) && ENDING.matcher(prefix(4)).matches())
-				return fetchDocumentStart();
-			else if (NULL_OR_OTHER.indexOf(peek(1)) != -1) return fetchBlockEntry();
-			break;
-		case '.':
-			if (colz && START.matcher(prefix(4)).matches()) return fetchDocumentEnd();
-			break;
-		case '[':
-			return fetchFlowSequenceStart();
-		case '{':
-			return fetchFlowMappingStart();
-		case ']':
-			return fetchFlowSequenceEnd();
-		case '}':
-			return fetchFlowMappingEnd();
-		case ',':
-			return fetchFlowEntry();
-		case '*':
-			return fetchAlias();
-		case '&':
-			return fetchAnchor();
-		case '!':
-			return fetchTag();
-		case '|':
-			if (flowLevel == 0) return fetchLiteral();
-			break;
-		case '>':
-			if (flowLevel == 0) return fetchFolded();
-			break;
+		
+		for(chars char1: chars.values()){
+			if(char1.getSpan() == ch){
+				return char1.fetch(this, colz, docStart);
+			}
 		}
+		
 		if (BEG.matcher(prefix(2)).find()) return fetchPlain();
 		if (ch == '\t') throw new TokenizerException("Tabs cannot be used for indentation.");
 		throw new TokenizerException("While scanning for the next token, a character that cannot begin a token was found: "
@@ -319,15 +404,15 @@ public class Tokenizer {
 			SimpleKey key = (SimpleKey)iter.next();
 			if (key.tokenNumber > 0) return key.tokenNumber;
 		}
-		return -1;
+		throw new TokenizerException("There is no next possible simple key.");
 	}
 
 	private void savePossibleSimpleKey () {
-		if (allowSimpleKey) possibleSimpleKeys.put(flowLevel, new SimpleKey(tokensTaken + tokens.size(), column));
+		if (allowSimpleKey) possibleSimpleKeys.put(getFlowLevel(), new SimpleKey(tokensTaken + tokens.size(), column));
 	}
 
 	private void unwindIndent (int col) {
-		if (flowLevel != 0) return;
+		if (getFlowLevel() != 0) return;
 
 		while (indent > col) {
 			indent = indents.remove(0);
@@ -425,35 +510,32 @@ public class Tokenizer {
 	}
 
 	private Token fetchBlockEntry () {
-		if (flowLevel == 0) {
-			if (!allowSimpleKey) throw new TokenizerException("Found a sequence entry where it is not allowed.");
-			if (addIndent(column)) tokens.add(Token.BLOCK_SEQUENCE_START);
-		}
-		allowSimpleKey = true;
-		forward();
-		tokens.add(Token.BLOCK_ENTRY);
-		return Token.BLOCK_ENTRY;
+		return fetchSomething("sequence entry", Token.BLOCK_MAPPING_START, true, Token.BLOCK_ENTRY);
 	}
 
 	private Token fetchKey () {
-		if (flowLevel == 0) {
-			if (!allowSimpleKey) throw new TokenizerException("Found a mapping key where it is not allowed.");
-			if (addIndent(column)) tokens.add(Token.BLOCK_MAPPING_START);
+		return fetchSomething("mapping key", Token.BLOCK_MAPPING_START, getFlowLevel() == 0, Token.KEY);
+	}
+	
+	private Token fetchSomething(String ExcptToken, Token addToken, boolean allowSimpleKeyValue, Token _addToken){
+		if (getFlowLevel() == 0) {
+			if (!allowSimpleKey) throw new TokenizerException("Found a "+ExcptToken+" where it is not allowed.");
+			if (addIndent(column)) tokens.add(addToken);
 		}
-		allowSimpleKey = flowLevel == 0;
+		allowSimpleKey = allowSimpleKeyValue;
 		forward();
-		tokens.add(Token.KEY);
-		return Token.KEY;
+		tokens.add(_addToken);
+		return _addToken;
 	}
 
 	private Token fetchValue () {
-		SimpleKey key = possibleSimpleKeys.get(flowLevel);
+		SimpleKey key = possibleSimpleKeys.get(getFlowLevel());
 		if (null == key) {
-			if (flowLevel == 0 && !allowSimpleKey) throw new TokenizerException("Found a mapping value where it is not allowed.");
+			if (getFlowLevel() == 0 && !allowSimpleKey) throw new TokenizerException("Found a mapping value where it is not allowed.");
 		} else {
-			possibleSimpleKeys.remove(flowLevel);
+			possibleSimpleKeys.remove(getFlowLevel());
 			tokens.add(key.tokenNumber - tokensTaken, Token.KEY);
-			if (flowLevel == 0 && addIndent(key.column)) tokens.add(key.tokenNumber - tokensTaken, Token.BLOCK_MAPPING_START);
+			if (getFlowLevel() == 0 && addIndent(key.column)) tokens.add(key.tokenNumber - tokensTaken, Token.BLOCK_MAPPING_START);
 			allowSimpleKey = false;
 		}
 		forward();
@@ -484,6 +566,7 @@ public class Tokenizer {
 		tokens.add(tok);
 		return tok;
 	}
+	
 
 	private Token fetchLiteral () {
 		return fetchBlockScalar('|');
@@ -531,7 +614,7 @@ public class Tokenizer {
 			if (peek() == '#') while (NULL_OR_LINEBR.indexOf(peek()) == -1)
 				forward();
 			if (scanLineBreak().length() != 0) {
-				if (flowLevel == 0) allowSimpleKey = true;
+				if (getFlowLevel() == 0) allowSimpleKey = true;
 			} else
 				break;
 		}
@@ -659,13 +742,10 @@ public class Tokenizer {
 		if (NON_ALPHA_OR_NUM.indexOf(peek()) == -1)
 			throw new TokenizerException("While scanning an " + name + ", expected an alpha or numeric character but found: "
 				+ ch(peek()));
-		if (tok instanceof AnchorToken)
-			((AnchorToken)tok).setInstanceName(value);
-		else
-			((AliasToken)tok).setInstanceName(value);
+		tok.setInstanceName(value);
 		return tok;
 	}
-
+	
 	private Token scanTag () {
 		char ch = peek(1);
 		String handle = null;
@@ -767,16 +847,12 @@ public class Tokenizer {
 			ch = peek();
 			if (Character.isDigit(ch)) {
 				increment = Integer.parseInt(("" + ch));
-				if (increment == 0)
-					throw new TokenizerException(
-						"While scanning a black scaler, expected indentation indicator between 1 and 9 but found: 0");
+				checkIncrement(increment);
 				forward();
 			}
 		} else if (Character.isDigit(ch)) {
 			increment = Integer.parseInt(("" + ch));
-			if (increment == 0)
-				throw new TokenizerException(
-					"While scanning a black scaler, expected indentation indicator between 1 and 9 but found: 0");
+			checkIncrement(increment);
 			forward();
 			ch = peek();
 			if (ch == '-' || ch == '+') {
@@ -788,6 +864,12 @@ public class Tokenizer {
 			throw new TokenizerException("While scanning a block scalar, expected chomping or indentation indicators but found: "
 				+ ch(peek()));
 		return new Object[] {Boolean.valueOf(chomping), increment};
+	}
+	
+	private void checkIncrement(int increment){
+		if (increment == 0)
+			throw new TokenizerException(
+				"While scanning a black scaler, expected indentation indicator between 1 and 9 but found: 0");
 	}
 
 	private String scanBlockScalarIgnoredLine () {
@@ -928,7 +1010,7 @@ public class Tokenizer {
 		String spaces = "";
 		boolean f_nzero = true;
 		Pattern r_check = R_FLOWNONZERO;
-		if (flowLevel == 0) {
+		if (getFlowLevel() == 0) {
 			f_nzero = false;
 			r_check = R_FLOWZERO;
 		}
@@ -951,7 +1033,7 @@ public class Tokenizer {
 			chunks.append(prefixForward(length));
 			// forward(length);
 			spaces = scanPlainSpaces();
-			if (spaces == null || flowLevel == 0 && column < ind) break;
+			if (spaces == null || getFlowLevel() == 0 && column < ind) break;
 		}
 		return new ScalarToken(chunks.toString(), true);
 	}
@@ -1051,14 +1133,15 @@ public class Tokenizer {
 		// '\x85' : '\n'
 		// default : ''
 		char val = peek();
+		String res = "";
 		if (FULL_LINEBR.indexOf(val) != -1) {
 			if (RN.equals(prefix(2)))
 				forward(2);
 			else
 				forward();
-			return "\n";
+			res = "\n";
 		}
-		return "";
+		return res;
 	}
 
 	private String ch (char ch) {
