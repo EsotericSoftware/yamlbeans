@@ -26,14 +26,18 @@ class ScalarAnalysis {
 	static private final String SPECIAL_INDICATOR = "#,[]{}#&*!|>'\"%@`";
 	static private final String FLOW_INDICATOR = ",?[]{}";
 
-	public final String scalar;
-	public final boolean empty;
-	public final boolean multiline;
-	public final boolean allowFlowPlain;
-	public final boolean allowBlockPlain;
-	public final boolean allowSingleQuoted;
-	public final boolean allowDoubleQuoted;
-	public final boolean allowBlock;
+	static private final char UNICODE_NEXT_LINE = '\u0085';
+	static private final char UNICODE_SPACE = '\u0020';
+	static private final char UNICODE_TILDE = '\u007E';
+
+	private final String scalar;
+	private final boolean empty;
+	private final boolean multiline;
+	private final boolean allowFlowPlain;
+	private final boolean allowBlockPlain;
+	private final boolean allowSingleQuoted;
+	private final boolean allowDoubleQuoted;
+	private final boolean allowBlock;
 
 	private ScalarAnalysis (String scalar, boolean empty, boolean multiline, boolean allowFlowPlain, boolean allowBlockPlain,
 		boolean allowSingleQuoted, boolean allowDoubleQuoted, boolean allowBlock) {
@@ -106,11 +110,11 @@ class ScalarAnalysis {
 					blockIndicators = true;
 				}
 			}
-			if (ceh == '\n' || '\u0085' == ceh) lineBreaks = true;
+			if (ceh == '\n' || UNICODE_NEXT_LINE == ceh) lineBreaks = true;
 			if (escapeUnicode) {
-				if (ceh != '\n' && ceh != '\t' && !('\u0020' <= ceh && ceh <= '\u007E')) specialCharacters = true;
+				if (ceh != '\n' && ceh != '\t' && !( UNICODE_SPACE <= ceh && ceh <= UNICODE_TILDE)) specialCharacters = true;
 			}
-			if (' ' == ceh || '\n' == ceh || '\u0085' == ceh) {
+			if (' ' == ceh || '\n' == ceh || UNICODE_NEXT_LINE == ceh) {
 				if (spaces && breaks) {
 					if (ceh != ' ') mixed = true;
 				} else if (spaces) {
@@ -190,5 +194,37 @@ class ScalarAnalysis {
 
 		return new ScalarAnalysis(scalar, false, lineBreaks, allowFlowPlain, allowBlockPlain, allowSingleQuoted, allowDoubleQuoted,
 			allowBlock);
+	}
+
+	public String getScalar() {
+		return scalar;
+	}
+
+	public boolean isEmpty() {
+		return empty;
+	}
+
+	public boolean isMultiline() {
+		return multiline;
+	}
+
+	public boolean isAllowFlowPlain() {
+		return allowFlowPlain;
+	}
+
+	public boolean isAllowBlockPlain() {
+		return allowBlockPlain;
+	}
+
+	public boolean isAllowSingleQuoted() {
+		return allowSingleQuoted;
+	}
+
+	public boolean isAllowDoubleQuoted() {
+		return allowDoubleQuoted;
+	}
+
+	public boolean isAllowBlock() {
+		return allowBlock;
 	}
 }
