@@ -67,6 +67,34 @@ public class Emitter {
 	private ScalarAnalysis analysis;
 	private char style = 0;
 
+	static private final int S_STREAM_START = 0;
+	static private final int S_FIRST_DOCUMENT_START = 1;
+	static private final int S_DOCUMENT_ROOT = 2;
+	static private final int S_NOTHING = 3;
+	static private final int S_DOCUMENT_START = 4;
+	static private final int S_DOCUMENT_END = 5;
+	static private final int S_FIRST_FLOW_SEQUENCE_ITEM = 6;
+	static private final int S_FLOW_SEQUENCE_ITEM = 7;
+	static private final int S_FIRST_FLOW_MAPPING_KEY = 8;
+	static private final int S_FLOW_MAPPING_SIMPLE_VALUE = 9;
+	static private final int S_FLOW_MAPPING_VALUE = 10;
+	static private final int S_FLOW_MAPPING_KEY = 11;
+	static private final int S_BLOCK_SEQUENCE_ITEM = 12;
+	static private final int S_FIRST_BLOCK_MAPPING_KEY = 13;
+	static private final int S_BLOCK_MAPPING_SIMPLE_VALUE = 14;
+	static private final int S_BLOCK_MAPPING_VALUE = 15;
+	static private final int S_BLOCK_MAPPING_KEY = 16;
+	static private final int S_FIRST_BLOCK_SEQUENCE_ITEM = 17;
+
+	static private final Map<String, String> DEFAULT_TAG_PREFIXES_1_0 = new HashMap();
+	static private final Map<String, String> DEFAULT_TAG_PREFIXES_1_1 = new HashMap();
+	static {
+		DEFAULT_TAG_PREFIXES_1_0.put("tag:yaml.org,2002:", "!");
+
+		DEFAULT_TAG_PREFIXES_1_1.put("!", "!");
+		DEFAULT_TAG_PREFIXES_1_1.put("tag:yaml.org,2002:", "!!");
+	}
+	
 	public Emitter (Writer writer) {
 		this(writer, new EmitterConfig());
 	}
@@ -716,34 +744,6 @@ public class Emitter {
 
 	private interface EmitterState {
 		public void expect () throws IOException;
-	}
-
-	static private final int S_STREAM_START = 0;
-	static private final int S_FIRST_DOCUMENT_START = 1;
-	static private final int S_DOCUMENT_ROOT = 2;
-	static private final int S_NOTHING = 3;
-	static private final int S_DOCUMENT_START = 4;
-	static private final int S_DOCUMENT_END = 5;
-	static private final int S_FIRST_FLOW_SEQUENCE_ITEM = 6;
-	static private final int S_FLOW_SEQUENCE_ITEM = 7;
-	static private final int S_FIRST_FLOW_MAPPING_KEY = 8;
-	static private final int S_FLOW_MAPPING_SIMPLE_VALUE = 9;
-	static private final int S_FLOW_MAPPING_VALUE = 10;
-	static private final int S_FLOW_MAPPING_KEY = 11;
-	static private final int S_BLOCK_SEQUENCE_ITEM = 12;
-	static private final int S_FIRST_BLOCK_MAPPING_KEY = 13;
-	static private final int S_BLOCK_MAPPING_SIMPLE_VALUE = 14;
-	static private final int S_BLOCK_MAPPING_VALUE = 15;
-	static private final int S_BLOCK_MAPPING_KEY = 16;
-	static private final int S_FIRST_BLOCK_SEQUENCE_ITEM = 17;
-
-	static private final Map<String, String> DEFAULT_TAG_PREFIXES_1_0 = new HashMap();
-	static private final Map<String, String> DEFAULT_TAG_PREFIXES_1_1 = new HashMap();
-	static {
-		DEFAULT_TAG_PREFIXES_1_0.put("tag:yaml.org,2002:", "!");
-
-		DEFAULT_TAG_PREFIXES_1_1.put("!", "!");
-		DEFAULT_TAG_PREFIXES_1_1.put("tag:yaml.org,2002:", "!!");
 	}
 
 	public static void main (String[] args) throws IOException {
