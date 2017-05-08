@@ -29,6 +29,10 @@ import java.util.*;
  */
 class Beans {
 
+    static private final String GETTER = "get";
+    static private final String GETTER_BOOLEAN = "is";
+    static private final String SETTER = "set";
+
     private Beans() {
     }
 
@@ -64,47 +68,23 @@ class Beans {
     }
 
     static public Object createObject(Class type, boolean privateConstructors) throws InvocationTargetException {
-        // Use no-arg constructor.
-        Constructor constructor = null;
-        for (Constructor typeConstructor : type.getConstructors()) {
-            if (typeConstructor.getParameterTypes().length == 0) {
-                constructor = typeConstructor;
-                break;
-            }
-        }
+        Constructor constructor = getNoArgConstructor(type);
 
         if (constructor == null && privateConstructors) {
-            // Try a private constructor.
-            try {
-                constructor = type.getDeclaredConstructor();
-                constructor.setAccessible(true);
-            } catch (SecurityException ignored) {
-            } catch (NoSuchMethodException ignored) {
-            }
+            constructor = getPrivateConstructor(type);
         }
-
-        // Otherwise try to use a common implementation.
         if (constructor == null) {
-            try {
-                if (List.class.isAssignableFrom(type)) {
-                    constructor = ArrayList.class.getConstructor(new Class[0]);
-                } else if (Set.class.isAssignableFrom(type)) {
-                    constructor = HashSet.class.getConstructor(new Class[0]);
-                } else if (Map.class.isAssignableFrom(type)) {
-                    constructor = HashMap.class.getConstructor(new Class[0]);
-                }
-            } catch (Exception ex) {
-                throw new InvocationTargetException(ex, "Error getting constructor for class: " + type.getName());
-            }
+            constructor = tryCommonImplementationConstructor(type);
         }
 
-        if (constructor == null)
+        if (constructor == null) {
             throw new InvocationTargetException(null, "Unable to find a no-arg constructor for class: " + type.getName());
-
-        try {
-            return constructor.newInstance();
-        } catch (Exception ex) {
-            throw new InvocationTargetException(ex, "Error constructing instance of class: " + type.getName());
+        } else {
+            try {
+                return constructor.newInstance();
+            } catch (Exception e) {
+                throw new InvocationTargetException(e, "Error constructing instance of class: " + type.getName());
+            }
         }
     }
 
@@ -112,8 +92,16 @@ class Beans {
         if (type == null) {
             throw new IllegalArgumentException("type cannot be null.");
         }
-        Class[] noArgs = new Class[0], oneArg = new Class[1];
-        Set<Property> properties = config.writeConfig.keepBeanPropertyOrder ? new LinkedHashSet() : new TreeSet();
+        Class[] noArgs = new Class[0];
+        Class[] oneArg = new Class[1];
+
+        Set<Property> properties;
+        if (config.writeConfig.keepBeanPropertyOrder) {
+            properties = new LinkedHashSet<Property>();
+        } else {
+            properties = new TreeSet<Property>();
+        }
+
         for (Field field : getAllFields(type)) {
             String name = field.getName();
 
@@ -121,54 +109,39 @@ class Beans {
                 DeferredConstruction deferredConstruction = getDeferredConstruction(type, config);
                 boolean constructorProperty = deferredConstruction != null && deferredConstruction.hasParameter(name);
 
-                String nameUpper = Character.toUpperCase(name.charAt(0)) + name.substring(1);
-                Method getMethod = null, setMethod = null;
+                String upperName = getUpperName(name);
+                Method getMethod = null;
+                Method setMethod = null;
+
                 try {
                     oneArg[0] = field.getType();
-                    setMethod = type.getMethod("set" + nameUpper, oneArg);
+                    setMethod = type.getMethod(SETTER + upperName, oneArg);
                 } catch (Exception ignored) {
                 }
                 try {
-                    getMethod = type.getMethod("get" + nameUpper, noArgs);
+                    getMethod = type.getMethod(GETTER + upperName, noArgs);
                 } catch (Exception ignored) {
                 }
-                if (getMethod == null && (field.getType().equals(Boolean.class) || field.getType().equals(boolean.class))) {
+                if (getMethod == null && isBooleanType(field)) {
                     try {
-                        getMethod = type.getMethod("is" + nameUpper, noArgs);
+                        getMethod = type.getMethod(GETTER_BOOLEAN + upperName, noArgs);
                     } catch (Exception ignored) {
                     }
                 }
+
                 if (getMethod != null && (setMethod != null || constructorProperty)) {
                     properties.add(new MethodProperty(name, setMethod, getMethod));
                     continue;
                 }
             }
 
-            int modifiers = field.getModifiers();
-            if (Modifier.isStatic(modifiers) || Modifier.isTransient(modifiers)) {
-                continue;
-            }
-            if (!Modifier.isPublic(modifiers) && !privateFields) {
-                continue;
-            }
-            try {
+            if (isProperField(field, privateFields)) {
                 field.setAccessible(true);
-            } catch (Exception ignored) {
+                properties.add(new FieldProperty(field));
             }
-            properties.add(new FieldProperty(field));
         }
-        return properties;
-    }
 
-    static private String toJavaIdentifier(String name) {
-        StringBuilder buffer = new StringBuilder();
-        for (int i = 0, n = name.length(); i < n; i++) {
-            char c = name.charAt(i);
-            if (Character.isJavaIdentifierPart(c)) {
-                buffer.append(c);
-            }
-        }
-        return buffer.toString();
+        return properties;
     }
 
     static public Property getProperty(Class type, String name, boolean beanProperties, boolean privateFields, YamlConfig config) {
@@ -184,55 +157,148 @@ class Beans {
             DeferredConstruction deferredConstruction = getDeferredConstruction(type, config);
             boolean constructorProperty = deferredConstruction != null && deferredConstruction.hasParameter(name);
 
-            String nameUpper = Character.toUpperCase(name.charAt(0)) + name.substring(1);
+            String upperName = getUpperName(name);
             Method getMethod = null;
+            Method setMethod = null;
+
             try {
-                getMethod = type.getMethod("get" + nameUpper);
+                getMethod = type.getMethod(GETTER + upperName);
             } catch (Exception ignored) {
             }
             if (getMethod == null) {
                 try {
-                    getMethod = type.getMethod("is" + nameUpper);
+                    getMethod = type.getMethod(GETTER_BOOLEAN + upperName);
                 } catch (Exception ignored) {
                 }
             }
+
             if (getMethod != null) {
-                Method setMethod = null;
                 try {
-                    setMethod = type.getMethod("set" + nameUpper, getMethod.getReturnType());
+                    setMethod = type.getMethod(SETTER + upperName, getMethod.getReturnType());
                 } catch (Exception ignored) {
                 }
-                if (getMethod != null && (setMethod != null || constructorProperty))
+                if (setMethod != null || constructorProperty) {
                     return new MethodProperty(name, setMethod, getMethod);
+                }
             }
         }
 
+        FieldProperty fieldProperty = null;
         for (Field field : getAllFields(type)) {
-            if (!field.getName().equals(name)) continue;
-            int modifiers = field.getModifiers();
-            if (Modifier.isStatic(modifiers) || Modifier.isTransient(modifiers)) continue;
-            if (!Modifier.isPublic(modifiers) && !privateFields) continue;
-            try {
-                field.setAccessible(true);
-            } catch (Exception ignored) {
+            if (!field.getName().equals(name)) {
+                continue;
             }
-            return new FieldProperty(field);
+
+            if (isProperField(field, privateFields)) {
+                field.setAccessible(true);
+                fieldProperty = new FieldProperty(field);
+                break;
+            }
         }
-        return null;
+
+        return fieldProperty;
+    }
+
+    static private String toJavaIdentifier(String name) {
+        StringBuilder builder = new StringBuilder();
+
+        for (int i = 0; i < name.length(); i++) {
+            char c = name.charAt(i);
+
+            if (Character.isJavaIdentifierPart(c)) {
+                builder.append(c);
+            }
+        }
+
+        return builder.toString();
+    }
+
+    static private Constructor getNoArgConstructor(Class type) {
+        Constructor noArgConstructor = null;
+
+        for (Constructor typeConstructor : type.getConstructors()) {
+            if (isNoArgConstructor(typeConstructor)) {
+                noArgConstructor = typeConstructor;
+                break;
+            }
+        }
+
+        return noArgConstructor;
+    }
+
+    static private boolean isNoArgConstructor(Constructor constructor) {
+        return constructor.getParameterTypes().length == 0;
+    }
+
+    static private Constructor getPrivateConstructor(Class type) {
+        Constructor privateConstructor = null;
+
+        try {
+            privateConstructor = type.getDeclaredConstructor();
+            privateConstructor.setAccessible(true);
+        } catch (SecurityException ignored) {
+        } catch (NoSuchMethodException ignored) {
+        }
+
+        return privateConstructor;
+    }
+
+    static private Constructor tryCommonImplementationConstructor(Class type) throws InvocationTargetException {
+        Constructor commonImplementationConstructor = null;
+        Class[] noArgs = new Class[0];
+
+        try {
+            if (List.class.isAssignableFrom(type)) {
+                commonImplementationConstructor = ArrayList.class.getConstructor(noArgs);
+            } else if (Set.class.isAssignableFrom(type)) {
+                commonImplementationConstructor = HashSet.class.getConstructor(noArgs);
+            } else if (Map.class.isAssignableFrom(type)) {
+                commonImplementationConstructor = HashMap.class.getConstructor(noArgs);
+            }
+        } catch (Exception e) {
+            throw new InvocationTargetException(e, "Error getting constructor for class: " + type.getName());
+        }
+
+        return commonImplementationConstructor;
     }
 
     static private ArrayList<Field> getAllFields(Class type) {
-        ArrayList<Class> classes = new ArrayList();
+        ArrayList<Class> classes = new ArrayList<Class>();
+        ArrayList<Field> allFields = new ArrayList<Field>();
+
         Class nextClass = type;
         while (nextClass != null && nextClass != Object.class) {
             classes.add(nextClass);
             nextClass = nextClass.getSuperclass();
         }
-        ArrayList<Field> allFields = new ArrayList();
+
         for (int i = classes.size() - 1; i >= 0; i--) {
             Collections.addAll(allFields, classes.get(i).getDeclaredFields());
         }
+
         return allFields;
     }
 
+    static private String getUpperName(String name) {
+        return Character.toUpperCase(name.charAt(0)) + name.substring(1);
+    }
+
+    static private boolean isBooleanType(Field field) {
+        return field.getType().equals(Boolean.class) || field.getType().equals(boolean.class);
+    }
+
+    static private boolean isProperField(Field field, boolean privateFields) {
+        boolean isProper;
+
+        int modifiers = field.getModifiers();
+        if (Modifier.isStatic(modifiers) || Modifier.isTransient(modifiers)) {
+            isProper = false;
+        } else if (!Modifier.isPublic(modifiers) && !privateFields) {
+            isProper = false;
+        } else {
+            isProper = true;
+        }
+
+        return isProper;
+    }
 }

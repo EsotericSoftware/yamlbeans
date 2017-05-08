@@ -590,11 +590,11 @@ public class Emitter {
 		}
 		if (event.type == SCALAR && analysis == null) {
 			analysis = ScalarAnalysis.analyze(((ScalarEvent)event).value, config.escapeUnicode);
-			length += analysis.scalar.length();
+			length += analysis.getScalar().length();
 		}
 
 		return length < 128
-			&& (event.type == ALIAS || event.type == SCALAR && !analysis.empty && !analysis.multiline || checkEmptySequence() || checkEmptyMapping());
+			&& (event.type == ALIAS || event.type == SCALAR && !analysis.isEmpty() && !analysis.isMultiline() || checkEmptySequence() || checkEmptyMapping());
 	}
 
 	private void processAnchor (String indicator) throws IOException {
@@ -670,15 +670,15 @@ public class Emitter {
 			style = chooseScalarStyle();
 		boolean split = !simpleKeyContext;
 		if (style == '"')
-			writer.writeDoubleQuoted(analysis.scalar, split, indent, config.wrapColumn, config.escapeUnicode);
+			writer.writeDoubleQuoted(analysis.getScalar(), split, indent, config.wrapColumn, config.escapeUnicode);
 		else if (style == '\'')
-			writer.writeSingleQuoted(analysis.scalar, split, indent, config.wrapColumn);
+			writer.writeSingleQuoted(analysis.getScalar(), split, indent, config.wrapColumn);
 		else if (style == '>')
-			writer.writeFolded(analysis.scalar, indent, config.wrapColumn);
+			writer.writeFolded(analysis.getScalar(), indent, config.wrapColumn);
 		else if (style == '|')
-			writer.writeLiteral(analysis.scalar, indent);
+			writer.writeLiteral(analysis.getScalar(), indent);
 		else
-			writer.writePlain(analysis.scalar, split, indent, config.wrapColumn);
+			writer.writePlain(analysis.getScalar(), split, indent, config.wrapColumn);
 		analysis = null;
 		style = 0;
 	}

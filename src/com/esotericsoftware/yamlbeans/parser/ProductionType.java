@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public interface ProductionType {
+	
 	int P_STREAM = 0;
 	int P_STREAM_START = 1; // TERMINAL
 	int P_STREAM_END = 2; // TERMINAL
@@ -50,4 +51,9 @@ public interface ProductionType {
 	int P_FLOW_MAPPING_INTERNAL_VALUE = 43;
 	int P_ALIAS = 44;
 	int P_EMPTY_SCALAR = 45;
+	int P_ALLOCATION_FAIL = -1;
+	int P_ALLOCATION_SUCESS = -2;
+	
+	Map<String, String> DEFAULT_TAGS_1_0 = new HashMap();
+	Map<String, String> DEFAULT_TAGS_1_1 = new HashMap();
 }
