@@ -174,23 +174,52 @@ class ScalarAnalysis {
 		boolean allowDoubleQuoted = true;
 		boolean allowBlock = true;
 
-		if (leadingSpaces || leadingBreaks || trailingSpaces) allowFlowPlain = allowBlockPlain = allowBlock = false;
+		if (leadingSpaces || leadingBreaks || trailingSpaces){
+			allowFlowPlain = false;
+			allowBlockPlain = false;
+			allowBlock = false;
+		}
 
-		if (trailingBreaks) allowFlowPlain = allowBlockPlain = false;
+		if (trailingBreaks){ 
+			allowFlowPlain = false;
+			allowBlockPlain = false;
+		}
 
-		if (inlineBreaksSpaces) allowFlowPlain = allowBlockPlain = allowSingleQuoted = false;
+		if (inlineBreaksSpaces){ 
+			allowFlowPlain = false;
+			allowBlockPlain = false; 
+			allowSingleQuoted = false;
+		}
 
-		if (mixedBreaksSpaces || specialCharacters) allowFlowPlain = allowBlockPlain = allowSingleQuoted = allowBlock = false;
+		if (mixedBreaksSpaces || specialCharacters){ 
+			allowFlowPlain = false;
+			allowBlockPlain = false;
+			allowSingleQuoted = false;
+			allowBlock = false;
+		}
 
-		if (inlineBreaks) allowFlowPlain = allowBlockPlain = allowSingleQuoted = false;
+		if (inlineBreaks){ 
+			allowFlowPlain = false;
+			allowBlockPlain = false;
+			allowSingleQuoted = false;
+		}
 
-		if (trailingBreaks) allowSingleQuoted = false;
+		if (trailingBreaks){ 
+			allowSingleQuoted = false;
+		}
 
-		if (lineBreaks) allowFlowPlain = allowBlockPlain = false;
+		if (lineBreaks){ 
+			allowFlowPlain = false;
+			allowBlockPlain = false;
+		}
 
-		if (flowIndicators) allowFlowPlain = false;
+		if (flowIndicators){ 
+			allowFlowPlain = false;
+		}
 
-		if (blockIndicators) allowBlockPlain = false;
+		if (blockIndicators){ 
+			allowBlockPlain = false;
+		}
 
 		return new ScalarAnalysis(scalar, false, lineBreaks, allowFlowPlain, allowBlockPlain, allowSingleQuoted, allowDoubleQuoted,
 			allowBlock);
