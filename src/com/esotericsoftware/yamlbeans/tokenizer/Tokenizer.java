@@ -510,7 +510,7 @@ public class Tokenizer {
 	}
 
 	private Token fetchBlockEntry () {
-		return fetchSomething("sequence entry", Token.BLOCK_MAPPING_START, true, Token.BLOCK_ENTRY);
+		return fetchSomething("sequence entry", Token.BLOCK_SEQUENCE_START, true, Token.BLOCK_ENTRY);
 	}
 
 	private Token fetchKey () {
