@@ -360,7 +360,7 @@ class EmitterWriter {
 	}
 
 	public void writeLineBreak (String data) throws IOException {
-		if (data == null) data = "\n";
+		if (data == null) data = System.getProperty("line.separator");
 		whitespace = true;
 		indentation = true;
 		column = 0;
