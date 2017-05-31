@@ -60,7 +60,7 @@ http://repo1.maven.org/maven2/com/esotericsoftware/yamlbeans/yamlbeans/
 
 ## 反序列化其他类
 
-有两种方法来反序列化除HashMaps，ArrayLists和Strings之外的其他数据格式，例如下面这个YAML文件和Java类:
+有两种方法来反序列化除HashMaps，ArrayLists和Strings之外的其他自定义数据格式，例如下面这个YAML文件和Java类:
 
 ```yaml
     name: Nathan Sweet
@@ -73,7 +73,7 @@ http://repo1.maven.org/maven2/com/esotericsoftware/yamlbeans/yamlbeans/
     }
 ```
 
-在“**read()**”方法的入参中可以传递一个类，这样YamlReader就可以直接反序列化为指定的类:
+在“**read()**”方法的入参中传递一个类，这样YamlReader就可以直接反序列化为指定的类:
 
 ```java
     YamlReader reader = new YamlReader(new FileReader("contact.yml"));
@@ -82,7 +82,7 @@ http://repo1.maven.org/maven2/com/esotericsoftware/yamlbeans/yamlbeans/
 ```
 
 
-YamlReader创建了一个Contact.class的实例对象，并给“name”和“age”字段赋值，且YamlReader会把YAML中“age”的值转换为int。如果age不是int类型，则反序列化将失败。
+上面YamlReader创建了一个Contact.class的实例对象，并给“name”和“age”字段赋值，且YamlReader会把YAML中“age”的值转换为int。如果age不是int类型，则反序列化将失败。
 
 
 除了上面这种反序列化方法外，还可以在YAML中使用添加`!`方式来直接指定类型：
