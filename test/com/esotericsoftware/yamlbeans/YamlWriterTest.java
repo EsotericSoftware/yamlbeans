@@ -32,6 +32,9 @@ import junit.framework.TestCase;
 
 /** @author <a href="mailto:misc@n4te.com">Nathan Sweet</a> */
 public class YamlWriterTest extends TestCase {
+
+	private static final String LINE_SEPARATOR = System.getProperty("line.separator");
+
 	public void testPrivateFields () throws Exception {
 		ArrayList list = new ArrayList();
 		list.add("abc");
@@ -212,14 +215,14 @@ public class YamlWriterTest extends TestCase {
 		YamlWriter writer = new YamlWriter(buffer, config);
 		writer.write("test");
 		writer.close();
-		assertEquals("test\n...\n", buffer.toString());
+		assertEquals("test" + LINE_SEPARATOR + "..." + LINE_SEPARATOR, buffer.toString());
 
 		buffer = new StringWriter();
 		writer = new YamlWriter(buffer, config);
 		writer.write("test");
 		writer.write("test");
 		writer.close();
-		assertEquals("test\n...\n--- test\n...\n", buffer.toString());
+		assertEquals("test" + LINE_SEPARATOR + "..." + LINE_SEPARATOR + "--- test" + LINE_SEPARATOR + "..." + LINE_SEPARATOR, buffer.toString());
 	}
 
 	void checkWriterOutput (String example, String expected) throws Exception {
@@ -231,14 +234,14 @@ public class YamlWriterTest extends TestCase {
 	}
 
 	public void testSingleQuotesDoubling () throws Exception {
-		checkWriterOutput("abc", "abc\n");
-		checkWriterOutput("abc def", "abc def\n");
+		checkWriterOutput("abc", "abc" + LINE_SEPARATOR);
+		checkWriterOutput("abc def", "abc def" + LINE_SEPARATOR);
 		// single quotes around output as soon as we have a colon in the input
-		checkWriterOutput("abc: def", "'abc: def'\n");
-		checkWriterOutput("abc: def'ghi", "'abc: def''ghi'\n");
-		checkWriterOutput("abc: def 'ghi", "'abc: def ''ghi'\n");
+		checkWriterOutput("abc: def", "'abc: def'" + LINE_SEPARATOR);
+		checkWriterOutput("abc: def'ghi", "'abc: def''ghi'" + LINE_SEPARATOR);
+		checkWriterOutput("abc: def 'ghi", "'abc: def ''ghi'" + LINE_SEPARATOR);
 		// That was the initial bug:
-		checkWriterOutput("A: 'X'", "'A: ''X'''\n");
+		checkWriterOutput("A: 'X'", "'A: ''X'''" + LINE_SEPARATOR);
 	}
 
 	public void testObjectField () throws Exception {

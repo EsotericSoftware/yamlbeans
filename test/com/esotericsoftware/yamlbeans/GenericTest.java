@@ -12,26 +12,28 @@ import java.util.Map;
 
 public class GenericTest extends TestCase {
 
+    private static final String LINE_SEPARATOR = System.getProperty("line.separator");
+
     private static final String YAML
-            = "integerList: \n"
-            + "- 1\n"
-            + "- 100500\n"
-            + "- 10\n"
-            + "stringMap: \n"
-            + "   a: av\n"
-            + "   b: bv\n"
-            + "structList: \n"
-            + "-  i: 10\n"
-            + "   str: aaa\n"
-            + "-  i: 20\n"
-            + "   str: bbb\n"
-            + "structMap: \n"
-            + "   a: \n"
-            + "      i: 1\n"
-            + "      str: aa\n"
-            + "   b: \n"
-            + "      i: 2\n"
-            + "      str: ab\n";
+            = "integerList: " + LINE_SEPARATOR
+            + "- 1" + LINE_SEPARATOR
+            + "- 100500" + LINE_SEPARATOR
+            + "- 10" + LINE_SEPARATOR
+            + "stringMap: " + LINE_SEPARATOR
+            + "   a: av" + LINE_SEPARATOR
+            + "   b: bv" + LINE_SEPARATOR
+            + "structList: " + LINE_SEPARATOR
+            + "-  i: 10" + LINE_SEPARATOR
+            + "   str: aaa" + LINE_SEPARATOR
+            + "-  i: 20" + LINE_SEPARATOR
+            + "   str: bbb" + LINE_SEPARATOR
+            + "structMap: " + LINE_SEPARATOR
+            + "   a: " + LINE_SEPARATOR
+            + "      i: 1" + LINE_SEPARATOR
+            + "      str: aa" + LINE_SEPARATOR
+            + "   b: " + LINE_SEPARATOR
+            + "      i: 2" + LINE_SEPARATOR
+            + "      str: ab" + LINE_SEPARATOR;
 
     public void testRead() throws YamlException {
         Test test = createTest();
