@@ -4,7 +4,7 @@
 
 ## 概述
 
-**YAML**是一种人性化的数据格式，使用YAML来替代XML和properties文件，可以获得更多的表现力（支持lists，maps，anchors等数据结构），以及更容易的手工编辑。
+**YAML**是一种人性化的数据格式，使用YAML来替代XML和properties文件，可以获得更多的表现力（支持lists，maps，anchors等结构），以及更容易的手工编辑。
 而**YamlBeans**则可以让Java对象和YAML格式之间的转换（序列化和反序列化）变得更容易。
 
 Maven 仓库:
@@ -244,9 +244,9 @@ Note that it is not advisable to subclass Collection or Map. YamlBeans will only
 
 Map中value值的类型，可以根据期望的情况来指定，但Map中的键总是字符串类型。
 
-## Anchors
+## 锚点
 
-When an object graph contains multiple references to the same object, an anchor may be used so that the object only needs to be defined once in the YAML.
+当一个对象的结构中包含对其他同一对象的多个引用时，可以设置一个锚点，这样这个被引用的对象只需要在YAML中定义一次。
 
 ```yaml
     oldest friend:
@@ -256,7 +256,7 @@ When an object graph contains multiple references to the same object, an anchor 
     best friend: *1
 ```
 
-In this map, the "oldest friend" and "best friend" keys reference the same object. The YamlReader automatically handles the anchors in the YAML when rebuilding the object graph. By default, the YamlWriter automatically outputs anchors when writing objects.
+在上面map中，"oldest friend" 和 "best friend" 字段引用了同一个对象。在反序列化构建对象时，YamlReader会自动处理YAML中的锚点。同时，在默认情况下，YamlWriter在序列化对象时也会自动输出锚点。
 
 ```java
     Contact contact = new Contact();
@@ -298,7 +298,7 @@ In this map, the "oldest friend" and "best friend" keys reference the same objec
     }
 ```
 
-上面的代码不会打印任何东西，但会在第5行抛出`YamlReaderException` 异常说`发现重复字段 'line1'`
+上面的代码不会打印任何东西，但会在第5行抛出`YamlReaderException`异常说`Duplicate key found 'line1'`
 
 ## 体系结构
 
