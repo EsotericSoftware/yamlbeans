@@ -141,6 +141,8 @@ http://repo1.maven.org/maven2/com/esotericsoftware/yamlbeans/yamlbeans/
 
 Note that it is not advisable to subclass Collection or Map. YamlBeans will only serialize the collection or map and its elements, not any additional fields.
 
+***注意***，在yaml中把集合或Map设置为子类节点是不可取的。YamlBeans只会序列化集合或Map及其中的元素，而不会对其他字段进行序列化。
+
 ## 复杂结构
 
 **YamlBeans**可序列化任何对象。
