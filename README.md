@@ -1,5 +1,8 @@
 ## YamlBeans
 
+![License](https://img.shields.io/badge/License-BSD%202--Clause-orange.svg)
+![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.esotericsoftware.yamlbeans/yamlbeans/badge.svg)
+
 Please use the [YamlBeans discussion group](http://groups.google.com/group/yamlbeans-users) for support.
 
 ## Overview
