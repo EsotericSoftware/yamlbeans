@@ -431,25 +431,26 @@ public class Tokenizer {
 	}
 
 	private Token fetchBlockEntry () {
-		if (flowLevel == 0) {
-			if (!allowSimpleKey) throw new TokenizerException("Found a sequence entry where it is not allowed.");
-			if (addIndent(column)) tokens.add(Token.BLOCK_SEQUENCE_START);
-		}
-		allowSimpleKey = true;
-		forward();
-		tokens.add(Token.BLOCK_ENTRY);
-		return Token.BLOCK_ENTRY;
+		return fetchSomething("sequence entry", Token.BLOCK_SEQUENCE_START, true, Token.BLOCK_ENTRY);
 	}
 
 	private Token fetchKey () {
+		return fetchSomething("mapping key", Token.BLOCK_MAPPING_START, flowLevel == 0, Token.KEY);
+	}
+
+	private Token fetchSomething(String expectedToken, Token addToken, boolean allowSimpleKeyValue, Token token){
 		if (flowLevel == 0) {
-			if (!allowSimpleKey) throw new TokenizerException("Found a mapping key where it is not allowed.");
-			if (addIndent(column)) tokens.add(Token.BLOCK_MAPPING_START);
+			if (!allowSimpleKey) {
+				throw new TokenizerException("Found a "+expectedToken+" where it is not allowed.");
+			}
+			if (addIndent(column)) {
+				tokens.add(addToken);
+			}
 		}
-		allowSimpleKey = flowLevel == 0;
+		allowSimpleKey = allowSimpleKeyValue;
 		forward();
-		tokens.add(Token.KEY);
-		return Token.KEY;
+		tokens.add(token);
+		return token;
 	}
 
 	private Token fetchValue () {
