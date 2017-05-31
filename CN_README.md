@@ -205,9 +205,9 @@ Note that it is not advisable to subclass Collection or Map. YamlBeans will only
     age: 28
 ```
 
-## Lists and maps
+## List 和 Map
 
-When reading or writing a List or Map, YamlBeans cannot know what type of objects are supposed to be in the List or Map, so it will write out a tag.
+在读取或写入一个List或Map时，YamlBeans有时压根不知道List或Map中应该是什么类型的对象，因此它会输出一个类似`!com.example.Contact`的标签。
 
 ```yaml
     !com.example.Contact
@@ -221,7 +221,7 @@ When reading or writing a List or Map, YamlBeans cannot know what type of object
               number: 206-555-7654
 ```
 
-This can make the YAML less readable. To improve this, you may define what element type should be expected for a List or Map field on your object.
+这样会导致YAML的可读性变的更差。为了提高可读性，你可以在List或Map对象的字段中，指定该字段所属的类型，像下面这样：
 
 ```java
     YamlWriter writer = new YamlWriter(new FileWriter("output.yml"));
@@ -230,7 +230,8 @@ This can make the YAML less readable. To improve this, you may define what eleme
     writer.close();
 ```
 
-Now YamlBeans knows what to expect for elements of the "phoneNumbers" field, so extra tags will not be output.
+
+现在，YamlBeans知道“phoneNumbers”字段的类型是什么了，因此不会额外输出多余的标签。
 
 ```yaml
     !com.example.Contact
@@ -241,7 +242,7 @@ Now YamlBeans knows what to expect for elements of the "phoneNumbers" field, so 
             - number: 206-555-7654
 ```
 
-Setting the element type for a Map field tells YamlBeans what to expect for values in the Map. Keys in a Map are always Strings.
+Map中value值的类型，可以根据期望的情况来指定，但Map中的键总是字符串类型。
 
 ## Anchors
 
@@ -266,9 +267,9 @@ In this map, the "oldest friend" and "best friend" keys reference the same objec
     map.put("best friend", contact);
 ```
 
-## Duplicate key validation
+## 重复字段生效
 
-By default, the behaviour of this YAML parser is to ignore duplicate keys if you have. e.g if you have the following
+默认情况下，YAML在解析时是忽略重复字段的。例如，以下情况：
 
 ```yaml
     name: Nathan Sweet
@@ -279,7 +280,8 @@ By default, the behaviour of this YAML parser is to ignore duplicate keys if you
       line2: NYC
 ```
 
-The above YAML will give you an `address` object with attribute `line1` set to `711 3rd Ave S`. This is because the key `line1` in the above YAML is duplicated and thus the last value of `line1` will be retained. YAML parser will not complain about it. However, if your business logic requires you to validate YAML for such duplicates, then you can still do using `allowDuplicates` option of the `YamlConfig` object. Following is how its done:
+
+上面的YAML将会为`address`的`line1`字段赋值为`711 3rd Ave S`而不是`485 Madison Ave S`。这是因为上面YAML中的字段line1是重复的，因此line1的最后一个值将会被保留。但是，如果你的业务逻辑要求重复字段都生效，那么你可以在YamlConfig类进行设置。以下是设置方法:
 
 ```java
     try {
@@ -296,7 +298,7 @@ The above YAML will give you an `address` object with attribute `line1` set to `
     }
 ```
 
-The above code will not print anything, but throw `YamlReaderException` at line 5 saying, `Duplicate key found 'line1'`.
+上面的代码不会打印任何东西，但会在第5行抛出`YamlReaderException` 异常说`发现重复字段 'line1'`
 
 ## 体系结构
 
