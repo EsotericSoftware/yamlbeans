@@ -252,8 +252,14 @@ public class Tokenizer {
 	}
 
 	private boolean needMoreTokens () {
-		if (done) return false;
-		return tokens.isEmpty() || nextPossibleSimpleKey() == tokensTaken;
+		if (done) {
+			return false;
+		}
+		try {
+			return tokens.isEmpty() || nextPossibleSimpleKey() == tokensTaken;
+		} catch (TokenizerException e) {
+			return false;
+		}
 	}
 
 	private Token fetchMoreTokens () {
@@ -319,7 +325,7 @@ public class Tokenizer {
 			SimpleKey key = (SimpleKey)iter.next();
 			if (key.tokenNumber > 0) return key.tokenNumber;
 		}
-		return -1;
+		throw new TokenizerException("There is no next possible simple key.");
 	}
 
 	private void savePossibleSimpleKey () {
