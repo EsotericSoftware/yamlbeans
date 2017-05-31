@@ -125,9 +125,9 @@
 	<contributors>
 		<contributor>
 			<name>Tony Chemit</name>
-			<email>chemit at codelutin dot com</email>
-			<organization>CodeLutin</organization>
-			<organizationUrl>http://codelutin.com</organizationUrl>
+			<email>dev@tchemit.fr</email>
+			<organization>Ultreia</organization>
+			<organizationUrl>http://ultreia.io</organizationUrl>
 			<timezone>Europe/Paris</timezone>
 			<roles>
 				<role>Maven packager</role>
