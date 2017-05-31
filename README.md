@@ -2,7 +2,7 @@
 
 Please use the [YamlBeans discussion group](http://groups.google.com/group/yamlbeans-users) for support.
 
-这里查看[中文翻译文档](CN_README.md) .
+Chinese document [中文翻译文档](CN_README.md) .
 
 ## Overview
 
