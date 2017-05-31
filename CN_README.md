@@ -188,7 +188,7 @@ Note that it is not advisable to subclass Collection or Map. YamlBeans will only
 
 ## 标签截取
 
-`!com.example.Contact`这种形式的YAML标签有时可能会很长，会让YAML格式显得混乱不堪，不利于阅读。这时可以给类定义一个替代标签来代替，而不是用类的全限定类名。
+`!com.example.Contact`这种形式的YAML标签有时可能会很长，会让YAML格式显得混乱不堪，不利于阅读。这时可以给类定义一个替代标签来代替，而不是用类的完整类名。
 
 ```java
     YamlWriter writer = new YamlWriter(new FileWriter("output.yml"));
