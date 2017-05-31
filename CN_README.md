@@ -58,9 +58,9 @@ http://repo1.maven.org/maven2/com/esotericsoftware/yamlbeans/yamlbeans/
     }
 ```
 
-## Deserializing other classes
+## 反序列化其他类
 
-There are two ways to deserialize something other than HashMaps, ArrayLists, and Strings. Imagine this YAML document and Java class:
+有两种方法来反序列化除HashMaps，ArrayLists和Strings之外的其他数据格式，例如下面这个YAML文件和Java类:
 
 ```yaml
     name: Nathan Sweet
@@ -73,7 +73,7 @@ There are two ways to deserialize something other than HashMaps, ArrayLists, and
     }
 ```
 
-The "read" method can be passed a class, so the YamlReader knows what it is deserializing:
+在“**read()**”方法的入参中可以传递一个类，这样YamlReader就可以直接反序列化为指定的类:
 
 ```java
     YamlReader reader = new YamlReader(new FileReader("contact.yml"));
@@ -81,9 +81,11 @@ The "read" method can be passed a class, so the YamlReader knows what it is dese
     System.out.println(contact.age);
 ```
 
-The YamlReader creates an instance of the Contact class and sets the "name" and "age" fields. The YamlReader determines the "age" value in the YAML needs to be converted into a int. Deserialization would have failed if the age was not a valid int. The YamlReader can set public fields and bean setter methods.
 
-Instead of telling the YamlReader what type to deserialize, the type can alternatively be specified in the YAML using a tag:
+YamlReader创建了一个Contact.class的实例对象，并给“name”和“age”字段赋值，且YamlReader会把YAML中“age”的值转换为int。如果age不是int类型，则反序列化将失败。
+
+
+除了上面这种反序列化方法外，还可以在YAML中使用添加`!`方式来直接指定类型：
 
 ```yaml
     !com.example.Contact
