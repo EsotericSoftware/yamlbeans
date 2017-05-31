@@ -4,15 +4,15 @@
 
 ## 概述
 
-YAML是一种人性化的数据格式，使用YAML来替代XML和properties文件，可以获得更多的表现力（支持lists，maps，anchors等数据结构），以及更容易的手工编辑。
-而YamlBeans则可以让Java对象和YAML格式之间的转换（序列化和反序列化）变得更容易。
+**YAML**是一种人性化的数据格式，使用YAML来替代XML和properties文件，可以获得更多的表现力（支持lists，maps，anchors等数据结构），以及更容易的手工编辑。
+而**YamlBeans**则可以让Java对象和YAML格式之间的转换（序列化和反序列化）变得更容易。
 
 Maven 仓库:
 http://repo1.maven.org/maven2/com/esotericsoftware/yamlbeans/yamlbeans/
 
-## Basic deserialization
+## 基本的反序列化
 
-The YamlReader class is used to deserialize YAML to Java objects. The following YAML defines a Map with four entries. The "phone numbers" entry is a List of two items, each of which is a Map.
+**YamlReader**这个类用于将YAML格式数据反序列化为Java对象。下面定义了一个包含4个实体的Map,其中最后一个实体项`phone numbers`又是一个包含了2个item的List集合，而每一个item又是一个Map结构。
 
 ```yaml
     name: Nathan Sweet
@@ -25,7 +25,7 @@ The YamlReader class is used to deserialize YAML to Java objects. The following 
        number: 425-555-2306
 ```
 
-The "read" method reads the next YAML document and deserializes it into HashMaps, ArrayLists, and Strings. Since we know the root object defined in the YAML of our example is a Map, we can cast the object and make use of it.
+**“read()”**方法可用来读取YAML文件内容，并将其反序列化为对应的HashMaps，ArrayLists和Strings。因为我们已经知道上面示例的YAML文件中定义的对象是一个Map，所以下面示例中我们可以直接转换为java对象并使用它。
 
 ```java
     YamlReader reader = new YamlReader(new FileReader("contact.yml"));
