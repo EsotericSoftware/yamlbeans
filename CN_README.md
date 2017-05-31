@@ -186,9 +186,9 @@ Note that it is not advisable to subclass Collection or Map. YamlBeans will only
 
 上面是一个由Contact类的List集合构成的复杂Map结构，而且Contact类中还包含phoneNumbers这个List属性。另外，public类型声明的字段也可以是java bean的属性（而不仅仅是getter方法对应的private类型字段）。
 
-## Tag shortcuts
+## 标签截取
 
-Tags can be lengthy sometimes and can clutter up the YAML. Alternate tags can be defined for a class and will be used instead of the full class name.
+`!com.example.Contact`这种形式的YAML标签有时可能会很长，会让YAML格式显得混乱不堪，不利于阅读。这时可以给类定义一个替代标签来代替，而不是用类的全限定类名。
 
 ```java
     YamlWriter writer = new YamlWriter(new FileWriter("output.yml"));
@@ -197,7 +197,7 @@ Tags can be lengthy sometimes and can clutter up the YAML. Alternate tags can be
     writer.close();
 ```
 
-The output no longer contains the full classname for the Contact class.
+下面输出不再包含Contact类的完整类名。
 
 ```yaml
     !contact
