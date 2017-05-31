@@ -95,7 +95,7 @@ http://repo1.maven.org/maven2/com/esotericsoftware/yamlbeans/yamlbeans/
 
 ## 序列化对象
 
- **YamlWriter**这个类用来把Java对象序列化为YAML格式。且“**write()**”方法会自动识别处理public字段和getter方法。
+ **YamlWriter**这个类用来把Java对象序列化为YAML格式。且“**write()**”方法会自动识别处理public字段和getter方法(一般private属性会生成getter方法)。
 
 ```java
     Contact contact = new Contact();
@@ -114,7 +114,7 @@ http://repo1.maven.org/maven2/com/esotericsoftware/yamlbeans/yamlbeans/
     age: 28
 ```
 
-The tags are automatically output as needed so that the YamlReader class will be able to reconstruct the object graph. For example, serializing this ArrayList does not output any tag for the list because YamlReader uses an ArrayList by default.
+上面`!com.example.Contact`部分会根据需要自动输出，以便YamlReader类能够反序列化时重建对应的Java对象。但序列化ArrayList时则不会输出任何类似`!com.example.Contact`的格式内容,因为YamlReader默认就会用ArrayList。
 
 ```java
     List list = new ArrayList();
@@ -126,7 +126,7 @@ The tags are automatically output as needed so that the YamlReader class will be
     - cow
 ```
 
-If the list was a LinkedList, then YamlWriter knows that a tag is needed and outputs:
+但是如果List的接口实现是LinkedList，而不是ArrayList（默认）,那么YamlWriter类就会输出，例如下面：
 
 ```java
     List list = new LinkedList();
@@ -141,9 +141,9 @@ If the list was a LinkedList, then YamlWriter knows that a tag is needed and out
 
 Note that it is not advisable to subclass Collection or Map. YamlBeans will only serialize the collection or map and its elements, not any additional fields.
 
-## Complex graphs
+## 复杂结构
 
-YamlBeans can serialize any object graph.
+**YamlBeans**可序列化任何对象。
 
 ```java
     public class Contact {
@@ -184,7 +184,7 @@ YamlBeans can serialize any object graph.
               number: 206-555-1234
 ```
 
-This is a map of lists of contacts, each with a list of phone numbers. Again, the public fields could also have been bean properties.
+上面是一个由Contact类的List集合构成的复杂Map结构，而且Contact类中还包含phoneNumbers这个List属性。另外，public类型声明的字段也可以是java bean的属性（而不仅仅是getter方法对应的private类型字段）。
 
 ## Tag shortcuts
 
