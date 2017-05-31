@@ -25,7 +25,7 @@ http://repo1.maven.org/maven2/com/esotericsoftware/yamlbeans/yamlbeans/
        number: 425-555-2306
 ```
 
-**“read()”**方法可用来读取YAML文件内容，并将其反序列化为对应的HashMaps，ArrayLists和Strings。因为我们已经知道上面示例的YAML文件中定义的对象是一个Map，所以下面示例中我们可以直接转换为java对象并使用它。
+**“read()”**方法可用来读取`contact.yml`文件中描述的YAML对象，并将其反序列化为对应的HashMaps，ArrayLists和Strings。因为我们已经知道上面示例的YAML文件中定义的对象是一个Map，所以下面示例中我们可以直接转换为java对象并使用它。
 
 ```java
     YamlReader reader = new YamlReader(new FileReader("contact.yml"));
@@ -35,9 +35,10 @@ http://repo1.maven.org/maven2/com/esotericsoftware/yamlbeans/yamlbeans/
     System.out.println(map.get("address"));
 ```
 
-## Multiple objects
+## 多个对象
 
 A stream of YAML can contain more than one YAML document. Each call to YamlReader#read() deserializes the next document into an object. YAML documents are delimited by "---" (this is optional for the first document).
+一个YAML格式的文件中可以包含多个YAML对象,多个YAML对象之间用`---`隔开（开头第一个可以省略）
 
 ```yaml
     name: Nathan Sweet
@@ -46,8 +47,8 @@ A stream of YAML can contain more than one YAML document. Each call to YamlReade
     name: Some One
     age: 25
 ```
-
-This prints the String "28" then "25":
+下面示例中，当while循环中每次调用YamlReader类中read（）方法时，就会将contact.yml文件中对应顺序的YAML对象反序列化成一个与之对应结构的Java对象。
+下面代码会**先后输出**字符串`"28"`,`"25"`:
 
 ```java
     YamlReader reader = new YamlReader(new FileReader("contact.yml"));
