@@ -2,6 +2,8 @@
 
 Please use the [YamlBeans discussion group](http://groups.google.com/group/yamlbeans-users) for support.
 
+这里查看[中文翻译文档](CN_README.md) .
+
 ## Overview
 
 YamlBeans makes it easy to serialize and deserialize Java object graphs to and from YAML, a human-friendly data format. Replace XML and properties files with YAML for more expressive power (lists, maps, anchors, etc) and easier hand-editing.
