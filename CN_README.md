@@ -188,7 +188,7 @@ Note that it is not advisable to subclass Collection or Map. YamlBeans will only
 
 ## 标签截取
 
-`!com.example.Contact`这种形式的YAML标签有时可能会很长，会让YAML格式显得混乱不堪，不利于阅读。这时可以给类定义一个替代标签来代替，而不是用类的完整类名。
+`!com.example.Contact`这种形式的YAML标签有时可能会很长，会让YAML格式显得混乱不堪，不利于阅读。这时可以给类指定一个替代标签来代替，而不是用类的完整类名。
 
 ```java
     YamlWriter writer = new YamlWriter(new FileWriter("output.yml"));
@@ -298,13 +298,13 @@ The above YAML will give you an `address` object with attribute `line1` set to `
 
 The above code will not print anything, but throw `YamlReaderException` at line 5 saying, `Duplicate key found 'line1'`.
 
-## Architecture
+## 体系结构
 
-The YAML tokenizer, parser, and emitter are based on those from the JvYAML project. They have been heavily refactored, bugs fixed, etc. The rest of the JvYAML project was not used because of its complexity. YamlBeans strives for the simplest possible thing that works, with the goal being to make it easy to use the YAML data format with Java.
+YAML的tokenizer，parser，emitter组件是基于JvYAML项目中的。这些功能已被重构，修复bug等。由于JvYAML的复杂性，剩下部分未被使用。 YamlBeans努力于实现简单可行的事情---让使用Java操作YAML数据格式变得更加容易。
 
-YamlBeans supports YAML version 1.0 and 1.1.
+YamlBeans 支持 YAML 1.0 和 1.1 版本 。
 
-## More info
+## 更多信息
 
-See the javadocs for various other features available on the YamlConfig class.
+有关YamlConfig类的其他更多功能，请参阅javadocs
 
