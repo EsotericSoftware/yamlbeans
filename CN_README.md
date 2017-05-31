@@ -85,7 +85,7 @@ http://repo1.maven.org/maven2/com/esotericsoftware/yamlbeans/yamlbeans/
 上面YamlReader创建了一个Contact.class的实例对象，并给“name”和“age”字段赋值，且YamlReader会把YAML中“age”的值转换为int。如果age不是int类型，则反序列化将失败。
 
 
-除了上面这种反序列化方法外，还可以在YAML中使用添加`!`方式来直接指定类型：
+除了上面这种反序列化方法外，还可以在YAML中使用添加`!全限定类名`方式来直接指定类型：
 
 ```yaml
     !com.example.Contact
@@ -93,9 +93,9 @@ http://repo1.maven.org/maven2/com/esotericsoftware/yamlbeans/yamlbeans/
     age: 28
 ```
 
-## Serializing objects
+## 序列化对象
 
-The YamlWriter class is used to serialize Java objects to YAML. The "write" method automatically handles this by recognizing public fields and bean getter methods.
+ **YamlWriter**这个类用来把Java对象序列化为YAML格式。且“**write()**”方法会自动识别处理public字段和getter方法。
 
 ```java
     Contact contact = new Contact();
@@ -106,7 +106,7 @@ The YamlWriter class is used to serialize Java objects to YAML. The "write" meth
     writer.close();
 ```
 
-This outputs:
+输出：
 
 ```yaml
     !com.example.Contact
