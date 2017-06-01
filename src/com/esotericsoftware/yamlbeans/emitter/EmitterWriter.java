@@ -21,24 +21,26 @@ import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.esotericsoftware.yamlbeans.constants.Unicode;
+
 /** @author <a href="mailto:misc@n4te.com">Nathan Sweet</a>
  * @author <a href="mailto:ola.bini@ki.se">Ola Bini</a> */
 class EmitterWriter {
 	private static final Map<Integer, String> ESCAPE_REPLACEMENTS = new HashMap();
 	static {
 		ESCAPE_REPLACEMENTS.put((int)'\0', "0");
-		ESCAPE_REPLACEMENTS.put((int)'\u0007', "a");
-		ESCAPE_REPLACEMENTS.put((int)'\u0008', "b");
-		ESCAPE_REPLACEMENTS.put((int)'\u0009', "t");
+		ESCAPE_REPLACEMENTS.put((int)Unicode.BELL, "a");
+		ESCAPE_REPLACEMENTS.put((int)Unicode.BACKSPACE, "b");
+		ESCAPE_REPLACEMENTS.put((int)Unicode.HORIZONTAL_TABULATION, "t");
 		ESCAPE_REPLACEMENTS.put((int)'\n', "n");
-		ESCAPE_REPLACEMENTS.put((int)'\u000b', "v");
-		ESCAPE_REPLACEMENTS.put((int)'\u000c', "f");
+		ESCAPE_REPLACEMENTS.put((int)Unicode.VERTICAL_TABULATION, "v");
+		ESCAPE_REPLACEMENTS.put((int)Unicode.FORM_FEED, "f");
 		ESCAPE_REPLACEMENTS.put((int)'\r', "r");
-		ESCAPE_REPLACEMENTS.put((int)'\u001b', "e");
+		ESCAPE_REPLACEMENTS.put((int)Unicode.ESCAPE, "e");
 		ESCAPE_REPLACEMENTS.put((int)'"', "\"");
 		ESCAPE_REPLACEMENTS.put((int)'\\', "\\");
-		ESCAPE_REPLACEMENTS.put((int)'\u0085', "N");
-		ESCAPE_REPLACEMENTS.put((int)'\u00a0', "_");
+		ESCAPE_REPLACEMENTS.put((int)Unicode.NEXT_LINE, "N");
+		ESCAPE_REPLACEMENTS.put((int)Unicode.NO_BREAK_SPACE, "_");
 	}
 
 	private final Writer writer;
@@ -105,7 +107,7 @@ class EmitterWriter {
 		while (ending <= text.length()) {
 			int ch = 0;
 			if (ending < text.length()) ch = text.codePointAt(ending);
-			if (ch == 0 || "\"\\\u0085".indexOf(ch) != -1 || !('\u0020' <= ch && ch <= '\u007E')) {
+			if (ch == 0 || "\"\\\u0085".indexOf(ch) != -1 || !(Unicode.SPACE <= ch && ch <= Unicode.TILDE)) {
 				if (start < ending) {
 					data = text.substring(start, ending);
 					column += data.length();
@@ -180,7 +182,7 @@ class EmitterWriter {
 					start = ending;
 				}
 			} else if (breaks) {
-				if (ceh == 0 || !('\n' == ceh || '\u0085' == ceh)) {
+				if (ceh == 0 || !('\n' == ceh || Unicode.NEXT_LINE == ceh)) {
 					data = text.substring(start, ending);
 					for (int i = 0, j = data.length(); i < j; i++) {
 						char cha = data.charAt(i);
@@ -192,7 +194,7 @@ class EmitterWriter {
 					writeIndent(indent);
 					start = ending;
 				}
-			} else if (ceh == 0 || !('\n' == ceh || '\u0085' == ceh)) {
+			} else if (ceh == 0 || !('\n' == ceh || Unicode.NEXT_LINE == ceh)) {
 				if (start < ending) {
 					data = text.substring(start, ending);
 					column += data.length();
@@ -208,7 +210,7 @@ class EmitterWriter {
 			}
 			if (ceh != 0) {
 				spaces = ceh == ' ';
-				breaks = ceh == '\n' || ceh == '\u0085';
+				breaks = ceh == '\n' || ceh == Unicode.NEXT_LINE;
 			}
 			ending++;
 		}
@@ -228,7 +230,7 @@ class EmitterWriter {
 			char ceh = 0;
 			if (ending < text.length()) ceh = text.charAt(ending);
 			if (breaks) {
-				if (ceh == 0 || !('\n' == ceh || '\u0085' == ceh)) {
+				if (ceh == 0 || !('\n' == ceh || Unicode.NEXT_LINE == ceh)) {
 					if (!leadingSpace && ceh != 0 && ceh != ' ' && text.charAt(start) == '\n') writeLineBreak(null);
 					leadingSpace = ceh == ' ';
 					data = text.substring(start, ending);
@@ -253,14 +255,14 @@ class EmitterWriter {
 					}
 					start = ending;
 				}
-			} else if (ceh == 0 || ' ' == ceh || '\n' == ceh || '\u0085' == ceh) {
+			} else if (ceh == 0 || ' ' == ceh || '\n' == ceh || Unicode.NEXT_LINE == ceh) {
 				data = text.substring(start, ending);
 				writer.write(data);
 				if (ceh == 0) writeLineBreak(null);
 				start = ending;
 			}
 			if (ceh != 0) {
-				breaks = '\n' == ceh || '\u0085' == ceh;
+				breaks = '\n' == ceh || Unicode.NEXT_LINE == ceh;
 				spaces = ceh == ' ';
 			}
 			ending++;
@@ -278,7 +280,7 @@ class EmitterWriter {
 			char ceh = 0;
 			if (ending < text.length()) ceh = text.charAt(ending);
 			if (breaks) {
-				if (ceh == 0 || !('\n' == ceh || '\u0085' == ceh)) {
+				if (ceh == 0 || !('\n' == ceh || Unicode.NEXT_LINE == ceh)) {
 					data = text.substring(start, ending);
 					for (int i = 0, j = data.length(); i < j; i++) {
 						char cha = data.charAt(i);
@@ -290,13 +292,13 @@ class EmitterWriter {
 					if (ceh != 0) writeIndent(indent);
 					start = ending;
 				}
-			} else if (ceh == 0 || '\n' == ceh || '\u0085' == ceh) {
+			} else if (ceh == 0 || '\n' == ceh || Unicode.NEXT_LINE == ceh) {
 				data = text.substring(start, ending);
 				writer.write(data);
 				if (ceh == 0) writeLineBreak(null);
 				start = ending;
 			}
-			if (ceh != 0) breaks = '\n' == ceh || '\u0085' == ceh;
+			if (ceh != 0) breaks = '\n' == ceh || Unicode.NEXT_LINE == ceh;
 			ending++;
 		}
 	}
@@ -330,7 +332,7 @@ class EmitterWriter {
 					start = ending;
 				}
 			} else if (breaks) {
-				if (ceh != '\n' && ceh != '\u0085') {
+				if (ceh != '\n' && ceh != Unicode.NEXT_LINE) {
 					if (text.charAt(start) == '\n') writeLineBreak(null);
 					data = text.substring(start, ending);
 					for (int i = 0, j = data.length(); i < j; i++) {
@@ -345,7 +347,7 @@ class EmitterWriter {
 					indentation = false;
 					start = ending;
 				}
-			} else if (ceh == 0 || ' ' == ceh || '\n' == ceh || '\u0085' == ceh) {
+			} else if (ceh == 0 || ' ' == ceh || '\n' == ceh || Unicode.NEXT_LINE == ceh) {
 				data = text.substring(start, ending);
 				column += data.length();
 				writer.write(data);
@@ -353,7 +355,7 @@ class EmitterWriter {
 			}
 			if (ceh != 0) {
 				spaces = ceh == ' ';
-				breaks = ceh == '\n' || ceh == '\u0085';
+				breaks = ceh == '\n' || ceh == Unicode.NEXT_LINE;
 			}
 			ending++;
 		}
@@ -377,7 +379,7 @@ class EmitterWriter {
 			tail = " " + tail;
 		char ceh = tail.charAt(tail.length() - 1);
 		char ceh2 = tail.charAt(tail.length() - 2);
-		return ceh == '\n' || ceh == '\u0085' ? ceh2 == '\n' || ceh2 == '\u0085' ? "+" : "" : "-";
+		return ceh == '\n' || ceh == Unicode.NEXT_LINE ? ceh2 == '\n' || ceh2 == Unicode.NEXT_LINE ? "+" : "" : "-";
 	}
 
 	public void close () throws IOException {
