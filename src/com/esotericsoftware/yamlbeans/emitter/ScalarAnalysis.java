@@ -18,6 +18,8 @@ package com.esotericsoftware.yamlbeans.emitter;
 
 import java.util.regex.Pattern;
 
+import com.esotericsoftware.yamlbeans.constants.Unicode;
+
 /** @author <a href="mailto:misc@n4te.com">Nathan Sweet</a>
  * @author <a href="mailto:ola.bini@ki.se">Ola Bini</a> */
 class ScalarAnalysis {
@@ -106,11 +108,11 @@ class ScalarAnalysis {
 					blockIndicators = true;
 				}
 			}
-			if (ceh == '\n' || '\u0085' == ceh) lineBreaks = true;
+			if (ceh == '\n' || Unicode.NEXT_LINE == ceh) lineBreaks = true;
 			if (escapeUnicode) {
-				if (ceh != '\n' && ceh != '\t' && !('\u0020' <= ceh && ceh <= '\u007E')) specialCharacters = true;
+				if (ceh != '\n' && ceh != '\t' && !(Unicode.SPACE <= ceh && ceh <= Unicode.TILDE)) specialCharacters = true;
 			}
-			if (' ' == ceh || '\n' == ceh || '\u0085' == ceh) {
+			if (' ' == ceh || '\n' == ceh || Unicode.NEXT_LINE == ceh) {
 				if (spaces && breaks) {
 					if (ceh != ' ') mixed = true;
 				} else if (spaces) {
