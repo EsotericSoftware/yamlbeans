@@ -1,7 +1,7 @@
 package com.esotericsoftware.yamlbeans;
 
-public class ShortConvert extends Converter {
-	public ShortConvert(Class type) {
+public class ShortConverter extends Converter {
+	public ShortConverter(Class type) {
 		this.type = type;
 	}
 

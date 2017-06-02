@@ -1,7 +1,7 @@
 package com.esotericsoftware.yamlbeans;
 
-public class ByteConvert extends Converter {
-	public ByteConvert(Class type) {
+public class ByteConverter extends Converter {
+	public ByteConverter(Class type) {
 		this.type = type;
 	}
 

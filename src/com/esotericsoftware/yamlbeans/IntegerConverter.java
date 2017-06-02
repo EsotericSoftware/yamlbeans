@@ -1,7 +1,7 @@
 package com.esotericsoftware.yamlbeans;
 
-public class IntegerConvert extends Converter {
-	public IntegerConvert(Class type) {
+public class IntegerConverter extends Converter {
+	public IntegerConverter(Class type) {
 		this.type = type;
 	}
 

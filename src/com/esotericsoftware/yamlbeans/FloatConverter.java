@@ -1,7 +1,7 @@
 package com.esotericsoftware.yamlbeans;
 
-public class FloatConvert extends Converter {
-	public FloatConvert(Class type) {
+public class FloatConverter extends Converter {
+	public FloatConverter(Class type) {
 		this.type = type;
 	}
 

@@ -1,7 +1,7 @@
 package com.esotericsoftware.yamlbeans;
 
-public class DoubleConvert extends Converter {
-	public DoubleConvert(Class type) {
+public class DoubleConverter extends Converter {
+	public DoubleConverter(Class type) {
 		this.type = type;
 	}
 

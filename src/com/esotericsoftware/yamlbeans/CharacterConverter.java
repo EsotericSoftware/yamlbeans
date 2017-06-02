@@ -1,7 +1,7 @@
 package com.esotericsoftware.yamlbeans;
 
-public class CharacterConvert extends Converter {
-	public CharacterConvert(Class type) {
+public class CharacterConverter extends Converter {
+	public CharacterConverter(Class type) {
 		this.type = type;
 	}
 

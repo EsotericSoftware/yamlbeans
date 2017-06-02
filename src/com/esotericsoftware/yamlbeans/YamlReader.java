@@ -232,35 +232,27 @@ public class YamlReader {
 				throw new YamlReaderException("Expected scalar for primitive type '" + type.getClass() + "' but found: " + event.type);
 			String value = ((ScalarEvent)event).value;
 			try {
-				StringConvert stringConvert = new StringConvert(type);
-				ByteConvert byteConvert = new ByteConvert(type);
-				IntegerConvert integerConvert = new IntegerConvert(type);
-				BooleanConvert booleanConvert = new BooleanConvert(type);
-				FloatConvert floatConvert = new FloatConvert(type);
-				DoubleConvert doubleConvert = new DoubleConvert(type);
-				LongConvert longConvert = new LongConvert(type);
-				ShortConvert shortConvert = new ShortConvert(type);
-				CharacterConvert characterConvert = new CharacterConvert(type);
+				StringConverter stringConverter = new StringConverter(type);
+				ByteConverter byteConverter = new ByteConverter(type);
+				IntegerConverter integerConverter = new IntegerConverter(type);
+				BooleanConverter booleanConverter = new BooleanConverter(type);
+				FloatConverter floatConverter = new FloatConverter(type);
+				DoubleConverter doubleConverter = new DoubleConverter(type);
+				LongConverter longConverter = new LongConverter(type);
+				ShortConverter shortConverter = new ShortConverter(type);
+				CharacterConverter characterConverter = new CharacterConverter(type);
 				Object convertedValue;
 
-				convertedValue = stringConvert.getType(type, value);
-				stringConvert.setNext(integerConvert);
-				convertedValue = integerConvert.getType(type, value);
-				integerConvert.setNext(booleanConvert);
-				convertedValue = booleanConvert.getType(type, value);
-				booleanConvert.setNext(floatConvert);
-				convertedValue = floatConvert.getType(type, value);
-				floatConvert.setNext(doubleConvert);
-				convertedValue = doubleConvert.getType(type, value);
-				doubleConvert.setNext(longConvert);
-				convertedValue = longConvert.getType(type, value);
-				longConvert.setNext(shortConvert);
-				convertedValue = shortConvert.getType(type, value);
-				shortConvert.setNext(characterConvert);
-				convertedValue = characterConvert.getType(type, value);
-				characterConvert.setNext(byteConvert);
-				convertedValue = byteConvert.getType(type, value);
-				
+				convertedValue = stringConverter.getType(type, value);
+				stringConverter.setNext(integerConverter);
+				integerConverter.setNext(booleanConverter);
+				booleanConverter.setNext(floatConverter);
+				floatConverter.setNext(doubleConverter);
+				doubleConverter.setNext(longConverter);
+				longConverter.setNext(shortConverter);
+				shortConverter.setNext(characterConverter);
+				characterConverter.setNext(byteConverter);
+
 				if (anchor != null) anchors.put(anchor, convertedValue);
 				return convertedValue;
 			} catch (Exception ex) {

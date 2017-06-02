@@ -1,7 +1,7 @@
 package com.esotericsoftware.yamlbeans;
 
-public class BooleanConvert extends Converter {
-	public BooleanConvert(Class type) {
+public class BooleanConverter extends Converter {
+	public BooleanConverter(Class type) {
 		this.type = type;
 	}
 

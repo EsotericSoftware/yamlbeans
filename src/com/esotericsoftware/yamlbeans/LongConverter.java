@@ -1,7 +1,7 @@
 package com.esotericsoftware.yamlbeans;
 
-public class LongConvert extends Converter {
-	public LongConvert(Class type) {
+public class LongConverter extends Converter {
+	public LongConverter(Class type) {
 		this.type = type;
 	}
 

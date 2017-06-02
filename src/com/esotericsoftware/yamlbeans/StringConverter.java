@@ -1,7 +1,7 @@
 package com.esotericsoftware.yamlbeans;
 
-public class StringConvert extends Converter {
-	public StringConvert(Class type) {
+public class StringConverter extends Converter {
+	public StringConverter(Class type) {
 		this.type = type;
 	}
 
