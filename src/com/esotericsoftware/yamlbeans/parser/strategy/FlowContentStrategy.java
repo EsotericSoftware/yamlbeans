@@ -3,7 +3,6 @@ package com.esotericsoftware.yamlbeans.parser.strategy;
 import com.esotericsoftware.yamlbeans.parser.AbstractEventStrategy;
 import com.esotericsoftware.yamlbeans.parser.Event;
 import com.esotericsoftware.yamlbeans.parser.Parser;
-import com.esotericsoftware.yamlbeans.parser.ParserException;
 import com.esotericsoftware.yamlbeans.tokenizer.TokenType;
 
 public class FlowContentStrategy extends AbstractEventStrategy {
@@ -22,7 +21,7 @@ public class FlowContentStrategy extends AbstractEventStrategy {
         } else if (type == TokenType.SCALAR) {
             parser.pushParseStack(new ScalarStrategy(parser));
         } else {
-            throw new ParserException(parser, "Expected a sequence, mapping, or scalar but found: " + type);
+            throw new Parser.ParserException(parser, "Expected a sequence, mapping, or scalar but found: " + type);
         }
 
         return null;

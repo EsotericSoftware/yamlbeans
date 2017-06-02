@@ -3,7 +3,6 @@ package com.esotericsoftware.yamlbeans.parser.strategy;
 import com.esotericsoftware.yamlbeans.parser.AbstractEventStrategy;
 import com.esotericsoftware.yamlbeans.parser.Event;
 import com.esotericsoftware.yamlbeans.parser.Parser;
-import com.esotericsoftware.yamlbeans.parser.ParserException;
 import com.esotericsoftware.yamlbeans.parser.event.DocumentStartEvent;
 import com.esotericsoftware.yamlbeans.tokenizer.Token;
 
@@ -19,7 +18,7 @@ public class DocumentStartStrategy extends AbstractEventStrategy {
         Token token = parser.peekNextToken();
         DocumentStartEvent documentStartEvent = parser.processDirectives(true);
         if (parser.peekNextTokenType() != DOCUMENT_START)
-            throw new ParserException(parser, "Expected 'document start' but found: " + token.getType());
+            throw new Parser.ParserException(parser, "Expected 'document start' but found: " + token.getType());
         
         parser.getNextToken();
         return documentStartEvent;

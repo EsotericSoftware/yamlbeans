@@ -3,7 +3,6 @@ package com.esotericsoftware.yamlbeans.parser.strategy;
 import com.esotericsoftware.yamlbeans.parser.AbstractEventStrategy;
 import com.esotericsoftware.yamlbeans.parser.Event;
 import com.esotericsoftware.yamlbeans.parser.Parser;
-import com.esotericsoftware.yamlbeans.parser.ParserException;
 import com.esotericsoftware.yamlbeans.tokenizer.AnchorToken;
 import com.esotericsoftware.yamlbeans.tokenizer.TagToken;
 import com.esotericsoftware.yamlbeans.tokenizer.TokenType;
@@ -38,7 +37,7 @@ public class PropertiesStrategy extends AbstractEventStrategy {
 
         if (tagHandle != null && !tagHandle.equals("!")) {
             if (!parser.containsTagHandle(tagHandle)) {
-                throw new ParserException(parser, "Undefined tag handle: " + tagHandle);
+                throw new Parser.ParserException(parser, "Undefined tag handle: " + tagHandle);
             }
 
             tag = parser.getTagHandle(tagHandle) + tagSuffix;

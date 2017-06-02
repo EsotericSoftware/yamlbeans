@@ -28,8 +28,8 @@ import com.esotericsoftware.yamlbeans.tokenizer.Tokenizer.TokenizerException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -53,13 +53,14 @@ public class Parser {
         DEFAULT_TAGS_1_1.put("!!", "tag:yaml.org,2002:");
     }
 
-    Tokenizer tokenizer = null;
-    List<EventStrategy> parseStack = null;
-    final List<String> tags = new LinkedList();
-    final List<String> anchors = new LinkedList();
-    Map<String, String> tagHandles = new HashMap();
-    Version defaultVersion, documentVersion;
-    Event peekedEvent;
+    private Tokenizer tokenizer = null;
+    private Version defaultVersion;
+    private Version documentVersion;
+    private Event peekedEvent;
+    private final List<EventStrategy> parseStack;
+    private final List<String> tags;
+    private final List<String> anchors;
+    private final Map<String, String> tagHandles;
 
     public Parser(Reader reader) {
         this(reader, new Version(1, 1));
@@ -69,11 +70,13 @@ public class Parser {
         if (reader == null) throw new IllegalArgumentException("reader cannot be null.");
         if (defaultVersion == null) throw new IllegalArgumentException("defaultVersion cannot be null.");
 
-        tokenizer = new Tokenizer(reader);
-
+        this.tokenizer = new Tokenizer(reader);
         this.defaultVersion = defaultVersion;
+        this.parseStack = new ArrayList<EventStrategy>();
+        this.tags = new ArrayList<String>();
+        this.anchors = new ArrayList<String>();
+        this.tagHandles = new HashMap<String, String>();
 
-        parseStack = new LinkedList();
         pushParseStack(new StreamStrategy(this));
     }
 
@@ -191,6 +194,12 @@ public class Parser {
         for (String key : baseTags.keySet())
             if (!tagHandles.containsKey(key)) tagHandles.put(key, baseTags.get(key));
         return new DocumentStartEvent(explicit, version, tags);
+    }
+
+    public static class ParserException extends RuntimeException {
+        public ParserException(Parser parser, String message) {
+            super("Line " + parser.tokenizer.getLineNumber() + ", column " + parser.tokenizer.getColumn() + ": " + message);
+        }
     }
 
     public static void main(String[] args) throws Exception {
