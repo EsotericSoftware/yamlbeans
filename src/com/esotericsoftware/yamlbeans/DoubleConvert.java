@@ -6,12 +6,12 @@ public class DoubleConvert extends Converter {
 	}
 
 	@Override
-	public Object getType(Class type, String value) {
-		Object convertedValue = null;
+	public Object getType(Class type, String value) throws YamlException {
 		if (type == Double.TYPE)
-			convertedValue = value.length() == 0 ? 0 : Double.valueOf(value);
+			return value.length() == 0 ? 0 : Double.valueOf(value);
 		else if (type == Double.class)
-			convertedValue = value.length() == 0 ? null : Double.valueOf(value);
-		return convertedValue;
+			return value.length() == 0 ? null : Double.valueOf(value);
+		else
+			return next.getType(type, value);
 	}
 }

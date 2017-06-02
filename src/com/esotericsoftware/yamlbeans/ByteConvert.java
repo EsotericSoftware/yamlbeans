@@ -7,13 +7,11 @@ public class ByteConvert extends Converter {
 
 	@Override
 	public Object getType(Class type, String value) throws YamlException {
-		Object convertedValue;
 		if (type == Byte.TYPE)
-			convertedValue = value.length() == 0 ? 0 : Byte.decode(value);
+			return value.length() == 0 ? 0 : Byte.decode(value);
 		else if (type == Byte.class)
-			convertedValue = value.length() == 0 ? null : Byte.decode(value);
+			return value.length() == 0 ? null : Byte.decode(value);
 		else 
-			throw new YamlException("Unknown field type.");
-		return convertedValue;
+			return next.getType(type, value);
 	}
 }

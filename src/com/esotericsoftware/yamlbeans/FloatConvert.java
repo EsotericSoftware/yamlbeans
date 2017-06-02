@@ -6,12 +6,12 @@ public class FloatConvert extends Converter {
 	}
 
 	@Override
-	public Object getType(Class type, String value) {
-		Object convertedValue = null;
+	public Object getType(Class type, String value) throws YamlException {
 		if (type == Float.TYPE)
-			convertedValue = value.length() == 0 ? 0 : Float.valueOf(value);
+			return value.length() == 0 ? 0 : Float.valueOf(value);
 		else if (type == Float.class)
-			convertedValue = value.length() == 0 ? null : Float.valueOf(value);
-		return convertedValue;
+			return value.length() == 0 ? null : Float.valueOf(value);
+		else
+			return next.getType(type, value);
 	}
 }

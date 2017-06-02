@@ -6,12 +6,12 @@ public class LongConvert extends Converter {
 	}
 
 	@Override
-	public Object getType(Class type, String value) {
-		Object convertedValue = null;
+	public Object getType(Class type, String value) throws YamlException {
 		if (type == Long.TYPE)
-			convertedValue = value.length() == 0 ? 0 : Long.decode(value);
+			return value.length() == 0 ? 0 : Long.decode(value);
 		else if (type == Long.class)
-			convertedValue = value.length() == 0 ? null : Long.decode(value);
-		return convertedValue;
+			return value.length() == 0 ? null : Long.decode(value);
+		else
+			return next.getType(type, value);
 	}
 }

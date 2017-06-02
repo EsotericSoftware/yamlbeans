@@ -6,10 +6,10 @@ public class StringConvert extends Converter {
 	}
 
 	@Override
-	public Object getType(Class type, String value) {
-		Object convertedValue = null;
+	public Object getType(Class type, String value) throws YamlException {
 		if (type == String.class)
-			convertedValue = value;
-		return convertedValue;
+			return value;
+		else
+			return next.getType(type, value);
 	}
 }

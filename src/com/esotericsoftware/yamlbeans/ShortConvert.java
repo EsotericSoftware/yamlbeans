@@ -6,12 +6,12 @@ public class ShortConvert extends Converter {
 	}
 
 	@Override
-	public Object getType(Class type, String value) {
-		Object convertedValue = null;
+	public Object getType(Class type, String value) throws YamlException {
 		if (type == Short.TYPE)
-			convertedValue = value.length() == 0 ? 0 : Short.decode(value);
+			return value.length() == 0 ? 0 : Short.decode(value);
 		else if (type == Short.class)
-			convertedValue = value.length() == 0 ? null : Short.decode(value);
-		return convertedValue;
+			return value.length() == 0 ? null : Short.decode(value);
+		else
+			return next.getType(type, value);
 	}
 }

@@ -6,12 +6,12 @@ public class IntegerConvert extends Converter {
 	}
 
 	@Override
-	public Object getType(Class type, String value) {
-		Object convertedValue = null;
+	public Object getType(Class type, String value) throws YamlException {
 		if (type == Integer.TYPE)
-			convertedValue = value.length() == 0 ? 0 : Integer.decode(value);
+			return value.length() == 0 ? 0 : Integer.decode(value);
 		else if (type == Integer.class)
-			convertedValue = value.length() == 0 ? null : Integer.decode(value);
-		return convertedValue;
+			return value.length() == 0 ? null : Integer.decode(value);
+		else
+			return next.getType(type, value);
 	}
 }

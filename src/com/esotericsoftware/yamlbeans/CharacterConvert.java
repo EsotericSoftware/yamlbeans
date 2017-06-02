@@ -6,12 +6,12 @@ public class CharacterConvert extends Converter {
 	}
 
 	@Override
-	public Object getType(Class type, String value) {
-		Object convertedValue = null;
+	public Object getType(Class type, String value) throws YamlException {
 		if (type == Character.TYPE)
-			convertedValue = value.length() == 0 ? 0 : value.charAt(0);
+			return value.length() == 0 ? 0 : value.charAt(0);
 		else if (type == Character.class)
-			convertedValue = value.length() == 0 ? null : value.charAt(0);
-		return convertedValue;
+			return  value.length() == 0 ? null : value.charAt(0);
+		else
+			return next.getType(type, value);
 	}
 }
