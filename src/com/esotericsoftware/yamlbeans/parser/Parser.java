@@ -20,6 +20,7 @@ import static com.esotericsoftware.yamlbeans.tokenizer.TokenType.*;
 import static com.esotericsoftware.yamlbeans.parser.ProductionType.*;
 
 import com.esotericsoftware.yamlbeans.Version;
+import com.esotericsoftware.yamlbeans.parser.event.*;
 import com.esotericsoftware.yamlbeans.tokenizer.AliasToken;
 import com.esotericsoftware.yamlbeans.tokenizer.AnchorToken;
 import com.esotericsoftware.yamlbeans.tokenizer.DirectiveToken;

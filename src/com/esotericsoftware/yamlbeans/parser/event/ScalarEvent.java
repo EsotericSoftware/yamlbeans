@@ -14,12 +14,28 @@
  * IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.esotericsoftware.yamlbeans.parser;
+package com.esotericsoftware.yamlbeans.parser.event;
+
+import java.util.Arrays;
 
 /** @author <a href="mailto:misc@n4te.com">Nathan Sweet</a>
  * @author <a href="mailto:ola.bini@ki.se">Ola Bini</a> */
-public class MappingStartEvent extends CollectionStartEvent {
-	public MappingStartEvent (String anchor, String tag, boolean implicit, boolean flowStyle) {
-		super(EventType.MAPPING_START, anchor, tag, implicit, flowStyle);
+public class ScalarEvent extends NodeEvent {
+	public final String tag;
+	public final boolean[] implicit;
+	public final String value;
+	public final char style;
+
+	public ScalarEvent (String anchor, String tag, boolean[] implicit, String value, char style) {
+		super(EventType.SCALAR, anchor);
+		this.tag = tag;
+		this.implicit = implicit;
+		this.value = value;
+		this.style = style;
+	}
+
+	public String toString () {
+		return "<" + type + " value='" + value + "' anchor='" + anchor + "' tag='" + tag + "' implicit='"
+			+ Arrays.toString(implicit) + "' style='" + (style == 0 ? "" : style) + "'>";
 	}
 }

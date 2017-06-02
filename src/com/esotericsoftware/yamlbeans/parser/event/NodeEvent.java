@@ -14,12 +14,15 @@
  * IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.esotericsoftware.yamlbeans.parser;
+package com.esotericsoftware.yamlbeans.parser.event;
 
 /** @author <a href="mailto:misc@n4te.com">Nathan Sweet</a>
  * @author <a href="mailto:ola.bini@ki.se">Ola Bini</a> */
-public class SequenceStartEvent extends CollectionStartEvent {
-	public SequenceStartEvent (String anchor, String tag, boolean implicit, boolean flowStyle) {
-		super(EventType.SEQUENCE_START, anchor, tag, implicit, flowStyle);
+public abstract class NodeEvent extends Event {
+	public final String anchor;
+
+	public NodeEvent (EventType eventType, String anchor) {
+		super(eventType);
+		this.anchor = anchor;
 	}
 }

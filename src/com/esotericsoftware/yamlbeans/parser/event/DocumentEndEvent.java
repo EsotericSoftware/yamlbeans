@@ -14,27 +14,19 @@
  * IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.esotericsoftware.yamlbeans.parser;
-
-import com.esotericsoftware.yamlbeans.Version;
-
-import java.util.Map;
+package com.esotericsoftware.yamlbeans.parser.event;
 
 /** @author <a href="mailto:misc@n4te.com">Nathan Sweet</a>
  * @author <a href="mailto:ola.bini@ki.se">Ola Bini</a> */
-public class DocumentStartEvent extends Event {
+public class DocumentEndEvent extends Event {
 	public final boolean isExplicit;
-	public final Version version;
-	public final Map<String, String> tags;
 
-	public DocumentStartEvent (boolean explicit, Version version, Map<String, String> tags) {
-		super(EventType.DOCUMENT_START);
-		this.isExplicit = explicit;
-		this.version = version;
-		this.tags = tags;
+	public DocumentEndEvent (boolean isExplicit) {
+		super(EventType.DOCUMENT_END);
+		this.isExplicit = isExplicit;
 	}
 
 	public String toString () {
-		return "<" + type + " explicit='" + isExplicit + "' version='" + version + "' tags='" + tags + "'>";
+		return "<" + type + " explicit='" + isExplicit + "'>";
 	}
 }

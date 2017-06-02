@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008 Nathan Sweet
+ * Copyright (c) 2008 Nathan Sweet, Copyright (c) 2006 Ola Bini
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation
  * files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy,
@@ -14,24 +14,27 @@
  * IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.esotericsoftware.yamlbeans.parser;
+package com.esotericsoftware.yamlbeans.parser.event;
 
-/** @author <a href="mailto:misc@n4te.com">Nathan Sweet</a> */
-public class Event {
-	public static final Event MAPPING_END = new Event(EventType.MAPPING_END);
-	public static final Event SEQUENCE_END = new Event(EventType.SEQUENCE_END);
-	public static final Event STREAM_END = new Event(EventType.STREAM_END);
-	public static final Event STREAM_START = new Event(EventType.STREAM_START);
-	public static final Event DOCUMENT_END_TRUE = new DocumentEndEvent(true);
-	public static final Event DOCUMENT_END_FALSE = new DocumentEndEvent(false);
+import com.esotericsoftware.yamlbeans.Version;
 
-	public final EventType type;
+import java.util.Map;
 
-	public Event (EventType type) {
-		this.type = type;
+/** @author <a href="mailto:misc@n4te.com">Nathan Sweet</a>
+ * @author <a href="mailto:ola.bini@ki.se">Ola Bini</a> */
+public class DocumentStartEvent extends Event {
+	public final boolean isExplicit;
+	public final Version version;
+	public final Map<String, String> tags;
+
+	public DocumentStartEvent (boolean explicit, Version version, Map<String, String> tags) {
+		super(EventType.DOCUMENT_START);
+		this.isExplicit = explicit;
+		this.version = version;
+		this.tags = tags;
 	}
 
 	public String toString () {
-		return "<" + type + ">";
+		return "<" + type + " explicit='" + isExplicit + "' version='" + version + "' tags='" + tags + "'>";
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008 Nathan Sweet, Copyright (c) 2006 Ola Bini
+ * Copyright (c) 2008 Nathan Sweet
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation
  * files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy,
@@ -14,16 +14,22 @@
  * IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.esotericsoftware.yamlbeans.parser;
+package com.esotericsoftware.yamlbeans.parser.event;
 
-/** @author <a href="mailto:misc@n4te.com">Nathan Sweet</a>
- * @author <a href="mailto:ola.bini@ki.se">Ola Bini</a> */
-public class AliasEvent extends NodeEvent {
-	public AliasEvent (String anchor) {
-		super(EventType.ALIAS, anchor);
-	}
+/** @author <a href="mailto:misc@n4te.com">Nathan Sweet</a> */
+public enum EventType {
+	STREAM_START, //
+	STREAM_END, //
+	SEQUENCE_START, //
+	SEQUENCE_END, //
+	SCALAR, //
+	MAPPING_START, //
+	MAPPING_END, //
+	DOCUMENT_START, //
+	DOCUMENT_END, //
+	ALIAS;
 
 	public String toString () {
-		return "<" + type + " anchor='" + anchor + "'>";
+		return name().toLowerCase().replace('_', ' ');
 	}
 }

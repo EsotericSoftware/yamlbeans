@@ -34,13 +34,13 @@ import com.esotericsoftware.yamlbeans.YamlConfig.WriteClassName;
 import com.esotericsoftware.yamlbeans.YamlConfig.WriteConfig;
 import com.esotericsoftware.yamlbeans.emitter.Emitter;
 import com.esotericsoftware.yamlbeans.emitter.EmitterException;
-import com.esotericsoftware.yamlbeans.parser.AliasEvent;
-import com.esotericsoftware.yamlbeans.parser.DocumentEndEvent;
-import com.esotericsoftware.yamlbeans.parser.DocumentStartEvent;
-import com.esotericsoftware.yamlbeans.parser.Event;
-import com.esotericsoftware.yamlbeans.parser.MappingStartEvent;
-import com.esotericsoftware.yamlbeans.parser.ScalarEvent;
-import com.esotericsoftware.yamlbeans.parser.SequenceStartEvent;
+import com.esotericsoftware.yamlbeans.parser.event.AliasEvent;
+import com.esotericsoftware.yamlbeans.parser.event.DocumentEndEvent;
+import com.esotericsoftware.yamlbeans.parser.event.DocumentStartEvent;
+import com.esotericsoftware.yamlbeans.parser.event.Event;
+import com.esotericsoftware.yamlbeans.parser.event.MappingStartEvent;
+import com.esotericsoftware.yamlbeans.parser.event.ScalarEvent;
+import com.esotericsoftware.yamlbeans.parser.event.SequenceStartEvent;
 import com.esotericsoftware.yamlbeans.scalar.ScalarSerializer;
 
 /** Serializes Java objects as YAML.
