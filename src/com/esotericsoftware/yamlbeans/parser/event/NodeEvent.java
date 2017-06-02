@@ -16,6 +16,9 @@
 
 package com.esotericsoftware.yamlbeans.parser.event;
 
+import com.esotericsoftware.yamlbeans.parser.Event;
+import com.esotericsoftware.yamlbeans.parser.EventType;
+
 /** @author <a href="mailto:misc@n4te.com">Nathan Sweet</a>
  * @author <a href="mailto:ola.bini@ki.se">Ola Bini</a> */
 public abstract class NodeEvent extends Event {

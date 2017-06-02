@@ -17,6 +17,8 @@
 package com.esotericsoftware.yamlbeans.parser.event;
 
 import com.esotericsoftware.yamlbeans.Version;
+import com.esotericsoftware.yamlbeans.parser.Event;
+import com.esotericsoftware.yamlbeans.parser.EventType;
 
 import java.util.Map;
 

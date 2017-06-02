@@ -14,7 +14,7 @@
  * IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.esotericsoftware.yamlbeans.parser.event;
+package com.esotericsoftware.yamlbeans.parser;
 
 /** @author <a href="mailto:misc@n4te.com">Nathan Sweet</a> */
 public enum EventType {

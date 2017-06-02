@@ -37,7 +37,7 @@ import com.esotericsoftware.yamlbeans.emitter.EmitterException;
 import com.esotericsoftware.yamlbeans.parser.event.AliasEvent;
 import com.esotericsoftware.yamlbeans.parser.event.DocumentEndEvent;
 import com.esotericsoftware.yamlbeans.parser.event.DocumentStartEvent;
-import com.esotericsoftware.yamlbeans.parser.event.Event;
+import com.esotericsoftware.yamlbeans.parser.Event;
 import com.esotericsoftware.yamlbeans.parser.event.MappingStartEvent;
 import com.esotericsoftware.yamlbeans.parser.event.ScalarEvent;
 import com.esotericsoftware.yamlbeans.parser.event.SequenceStartEvent;

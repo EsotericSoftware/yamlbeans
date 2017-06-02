@@ -16,13 +16,13 @@
 
 package com.esotericsoftware.yamlbeans;
 
-import static com.esotericsoftware.yamlbeans.parser.event.EventType.*;
+import static com.esotericsoftware.yamlbeans.parser.EventType.*;
 
 import com.esotericsoftware.yamlbeans.parser.event.AliasEvent;
 import com.esotericsoftware.yamlbeans.parser.event.CollectionStartEvent;
-import com.esotericsoftware.yamlbeans.parser.event.Event;
+import com.esotericsoftware.yamlbeans.parser.Event;
 import com.esotericsoftware.yamlbeans.parser.Parser;
-import com.esotericsoftware.yamlbeans.parser.Parser.ParserException;
+import com.esotericsoftware.yamlbeans.parser.ParserException;
 import com.esotericsoftware.yamlbeans.parser.event.ScalarEvent;
 import com.esotericsoftware.yamlbeans.scalar.ScalarSerializer;
 import com.esotericsoftware.yamlbeans.tokenizer.Tokenizer.TokenizerException;

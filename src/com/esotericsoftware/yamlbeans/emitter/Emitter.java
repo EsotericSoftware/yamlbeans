@@ -16,12 +16,12 @@
 
 package com.esotericsoftware.yamlbeans.emitter;
 
-import static com.esotericsoftware.yamlbeans.parser.event.EventType.*;
+import static com.esotericsoftware.yamlbeans.parser.EventType.*;
 
 import com.esotericsoftware.yamlbeans.parser.event.CollectionStartEvent;
 import com.esotericsoftware.yamlbeans.parser.event.DocumentEndEvent;
 import com.esotericsoftware.yamlbeans.parser.event.DocumentStartEvent;
-import com.esotericsoftware.yamlbeans.parser.event.Event;
+import com.esotericsoftware.yamlbeans.parser.Event;
 import com.esotericsoftware.yamlbeans.parser.event.MappingStartEvent;
 import com.esotericsoftware.yamlbeans.parser.event.NodeEvent;
 import com.esotericsoftware.yamlbeans.parser.Parser;

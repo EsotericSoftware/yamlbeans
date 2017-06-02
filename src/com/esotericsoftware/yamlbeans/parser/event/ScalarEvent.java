@@ -16,6 +16,8 @@
 
 package com.esotericsoftware.yamlbeans.parser.event;
 
+import com.esotericsoftware.yamlbeans.parser.EventType;
+
 import java.util.Arrays;
 
 /** @author <a href="mailto:misc@n4te.com">Nathan Sweet</a>
