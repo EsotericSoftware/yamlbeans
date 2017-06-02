@@ -16,17 +16,11 @@
 
 package com.esotericsoftware.yamlbeans;
 
-import static com.esotericsoftware.yamlbeans.parser.EventType.*;
-
-import com.esotericsoftware.yamlbeans.Beans.Property;
-import com.esotericsoftware.yamlbeans.parser.AliasEvent;
-import com.esotericsoftware.yamlbeans.parser.CollectionStartEvent;
-import com.esotericsoftware.yamlbeans.parser.Event;
-import com.esotericsoftware.yamlbeans.parser.Parser;
-import com.esotericsoftware.yamlbeans.parser.Parser.ParserException;
-import com.esotericsoftware.yamlbeans.parser.ScalarEvent;
-import com.esotericsoftware.yamlbeans.scalar.ScalarSerializer;
-import com.esotericsoftware.yamlbeans.tokenizer.Tokenizer.TokenizerException;
+import static com.esotericsoftware.yamlbeans.parser.EventType.DOCUMENT_START;
+import static com.esotericsoftware.yamlbeans.parser.EventType.MAPPING_END;
+import static com.esotericsoftware.yamlbeans.parser.EventType.SCALAR;
+import static com.esotericsoftware.yamlbeans.parser.EventType.SEQUENCE_END;
+import static com.esotericsoftware.yamlbeans.parser.EventType.STREAM_END;
 
 import java.io.FileReader;
 import java.io.IOException;
@@ -40,9 +34,19 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import com.esotericsoftware.yamlbeans.Beans.Property;
+import com.esotericsoftware.yamlbeans.parser.AliasEvent;
+import com.esotericsoftware.yamlbeans.parser.CollectionStartEvent;
+import com.esotericsoftware.yamlbeans.parser.Event;
+import com.esotericsoftware.yamlbeans.parser.Parser;
+import com.esotericsoftware.yamlbeans.parser.Parser.ParserException;
+import com.esotericsoftware.yamlbeans.parser.ScalarEvent;
+import com.esotericsoftware.yamlbeans.scalar.ScalarSerializer;
+import com.esotericsoftware.yamlbeans.tokenizer.Tokenizer.TokenizerException;
+
 /** Deserializes Java objects from YAML.
  * @author <a href="mailto:misc@n4te.com">Nathan Sweet</a> */
-public class YamlReader {
+public class YamlReader implements AutoCloseable {
 	private final YamlConfig config;
 	Parser parser;
 	private final Map<String, Object> anchors = new HashMap();
@@ -72,7 +76,8 @@ public class YamlReader {
 	public Object get (String alias) {
 		return anchors.get(alias);
 	}
-
+	
+	@Override
 	public void close () throws IOException {
 		parser.close();
 		anchors.clear();
