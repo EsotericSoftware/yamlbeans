@@ -25,6 +25,9 @@ import com.esotericsoftware.yamlbeans.parser.Parser;
 import com.esotericsoftware.yamlbeans.parser.event.ScalarEvent;
 import com.esotericsoftware.yamlbeans.scalar.ScalarSerializer;
 import com.esotericsoftware.yamlbeans.tokenizer.Tokenizer.TokenizerException;
+import com.sun.prism.PixelFormat.DataType;
+import com.sun.org.apache.bcel.internal.generic.BasicType;
+import com.sun.org.apache.bcel.internal.generic.Type;
 
 import java.io.FileReader;
 import java.io.IOException;
@@ -37,6 +40,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import org.omg.CORBA.DATA_CONVERSION;
 
 /** Deserializes Java objects from YAML.
  * @author <a href="mailto:misc@n4te.com">Nathan Sweet</a> */
@@ -191,7 +196,7 @@ public class YamlReader {
 	protected Class<?> findTagClass(String tag, ClassLoader classLoader) throws ClassNotFoundException {
 		return Class.forName(tag, true, classLoader);
 	}
-
+  
 	private Object readValueInternal (Class type, Class elementType, String anchor) throws YamlException, Parser.ParserException,
 		TokenizerException {
 		if (type == null || type == Object.class) {
@@ -218,50 +223,34 @@ public class YamlReader {
 			if (anchor != null) anchors.put(anchor, value);
 			return value;
 		}
-
+		
 		if (Beans.isScalar(type)) {
 			Event event = parser.getNextEvent();
 			if (event.type != SCALAR)
 				throw new YamlReaderException("Expected scalar for primitive type '" + type.getClass() + "' but found: " + event.type);
 			String value = ((ScalarEvent)event).value;
 			try {
+				StringConverter stringConverter = new StringConverter(type);
+				ByteConverter byteConverter = new ByteConverter(type);
+				IntegerConverter integerConverter = new IntegerConverter(type);
+				BooleanConverter booleanConverter = new BooleanConverter(type);
+				FloatConverter floatConverter = new FloatConverter(type);
+				DoubleConverter doubleConverter = new DoubleConverter(type);
+				LongConverter longConverter = new LongConverter(type);
+				ShortConverter shortConverter = new ShortConverter(type);
+				CharacterConverter characterConverter = new CharacterConverter(type);
 				Object convertedValue;
-				if (type == String.class) {
-					convertedValue = value;
-				} else if (type == Integer.TYPE) {
-					convertedValue = value.length() == 0 ? 0 : Integer.decode(value);
-				} else if (type == Integer.class) {
-					convertedValue = value.length() == 0 ? null : Integer.decode(value);
-				} else if (type == Boolean.TYPE) {
-					convertedValue = value.length() == 0 ? false : Boolean.valueOf(value);
-				} else if (type == Boolean.class) {
-					convertedValue = value.length() == 0 ? null : Boolean.valueOf(value);
-				} else if (type == Float.TYPE) {
-					convertedValue = value.length() == 0 ? 0 : Float.valueOf(value);
-				} else if (type == Float.class) {
-					convertedValue = value.length() == 0 ? null : Float.valueOf(value);
-				} else if (type == Double.TYPE) {
-					convertedValue = value.length() == 0 ? 0 : Double.valueOf(value);
-				} else if (type == Double.class) {
-					convertedValue = value.length() == 0 ? null : Double.valueOf(value);
-				} else if (type == Long.TYPE) {
-					convertedValue = value.length() == 0 ? 0 : Long.decode(value);
-				} else if (type == Long.class) {
-					convertedValue = value.length() == 0 ? null : Long.decode(value);
-				} else if (type == Short.TYPE) {
-					convertedValue = value.length() == 0 ? 0 : Short.decode(value);
-				} else if (type == Short.class) {
-					convertedValue = value.length() == 0 ? null : Short.decode(value);
-				} else if (type == Character.TYPE) {
-					convertedValue = value.length() == 0 ? 0 : value.charAt(0);
-				} else if (type == Character.class) {
-					convertedValue = value.length() == 0 ? null : value.charAt(0);
-				} else if (type == Byte.TYPE) {
-					convertedValue = value.length() == 0 ? 0 : Byte.decode(value);
-				} else if (type == Byte.class) {
-					convertedValue = value.length() == 0 ? null : Byte.decode(value);
-				} else
-					throw new YamlException("Unknown field type.");
+
+				convertedValue = stringConverter.getType(type, value);
+				stringConverter.setNext(integerConverter);
+				integerConverter.setNext(booleanConverter);
+				booleanConverter.setNext(floatConverter);
+				floatConverter.setNext(doubleConverter);
+				doubleConverter.setNext(longConverter);
+				longConverter.setNext(shortConverter);
+				shortConverter.setNext(characterConverter);
+				characterConverter.setNext(byteConverter);
+
 				if (anchor != null) anchors.put(anchor, convertedValue);
 				return convertedValue;
 			} catch (Exception ex) {
