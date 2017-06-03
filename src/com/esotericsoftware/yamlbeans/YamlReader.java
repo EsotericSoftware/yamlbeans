@@ -18,13 +18,11 @@ package com.esotericsoftware.yamlbeans;
 
 import static com.esotericsoftware.yamlbeans.parser.EventType.*;
 
-
-import com.esotericsoftware.yamlbeans.parser.AliasEvent;
-import com.esotericsoftware.yamlbeans.parser.CollectionStartEvent;
+import com.esotericsoftware.yamlbeans.parser.event.AliasEvent;
+import com.esotericsoftware.yamlbeans.parser.event.CollectionStartEvent;
 import com.esotericsoftware.yamlbeans.parser.Event;
 import com.esotericsoftware.yamlbeans.parser.Parser;
-import com.esotericsoftware.yamlbeans.parser.Parser.ParserException;
-import com.esotericsoftware.yamlbeans.parser.ScalarEvent;
+import com.esotericsoftware.yamlbeans.parser.event.ScalarEvent;
 import com.esotericsoftware.yamlbeans.scalar.ScalarSerializer;
 import com.esotericsoftware.yamlbeans.tokenizer.Tokenizer.TokenizerException;
 import com.sun.prism.PixelFormat.DataType;
@@ -106,7 +104,7 @@ public class YamlReader {
 				if (event.type == DOCUMENT_START) break;
 			}
 			return (T)readValue(type, elementType, null);
-		} catch (ParserException ex) {
+		} catch (Parser.ParserException ex) {
 			throw new YamlException("Error parsing YAML.", ex);
 		} catch (TokenizerException ex) {
 			throw new YamlException("Error tokenizing YAML.", ex);
@@ -114,7 +112,7 @@ public class YamlReader {
 	}
 
 	/** Reads an object from the YAML. Can be overidden to take some action for any of the objects returned. */
-	protected Object readValue (Class type, Class elementType, Class defaultType) throws YamlException, ParserException,
+	protected Object readValue (Class type, Class elementType, Class defaultType) throws YamlException, Parser.ParserException,
 		TokenizerException {
 		String tag = null, anchor = null;
 		Event event = parser.peekNextEvent();
@@ -198,8 +196,8 @@ public class YamlReader {
 	protected Class<?> findTagClass(String tag, ClassLoader classLoader) throws ClassNotFoundException {
 		return Class.forName(tag, true, classLoader);
 	}
-	
-	private Object readValueInternal (Class type, Class elementType, String anchor) throws YamlException, ParserException,
+  
+	private Object readValueInternal (Class type, Class elementType, String anchor) throws YamlException, Parser.ParserException,
 		TokenizerException {
 		if (type == null || type == Object.class) {
 			Event event = parser.peekNextEvent();

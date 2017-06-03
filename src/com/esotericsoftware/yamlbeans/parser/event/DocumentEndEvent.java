@@ -14,28 +14,22 @@
  * IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.esotericsoftware.yamlbeans.parser;
+package com.esotericsoftware.yamlbeans.parser.event;
 
-import java.util.Arrays;
+import com.esotericsoftware.yamlbeans.parser.Event;
+import com.esotericsoftware.yamlbeans.parser.EventType;
 
 /** @author <a href="mailto:misc@n4te.com">Nathan Sweet</a>
  * @author <a href="mailto:ola.bini@ki.se">Ola Bini</a> */
-public class ScalarEvent extends NodeEvent {
-	public final String tag;
-	public final boolean[] implicit;
-	public final String value;
-	public final char style;
+public class DocumentEndEvent extends Event {
+	public final boolean isExplicit;
 
-	public ScalarEvent (String anchor, String tag, boolean[] implicit, String value, char style) {
-		super(EventType.SCALAR, anchor);
-		this.tag = tag;
-		this.implicit = implicit;
-		this.value = value;
-		this.style = style;
+	public DocumentEndEvent (boolean isExplicit) {
+		super(EventType.DOCUMENT_END);
+		this.isExplicit = isExplicit;
 	}
 
 	public String toString () {
-		return "<" + type + " value='" + value + "' anchor='" + anchor + "' tag='" + tag + "' implicit='"
-			+ Arrays.toString(implicit) + "' style='" + (style == 0 ? "" : style) + "'>";
+		return "<" + type + " explicit='" + isExplicit + "'>";
 	}
 }

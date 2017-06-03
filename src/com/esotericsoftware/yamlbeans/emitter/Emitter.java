@@ -18,15 +18,15 @@ package com.esotericsoftware.yamlbeans.emitter;
 
 import static com.esotericsoftware.yamlbeans.parser.EventType.*;
 
-import com.esotericsoftware.yamlbeans.parser.CollectionStartEvent;
-import com.esotericsoftware.yamlbeans.parser.DocumentEndEvent;
-import com.esotericsoftware.yamlbeans.parser.DocumentStartEvent;
+import com.esotericsoftware.yamlbeans.parser.event.CollectionStartEvent;
+import com.esotericsoftware.yamlbeans.parser.event.DocumentEndEvent;
+import com.esotericsoftware.yamlbeans.parser.event.DocumentStartEvent;
 import com.esotericsoftware.yamlbeans.parser.Event;
-import com.esotericsoftware.yamlbeans.parser.MappingStartEvent;
-import com.esotericsoftware.yamlbeans.parser.NodeEvent;
+import com.esotericsoftware.yamlbeans.parser.event.MappingStartEvent;
+import com.esotericsoftware.yamlbeans.parser.event.NodeEvent;
 import com.esotericsoftware.yamlbeans.parser.Parser;
-import com.esotericsoftware.yamlbeans.parser.ScalarEvent;
-import com.esotericsoftware.yamlbeans.parser.SequenceStartEvent;
+import com.esotericsoftware.yamlbeans.parser.event.ScalarEvent;
+import com.esotericsoftware.yamlbeans.parser.event.SequenceStartEvent;
 
 import java.io.BufferedWriter;
 import java.io.FileReader;

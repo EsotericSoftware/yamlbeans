@@ -16,6 +16,8 @@
 
 package com.esotericsoftware.yamlbeans.parser;
 
+import com.esotericsoftware.yamlbeans.parser.event.DocumentEndEvent;
+
 /** @author <a href="mailto:misc@n4te.com">Nathan Sweet</a> */
 public class Event {
 	public static final Event MAPPING_END = new Event(EventType.MAPPING_END);

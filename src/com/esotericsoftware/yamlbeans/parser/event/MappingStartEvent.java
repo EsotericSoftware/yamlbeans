@@ -14,19 +14,14 @@
  * IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.esotericsoftware.yamlbeans.parser;
+package com.esotericsoftware.yamlbeans.parser.event;
+
+import com.esotericsoftware.yamlbeans.parser.EventType;
 
 /** @author <a href="mailto:misc@n4te.com">Nathan Sweet</a>
  * @author <a href="mailto:ola.bini@ki.se">Ola Bini</a> */
-public class DocumentEndEvent extends Event {
-	public final boolean isExplicit;
-
-	public DocumentEndEvent (boolean isExplicit) {
-		super(EventType.DOCUMENT_END);
-		this.isExplicit = isExplicit;
-	}
-
-	public String toString () {
-		return "<" + type + " explicit='" + isExplicit + "'>";
+public class MappingStartEvent extends CollectionStartEvent {
+	public MappingStartEvent (String anchor, String tag, boolean implicit, boolean flowStyle) {
+		super(EventType.MAPPING_START, anchor, tag, implicit, flowStyle);
 	}
 }
