@@ -18,6 +18,7 @@ package com.esotericsoftware.yamlbeans;
 
 import static com.esotericsoftware.yamlbeans.parser.EventType.*;
 
+import com.esotericsoftware.yamlbeans.converter.*;
 import com.esotericsoftware.yamlbeans.parser.event.AliasEvent;
 import com.esotericsoftware.yamlbeans.parser.event.CollectionStartEvent;
 import com.esotericsoftware.yamlbeans.parser.Event;
@@ -25,9 +26,6 @@ import com.esotericsoftware.yamlbeans.parser.Parser;
 import com.esotericsoftware.yamlbeans.parser.event.ScalarEvent;
 import com.esotericsoftware.yamlbeans.scalar.ScalarSerializer;
 import com.esotericsoftware.yamlbeans.tokenizer.Tokenizer.TokenizerException;
-import com.sun.prism.PixelFormat.DataType;
-import com.sun.org.apache.bcel.internal.generic.BasicType;
-import com.sun.org.apache.bcel.internal.generic.Type;
 
 import java.io.FileReader;
 import java.io.IOException;
@@ -40,8 +38,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import org.omg.CORBA.DATA_CONVERSION;
 
 /** Deserializes Java objects from YAML.
  * @author <a href="mailto:misc@n4te.com">Nathan Sweet</a> */
@@ -230,27 +226,16 @@ public class YamlReader {
 				throw new YamlReaderException("Expected scalar for primitive type '" + type.getClass() + "' but found: " + event.type);
 			String value = ((ScalarEvent)event).value;
 			try {
-				StringConverter stringConverter = new StringConverter(type);
-				ByteConverter byteConverter = new ByteConverter(type);
-				IntegerConverter integerConverter = new IntegerConverter(type);
-				BooleanConverter booleanConverter = new BooleanConverter(type);
-				FloatConverter floatConverter = new FloatConverter(type);
-				DoubleConverter doubleConverter = new DoubleConverter(type);
-				LongConverter longConverter = new LongConverter(type);
-				ShortConverter shortConverter = new ShortConverter(type);
-				CharacterConverter characterConverter = new CharacterConverter(type);
-				Object convertedValue;
-
-				convertedValue = stringConverter.getType(type, value);
-				stringConverter.setNext(integerConverter);
-				integerConverter.setNext(booleanConverter);
-				booleanConverter.setNext(floatConverter);
-				floatConverter.setNext(doubleConverter);
-				doubleConverter.setNext(longConverter);
-				longConverter.setNext(shortConverter);
-				shortConverter.setNext(characterConverter);
-				characterConverter.setNext(byteConverter);
-
+				Converter converter = new StringConverter(type);
+				converter.setNext(new IntegerConverter(type))
+                        .setNext(new BooleanConverter(type))
+						.setNext(new FloatConverter(type))
+						.setNext(new DoubleConverter(type))
+						.setNext(new LongConverter(type))
+						.setNext(new ShortConverter(type))
+						.setNext(new CharacterConverter(type))
+						.setNext(new ByteConverter(type));
+				Object convertedValue = converter.getType(value);
 				if (anchor != null) anchors.put(anchor, convertedValue);
 				return convertedValue;
 			} catch (Exception ex) {
