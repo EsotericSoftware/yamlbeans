@@ -17,6 +17,7 @@
 package com.esotericsoftware.yamlbeans;
 
 import java.io.StringReader;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -154,6 +155,24 @@ public class YamlReaderTest extends TestCase {
 		assertTrue(root.right.parent == root);
 		assertTrue(root.right.left == null);
 		assertTrue(root.right.right == null);
+	}
+
+	public void testReaderMaintainsOrderWhenReadingMap() throws Exception {
+		YamlReader reader = new YamlReader("a: b\nkey1: value1\nc: d\n");
+		Map map = (Map)reader.read();
+		Iterator entrySetIterator = map.entrySet().iterator();
+
+		Map.Entry mapEntry = (Map.Entry)entrySetIterator.next();
+		assertEquals(mapEntry.getKey(), "a");
+		assertEquals(mapEntry.getValue(), "b");
+
+		mapEntry = (Map.Entry)entrySetIterator.next();
+		assertEquals(mapEntry.getKey(), "key1");
+		assertEquals(mapEntry.getValue(), "value1");
+
+		mapEntry = (Map.Entry)entrySetIterator.next();
+		assertEquals(mapEntry.getKey(), "c");
+		assertEquals(mapEntry.getValue(), "d");
 	}
 
 	private Test read (String yaml) throws Exception {
@@ -428,4 +447,4 @@ public class YamlReaderTest extends TestCase {
 		assertEquals(1, lake.fish.size());
 		assertEquals("Walleye", lake.fish.get(0).species);
 	}
-}
+}
