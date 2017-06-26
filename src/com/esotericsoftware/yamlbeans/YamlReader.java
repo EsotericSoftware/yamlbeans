@@ -34,10 +34,7 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 
 /** Deserializes Java objects from YAML.
@@ -200,7 +197,7 @@ public class YamlReader {
 			Event event = parser.peekNextEvent();
 			switch (event.type) {
 			case MAPPING_START:
-				type = HashMap.class;
+				type = LinkedHashMap.class;
 				break;
 			case SCALAR:
 				type = String.class;
@@ -430,4 +427,4 @@ public class YamlReader {
 		YamlReader reader = new YamlReader(new FileReader("test/test.yml"));
 		System.out.println(reader.read());
 	}
-}
+}
