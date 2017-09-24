@@ -478,7 +478,7 @@ public class Emitter {
 			length += analysis.scalar.length();
 		}
 
-		return length < 128
+		return length < 1024
 			&& (event.type == ALIAS || event.type == SCALAR && !analysis.empty && !analysis.multiline || checkEmptySequence() || checkEmptyMapping());
 	}
 
