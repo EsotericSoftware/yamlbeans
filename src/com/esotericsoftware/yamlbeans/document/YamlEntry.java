@@ -42,6 +42,18 @@ public class YamlEntry {
 		this.value = value;
 	}
 
+	public void setValue(boolean value) {
+		this.value = new YamlScalar(value);
+	}
+	
+	public void setValue(Number value) {
+		this.value = new YamlScalar(value);
+	}
+	
+	public void setValue(String value) {
+		this.value = new YamlScalar(value);
+	}
+
 	public void emitEvent(Emitter emitter, WriteConfig config) throws EmitterException, IOException {
 		key.emitEvent(emitter, config);
 		if(value==null)
