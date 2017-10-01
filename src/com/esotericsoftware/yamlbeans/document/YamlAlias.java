@@ -13,4 +13,9 @@ public class YamlAlias extends YamlElement {
 	public void emitEvent(Emitter emitter, WriteConfig config) throws EmitterException, IOException {
 		emitter.emit(new AliasEvent(anchor));
 	}
+	
+	@Override
+	public String toString() {
+		return "*" + anchor;
+	}
 }

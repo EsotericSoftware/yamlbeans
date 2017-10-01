@@ -17,6 +17,15 @@ public class YamlEntry {
 		this.value = value;
 	}
 
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append(key.toString());
+		sb.append(':');
+		sb.append(value.toString());
+		return sb.toString();
+	}
+	
 	public YamlScalar getKey() {
 		return key;
 	}
