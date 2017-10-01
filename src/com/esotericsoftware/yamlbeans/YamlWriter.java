@@ -22,6 +22,7 @@ import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
@@ -33,6 +34,8 @@ import java.util.Set;
 import com.esotericsoftware.yamlbeans.Beans.Property;
 import com.esotericsoftware.yamlbeans.YamlConfig.WriteClassName;
 import com.esotericsoftware.yamlbeans.YamlConfig.WriteConfig;
+import com.esotericsoftware.yamlbeans.docs.YamlDocument;
+import com.esotericsoftware.yamlbeans.docs.YamlElement;
 import com.esotericsoftware.yamlbeans.emitter.Emitter;
 import com.esotericsoftware.yamlbeans.emitter.EmitterException;
 import com.esotericsoftware.yamlbeans.parser.AliasEvent;
@@ -137,11 +140,14 @@ public class YamlWriter {
 		boolean isRoot = this.isRoot;
 		this.isRoot = false;
 
-		if (object == null) {
+		if(object instanceof YamlElement) {
+			((YamlElement)object).emitEvent(emitter, config.writeConfig);
+			return;
+		} else if (object == null) {
 			emitter.emit(new ScalarEvent(null, null, new boolean[] {true, true}, null, (char)0));
 			return;
 		}
-
+		
 		Class valueClass = object.getClass();
 		boolean unknownType = fieldClass == null;
 		if (unknownType) fieldClass = valueClass;
