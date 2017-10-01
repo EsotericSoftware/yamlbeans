@@ -1,0 +1,6 @@
+stuff: &anchor
+   v1: v1
+   v2: v2
+merged:
+  <<: *anchor
+  v3: v3

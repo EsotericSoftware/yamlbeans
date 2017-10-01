@@ -326,7 +326,10 @@ public class YamlReader {
 					if (!config.allowDuplicates && ((Map) object).containsKey(key)) {
 						throw new YamlReaderException("Duplicate key found '" + key + "'");
 					}
-					((Map)object).put(key, value);
+					if(config.readConfig.autoMerge && "<<".equals(key) && value!=null)
+						mergeMap((Map)object, value);
+					else
+						((Map)object).put(key, value);
 				} else {
 					// Set field on object.
 					try {
@@ -403,6 +406,24 @@ public class YamlReader {
 		default:
 			throw new YamlReaderException("Expected data for a " + type.getName() + " field but found: " + event.type);
 		}
+	}
+
+	/** see http://yaml.org/type/merge.html */
+	@SuppressWarnings("unchecked")
+	private void mergeMap(Map<String, Object> dest, Object source) throws YamlReaderException {
+		if(source instanceof Collection) {
+			for(Object item : ((Collection<Object>)source))
+				mergeMap(dest, item);
+		} else if(source instanceof Map) {
+			Map<String, Object> map = (Map<String, Object>)source;
+			for(Map.Entry<String, Object> entry : map.entrySet()) {
+				if(!dest.containsKey(entry.getKey()))
+					dest.put(entry.getKey(), entry.getValue());
+				
+			}
+		} else
+			throw new YamlReaderException("Expected a mapping or a sequence of mappings for a '<<' merge field but found: " + source.getClass().getSimpleName());
+		
 	}
 
 	/** Returns a new object of the requested type. */
