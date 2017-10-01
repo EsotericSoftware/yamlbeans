@@ -11,6 +11,13 @@ public class YamlScalar extends YamlElement {
 
 	String value;
 	
+	public YamlScalar() {
+	}
+	
+	public YamlScalar(Object value) {
+		this.value = String.valueOf(value);
+	}
+
 	public String getValue() {
 		return value;
 	}

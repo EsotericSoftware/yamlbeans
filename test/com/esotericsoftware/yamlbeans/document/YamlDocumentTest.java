@@ -5,6 +5,7 @@ import java.io.StringWriter;
 import org.junit.Test;
 
 import com.esotericsoftware.yamlbeans.YamlConfig;
+import com.esotericsoftware.yamlbeans.YamlException;
 import com.esotericsoftware.yamlbeans.YamlWriter;
 import com.esotericsoftware.yamlbeans.YamlConfig.WriteClassName;
 import com.esotericsoftware.yamlbeans.document.YamlDocument;
@@ -80,17 +81,77 @@ public class YamlDocumentTest {
 		testEquals("mapping: *alias\n");
 	}
 
-	private void testEquals(String yaml) throws Exception {
+	@Test
+	public void testThatMappingEntryIsChanged() throws YamlException {
+		YamlDocument yaml = readDocument("scalar: value\n");
+		yaml.setEntry("scalar", 123);
+		String actual = writeDocument(yaml);
+		assertEquals("scalar: 123\n", actual);
+	}
+	
+	@Test
+	public void testThatMappingEntryIsAdded() throws YamlException {
+		YamlDocument yaml = readDocument("scalar: value\n");
+		yaml.setEntry("scalar2", 123);
+		String actual = writeDocument(yaml);
+		assertEquals("scalar: value\nscalar2: 123\n", actual);
+	}
+	
+	@Test
+	public void testThatMappingEntryIsRemoved() throws YamlException {
+		YamlDocument yaml = readDocument("scalar: value\nscalar2: 123\n");
+		yaml.deleteEntry("scalar2");
+		String actual = writeDocument(yaml);
+		assertEquals("scalar: value\n", actual);
+	}
+	
+	@Test
+	public void testThatSequenceItemIsChanged() throws YamlException {
+		YamlDocument yaml = readDocument("- value\n");
+		yaml.setElement(0, 123);
+		String actual = writeDocument(yaml);
+		assertEquals("- 123\n", actual);
+	}
+	
+	@Test
+	public void testThatSequenceItemIsAdded() throws YamlException {
+		YamlDocument yaml = readDocument("- value\n");
+		yaml.addElement(123);
+		String actual = writeDocument(yaml);
+		assertEquals("- value\n- 123\n", actual);
+	}
+	
+	@Test
+	public void testThatSequenceItemIsRemoved() throws YamlException {
+		YamlDocument yaml = readDocument("- value\n- 123\n");
+		yaml.deleteElement(0);
+		String actual = writeDocument(yaml);
+		assertEquals("- 123\n", actual);
+	}
+
+
+	private YamlDocument readDocument(String yaml) throws YamlException {
 		YamlDocumentReader reader = new YamlDocumentReader(yaml);
-		YamlDocument document = reader.read();
+		return reader.read();
+	}
+	
+	private String writeDocument(YamlDocument yaml) throws YamlException {
 		StringWriter writer = new StringWriter();
 		YamlConfig config = new YamlConfig();
-		config.writeConfig.setExplicitFirstDocument(document.getTag()!=null);
+		config.writeConfig.setExplicitFirstDocument(yaml.getTag()!=null);
 		config.writeConfig.setWriteClassname(WriteClassName.NEVER);
 		config.writeConfig.setAutoAnchor(false);
 		YamlWriter yamlWriter = new YamlWriter(writer, config);
-		yamlWriter.write(document);
-		yamlWriter.close();
-		assertEquals(yaml, writer.toString());
+		yamlWriter.write(yaml);
+		yamlWriter.close();	
+		return writer.toString();
 	}
+
+	private void testEquals(String yaml) throws Exception {
+		YamlDocument document = readDocument(yaml);
+		String actual = writeDocument(document);
+		assertEquals(yaml, actual);
+	}
+	
+
 }
