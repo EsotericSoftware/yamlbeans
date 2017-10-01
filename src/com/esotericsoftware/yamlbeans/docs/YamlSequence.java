@@ -1,0 +1,29 @@
+package com.esotericsoftware.yamlbeans.docs;
+
+import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
+
+import com.esotericsoftware.yamlbeans.YamlConfig.WriteConfig;
+import com.esotericsoftware.yamlbeans.emitter.Emitter;
+import com.esotericsoftware.yamlbeans.emitter.EmitterException;
+import com.esotericsoftware.yamlbeans.parser.Event;
+import com.esotericsoftware.yamlbeans.parser.SequenceStartEvent;
+
+public class YamlSequence extends YamlElement implements YamlDocument {
+
+	List<YamlElement> elements = new LinkedList<YamlElement>();
+
+	public void addElement(YamlElement element) {
+		elements.add(element);
+	}
+
+	@Override
+	public void emitEvent(Emitter emitter, WriteConfig config) throws EmitterException, IOException {
+		emitter.emit(new SequenceStartEvent(anchor, tag, tag==null, false));
+		for (YamlElement element : elements)
+			element.emitEvent(emitter, config);
+		emitter.emit(Event.SEQUENCE_END);	
+	}
+
+}
