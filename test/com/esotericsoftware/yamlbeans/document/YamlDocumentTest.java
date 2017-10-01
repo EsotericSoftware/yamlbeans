@@ -1,4 +1,4 @@
-package com.esotericsoftware.yamlbeans.docs;
+package com.esotericsoftware.yamlbeans.document;
 
 import java.io.StringWriter;
 
@@ -7,8 +7,8 @@ import org.junit.Test;
 import com.esotericsoftware.yamlbeans.YamlConfig;
 import com.esotericsoftware.yamlbeans.YamlWriter;
 import com.esotericsoftware.yamlbeans.YamlConfig.WriteClassName;
-import com.esotericsoftware.yamlbeans.docs.YamlDocument;
-import com.esotericsoftware.yamlbeans.docs.YamlDocumentReader;
+import com.esotericsoftware.yamlbeans.document.YamlDocument;
+import com.esotericsoftware.yamlbeans.document.YamlDocumentReader;
 
 import static org.junit.Assert.*;
 

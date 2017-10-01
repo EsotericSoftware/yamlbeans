@@ -1,4 +1,4 @@
-package com.esotericsoftware.yamlbeans.docs;
+package com.esotericsoftware.yamlbeans.document;
 
 public interface YamlDocument {
 	

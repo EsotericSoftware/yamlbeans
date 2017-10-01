@@ -1,4 +1,4 @@
-package com.esotericsoftware.yamlbeans.docs;
+package com.esotericsoftware.yamlbeans.document;
 
 import java.io.IOException;
 import java.util.LinkedList;

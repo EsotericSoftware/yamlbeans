@@ -1,4 +1,4 @@
-package com.esotericsoftware.yamlbeans.docs;
+package com.esotericsoftware.yamlbeans.document;
 
 import static com.esotericsoftware.yamlbeans.parser.EventType.*;
 
