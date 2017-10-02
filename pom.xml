@@ -12,7 +12,7 @@
 	<name>YamlBeans</name>
 	<groupId>com.esotericsoftware.yamlbeans</groupId>
 	<artifactId>yamlbeans</artifactId>
-	<version>1.12</version>
+	<version>1.13-SNAPSHOT</version>
 
 	<description>Java object graphs, to and from YAML</description>
 	<url>https://github.com/EsotericSoftware/yamlbeans</url>
