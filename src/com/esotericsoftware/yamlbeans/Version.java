@@ -20,7 +20,7 @@ package com.esotericsoftware.yamlbeans;
  * @author <a href="mailto:misc@n4te.com">Nathan Sweet</a> */
 public class Version {
 	
-	public static final Version DEFAULT_VERSION = new Version(1, 1);;
+	public static final Version DEFAULT_VERSION = new Version(1, 1);
 	
 	public final int major;
 	public final int minor;
