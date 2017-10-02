@@ -28,6 +28,7 @@ import com.esotericsoftware.yamlbeans.parser.ScalarEvent;
 import com.esotericsoftware.yamlbeans.scalar.ScalarSerializer;
 import com.esotericsoftware.yamlbeans.tokenizer.Tokenizer.TokenizerException;
 
+import java.io.Closeable;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
@@ -39,7 +40,7 @@ import java.util.Map.Entry;
 
 /** Deserializes Java objects from YAML.
  * @author <a href="mailto:misc@n4te.com">Nathan Sweet</a> */
-public class YamlReader {
+public class YamlReader implements Closeable {
 	private final YamlConfig config;
 	Parser parser;
 	private final Map<String, Object> anchors = new HashMap();
