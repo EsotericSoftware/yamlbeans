@@ -224,6 +224,7 @@ public class YamlConfig {
 		ClassLoader classLoader;
 		final Map<Class, ConstructorParameters> constructorParameters = new IdentityHashMap();
 		boolean ignoreUnknownProperties;
+		boolean autoMerge = true;
 
 		ReadConfig () {
 		}
