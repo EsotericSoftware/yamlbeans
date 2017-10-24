@@ -18,6 +18,15 @@ package com.esotericsoftware.yamlbeans;
 
 import static com.esotericsoftware.yamlbeans.parser.EventType.*;
 
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
+import java.lang.reflect.Array;
+import java.lang.reflect.InvocationTargetException;
+import java.util.*;
+import java.util.Map.Entry;
+
 import com.esotericsoftware.yamlbeans.Beans.Property;
 import com.esotericsoftware.yamlbeans.parser.AliasEvent;
 import com.esotericsoftware.yamlbeans.parser.CollectionStartEvent;
@@ -27,15 +36,6 @@ import com.esotericsoftware.yamlbeans.parser.Parser.ParserException;
 import com.esotericsoftware.yamlbeans.parser.ScalarEvent;
 import com.esotericsoftware.yamlbeans.scalar.ScalarSerializer;
 import com.esotericsoftware.yamlbeans.tokenizer.Tokenizer.TokenizerException;
-
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.Reader;
-import java.io.StringReader;
-import java.lang.reflect.Array;
-import java.lang.reflect.InvocationTargetException;
-import java.util.*;
-import java.util.Map.Entry;
 
 /** Deserializes Java objects from YAML.
  * @author <a href="mailto:misc@n4te.com">Nathan Sweet</a> */
@@ -65,7 +65,8 @@ public class YamlReader {
 		return config;
 	}
 
-	/** Return the object with the given alias, or null. This is only valid after objects have been read and before {@link #close()} */
+	/** Return the object with the given alias, or null. This is only valid after objects have been read and before
+	 * {@link #close()} */
 	public Object get (String alias) {
 		return anchors.get(alias);
 	}
@@ -106,8 +107,8 @@ public class YamlReader {
 	}
 
 	/** Reads an object from the YAML. Can be overidden to take some action for any of the objects returned. */
-	protected Object readValue (Class type, Class elementType, Class defaultType) throws YamlException, ParserException,
-		TokenizerException {
+	protected Object readValue (Class type, Class elementType, Class defaultType)
+		throws YamlException, ParserException, TokenizerException {
 		String tag = null, anchor = null;
 		Event event = parser.peekNextEvent();
 
@@ -130,19 +131,19 @@ public class YamlReader {
 		default:
 		}
 
-		return readValueInternal(this.chooseType(tag,  defaultType, type), elementType, anchor);
+		return readValueInternal(this.chooseType(tag, defaultType, type), elementType, anchor);
 	}
-	
-	private Class<?> chooseType(String tag, Class<?> defaultType, Class<?> providedType) throws YamlReaderException {
-		if (tag != null) {
+
+	private Class<?> chooseType (String tag, Class<?> defaultType, Class<?> providedType) throws YamlReaderException {
+		if (tag != null && config.readConfig.classTags) {
 			Class<?> userConfiguredByTag = config.tagToClass.get(tag);
 			if (userConfiguredByTag != null) {
 				return userConfiguredByTag;
 			}
-			
+
 			ClassLoader classLoader = (config.readConfig.classLoader == null ? this.getClass().getClassLoader()
-					: config.readConfig.classLoader);
-			
+				: config.readConfig.classLoader);
+
 			try {
 				Class<?> loadedFromTag = findTagClass(tag, classLoader);
 				if (loadedFromTag != null) {
@@ -152,26 +153,23 @@ public class YamlReader {
 				throw new YamlReaderException("Unable to find class specified by tag: " + tag);
 			}
 		}
-		
+
 		if (defaultType != null) {
 			return defaultType;
 		}
-		
+
 		// This may be null.
 		return providedType;
 	}
-	
-	/**
-	 * Used during reading when a tag is present, and
-	 * {@link YamlConfig#setClassTag(String, Class)} was not used for that tag.
+
+	/** Used during reading when a tag is present, and {@link YamlConfig#setClassTag(String, Class)} was not used for that tag.
 	 * Attempts to load the class corresponding to that tag.
 	 * 
-	 * If this returns a non-null Class, that will be used as the
-	 * deserialization type regardless of whether a type was explicitly asked
-	 * for or if a default type exists.
+	 * If this returns a non-null Class, that will be used as the deserialization type regardless of whether a type was explicitly
+	 * asked for or if a default type exists.
 	 * 
-	 * If this returns null, no guidance will be provided by the tag and we will
-	 * fall back to the default type or a requested target type, if any exist.
+	 * If this returns null, no guidance will be provided by the tag and we will fall back to the default type or a requested
+	 * target type, if any exist.
 	 * 
 	 * If this throws a ClassNotFoundException, parsing will fail.
 	 * 
@@ -183,16 +181,14 @@ public class YamlReader {
 	 * 
 	 * and never returns null.
 	 * 
-	 * You can override this to handle cases where you do not want to respect
-	 * the type tags found in a document - e.g., if they were output by another
-	 * program using classes that do not exist on your classpath.
-	 */
-	protected Class<?> findTagClass(String tag, ClassLoader classLoader) throws ClassNotFoundException {
+	 * You can override this to handle cases where you do not want to respect the type tags found in a document - e.g., if they
+	 * were output by another program using classes that do not exist on your classpath. */
+	protected Class<?> findTagClass (String tag, ClassLoader classLoader) throws ClassNotFoundException {
 		return Class.forName(tag, true, classLoader);
 	}
 
-	private Object readValueInternal (Class type, Class elementType, String anchor) throws YamlException, ParserException,
-		TokenizerException {
+	private Object readValueInternal (Class type, Class elementType, String anchor)
+		throws YamlException, ParserException, TokenizerException {
 		if (type == null || type == Object.class) {
 			Event event = parser.peekNextEvent();
 			switch (event.type) {
@@ -220,8 +216,8 @@ public class YamlReader {
 
 		if (Beans.isScalar(type)) {
 			Event event = parser.getNextEvent();
-			if (event.type != SCALAR)
-				throw new YamlReaderException("Expected scalar for primitive type '" + type.getClass() + "' but found: " + event.type);
+			if (event.type != SCALAR) throw new YamlReaderException(
+				"Expected scalar for primitive type '" + type.getClass() + "' but found: " + event.type);
 			String value = ((ScalarEvent)event).value;
 			try {
 				Object convertedValue;
@@ -284,9 +280,8 @@ public class YamlReader {
 			if (entry.getKey().isAssignableFrom(type)) {
 				ScalarSerializer serializer = entry.getValue();
 				Event event = parser.getNextEvent();
-				if (event.type != SCALAR)
-					throw new YamlReaderException("Expected scalar for type '" + type + "' to be deserialized by scalar serializer '"
-						+ serializer.getClass().getName() + "' but found: " + event.type);
+				if (event.type != SCALAR) throw new YamlReaderException("Expected scalar for type '" + type
+					+ "' to be deserialized by scalar serializer '" + serializer.getClass().getName() + "' but found: " + event.type);
 				Object value = serializer.read(((ScalarEvent)event).value);
 				if (anchor != null) anchors.put(anchor, value);
 				return value;
@@ -322,8 +317,20 @@ public class YamlReader {
 				}
 				if (object instanceof Map) {
 					// Add to map.
+					if (config.readConfig.tagSuffix != null) {
+						Event nextEvent = parser.peekNextEvent();
+						switch (nextEvent.type) {
+						case MAPPING_START:
+						case SEQUENCE_START:
+							((Map)object).put(key + config.readConfig.tagSuffix, ((CollectionStartEvent)nextEvent).tag);
+							break;
+						case SCALAR:
+							((Map)object).put(key + config.readConfig.tagSuffix, ((ScalarEvent)nextEvent).tag);
+							break;
+						}
+					}
 					if (!isExplicitKey) value = readValue(elementType, null, null);
-					if (!config.allowDuplicates && ((Map) object).containsKey(key)) {
+					if (!config.allowDuplicates && ((Map)object).containsKey(key)) {
 						throw new YamlReaderException("Duplicate key found '" + key + "'");
 					}
 					if(config.readConfig.autoMerge && "<<".equals(key) && value!=null)
@@ -442,6 +449,11 @@ public class YamlReader {
 		public YamlReaderException (String message) {
 			this(message, null);
 		}
+	}
+
+	static public class Meow {
+		public String tag;
+		public String value;
 	}
 
 	public static void main (String[] args) throws Exception {

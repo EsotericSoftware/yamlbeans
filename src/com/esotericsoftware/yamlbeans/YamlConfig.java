@@ -177,9 +177,9 @@ public class YamlConfig {
 			this.autoAnchor = autoAnchor;
 		}
 
-		/** If true, bean fields/properties are written in the same order as the fields are defined in the bean class.
-		 * If false, they are sorted alphabetically. Default is false. */ 
-		public void setKeepBeanPropertyOrder(boolean keepBeanPropertyOrder) {
+		/** If true, bean fields/properties are written in the same order as the fields are defined in the bean class. If false,
+		 * they are sorted alphabetically. Default is false. */
+		public void setKeepBeanPropertyOrder (boolean keepBeanPropertyOrder) {
 			this.keepBeanPropertyOrder = keepBeanPropertyOrder;
 		}
 
@@ -225,6 +225,8 @@ public class YamlConfig {
 		final Map<Class, ConstructorParameters> constructorParameters = new IdentityHashMap();
 		boolean ignoreUnknownProperties;
 		boolean autoMerge = true;
+		boolean classTags = true;
+		String tagSuffix;
 
 		ReadConfig () {
 		}
@@ -250,16 +252,27 @@ public class YamlConfig {
 			try {
 				parameters.constructor = type.getConstructor(parameterTypes);
 			} catch (Exception ex) {
-				throw new IllegalArgumentException("Unable to find constructor: " + type.getName() + "("
-					+ Arrays.toString(parameterTypes) + ")", ex);
+				throw new IllegalArgumentException(
+					"Unable to find constructor: " + type.getName() + "(" + Arrays.toString(parameterTypes) + ")", ex);
 			}
 			parameters.parameterNames = parameterNames;
 			constructorParameters.put(type, parameters);
 		}
 
-		/** When true, fields in the YAML that are not found on the class will not throw a {@link YamlException}. Default is false. */
+		/** When true, fields in the YAML that are not found on the class will not throw a {@link YamlException}. Default is
+		 * false. */
 		public void setIgnoreUnknownProperties (boolean allowUnknownProperties) {
 			this.ignoreUnknownProperties = allowUnknownProperties;
+		}
+
+		/** When false, tags are not used to look up classes. Default is true. */
+		public void setClassTags (boolean classTags) {
+			this.classTags = classTags;
+		}
+
+		/** When not null, YAML read into a {@link Map} stores any tags using key + tagSuffix. Default is null. */
+		public void setTagSuffix (String tagSuffix) {
+			this.tagSuffix = tagSuffix;
 		}
 	}
 
@@ -271,4 +284,4 @@ public class YamlConfig {
 	public static enum WriteClassName {
 		ALWAYS, NEVER, AUTO
 	}
-}
+}
