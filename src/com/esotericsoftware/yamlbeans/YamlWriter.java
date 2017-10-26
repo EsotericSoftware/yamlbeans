@@ -22,7 +22,6 @@ import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
@@ -34,7 +33,6 @@ import java.util.Set;
 import com.esotericsoftware.yamlbeans.Beans.Property;
 import com.esotericsoftware.yamlbeans.YamlConfig.WriteClassName;
 import com.esotericsoftware.yamlbeans.YamlConfig.WriteConfig;
-import com.esotericsoftware.yamlbeans.document.YamlDocument;
 import com.esotericsoftware.yamlbeans.document.YamlElement;
 import com.esotericsoftware.yamlbeans.emitter.Emitter;
 import com.esotericsoftware.yamlbeans.emitter.EmitterException;
@@ -135,19 +133,19 @@ public class YamlWriter {
 		}
 	}
 
-	private void writeValue (Object object, Class fieldClass, Class elementType, Class defaultType) throws EmitterException,
-		IOException, YamlException {
+	private void writeValue (Object object, Class fieldClass, Class elementType, Class defaultType)
+		throws EmitterException, IOException, YamlException {
 		boolean isRoot = this.isRoot;
 		this.isRoot = false;
 
-		if(object instanceof YamlElement) {
+		if (object instanceof YamlElement) {
 			((YamlElement)object).emitEvent(emitter, config.writeConfig);
 			return;
 		} else if (object == null) {
 			emitter.emit(new ScalarEvent(null, null, new boolean[] {true, true}, null, (char)0));
 			return;
 		}
-		
+
 		Class valueClass = object.getClass();
 		boolean unknownType = fieldClass == null;
 		if (unknownType) fieldClass = valueClass;
@@ -178,7 +176,8 @@ public class YamlWriter {
 
 		String tag = null;
 		boolean showTag = false;
-		if ((unknownType || valueClass != fieldClass || config.writeConfig.writeClassName == WriteClassName.ALWAYS) && config.writeConfig.writeClassName != WriteClassName.NEVER) {
+		if ((unknownType || valueClass != fieldClass || config.writeConfig.writeClassName == WriteClassName.ALWAYS)
+			&& config.writeConfig.writeClassName != WriteClassName.NEVER) {
 			showTag = true;
 			if ((unknownType || fieldClass == List.class) && valueClass == ArrayList.class) showTag = false;
 			if ((unknownType || fieldClass == Map.class) && valueClass == HashMap.class) showTag = false;
@@ -224,11 +223,34 @@ public class YamlWriter {
 
 		if (object instanceof Map) {
 			emitter.emit(new MappingStartEvent(anchor, tag, !showTag, false));
-			for (Object item : ((Map)object).entrySet()) {
+			Map map = (Map)object;
+			for (Object item : map.entrySet()) {
 				Entry entry = (Entry)item;
-				writeValue(entry.getKey(), null, null, null);
-				if (isRoot && !config.writeConfig.writeRootElementTags) elementType = entry.getValue().getClass();
-				writeValue(entry.getValue(), elementType, null, null);
+				Object key = entry.getKey(), value = entry.getValue();
+				if (isRoot && !config.writeConfig.writeRootElementTags) elementType = value.getClass();
+				if (config.tagSuffix != null && key instanceof String) {
+					// Skip tag keys.
+					if (((String)key).endsWith(config.tagSuffix)) continue;
+
+					// Write value with tag, if found.
+					if (value instanceof String) {
+						Object valueTag = map.get(key + config.tagSuffix);
+						if (valueTag instanceof String) {
+							String string = (String)value;
+							char style = 0;
+							try {
+								Float.parseFloat(string);
+								style = '\'';
+							} catch (NumberFormatException ignored) {
+							}
+							writeValue(key, null, null, null);
+							emitter.emit(new ScalarEvent(null, (String)valueTag, new boolean[] {false, false}, string, style));
+							continue;
+						}
+					}
+				}
+				writeValue(key, null, null, null);
+				writeValue(value, elementType, null, null);
 			}
 			emitter.emit(Event.MAPPING_END);
 			return;

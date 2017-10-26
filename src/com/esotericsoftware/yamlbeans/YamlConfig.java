@@ -48,6 +48,7 @@ public class YamlConfig {
 	boolean privateFields;
 	boolean privateConstructors = true;
 	boolean allowDuplicates = true;
+	String tagSuffix;
 
 	public YamlConfig () {
 		scalarSerializers.put(Date.class, new DateSerializer());
@@ -121,6 +122,12 @@ public class YamlConfig {
 	/** If true, private no-arg constructors will be used. Default is true. */
 	public void setPrivateConstructors (boolean privateConstructors) {
 		this.privateConstructors = privateConstructors;
+	}
+
+	/** When not null, YAML read into a {@link Map} stores any value tags using key + tagSuffix, and when writing YAML the value
+	 * tags are output. Key tags are not stored in the map. Default is null. */
+	public void setTagSuffix (String tagSuffix) {
+		this.tagSuffix = tagSuffix;
 	}
 
 	static public class WriteConfig {
@@ -226,7 +233,6 @@ public class YamlConfig {
 		boolean ignoreUnknownProperties;
 		boolean autoMerge = true;
 		boolean classTags = true;
-		String tagSuffix;
 
 		ReadConfig () {
 		}
@@ -268,11 +274,6 @@ public class YamlConfig {
 		/** When false, tags are not used to look up classes. Default is true. */
 		public void setClassTags (boolean classTags) {
 			this.classTags = classTags;
-		}
-
-		/** When not null, YAML read into a {@link Map} stores any tags using key + tagSuffix. Default is null. */
-		public void setTagSuffix (String tagSuffix) {
-			this.tagSuffix = tagSuffix;
 		}
 	}
 

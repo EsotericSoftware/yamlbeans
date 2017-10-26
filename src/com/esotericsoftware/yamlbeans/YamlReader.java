@@ -24,7 +24,11 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import com.esotericsoftware.yamlbeans.Beans.Property;
@@ -317,15 +321,15 @@ public class YamlReader {
 				}
 				if (object instanceof Map) {
 					// Add to map.
-					if (config.readConfig.tagSuffix != null) {
+					if (config.tagSuffix != null) {
 						Event nextEvent = parser.peekNextEvent();
 						switch (nextEvent.type) {
 						case MAPPING_START:
 						case SEQUENCE_START:
-							((Map)object).put(key + config.readConfig.tagSuffix, ((CollectionStartEvent)nextEvent).tag);
+							((Map)object).put(key + config.tagSuffix, ((CollectionStartEvent)nextEvent).tag);
 							break;
 						case SCALAR:
-							((Map)object).put(key + config.readConfig.tagSuffix, ((ScalarEvent)nextEvent).tag);
+							((Map)object).put(key + config.tagSuffix, ((ScalarEvent)nextEvent).tag);
 							break;
 						}
 					}
@@ -333,7 +337,7 @@ public class YamlReader {
 					if (!config.allowDuplicates && ((Map)object).containsKey(key)) {
 						throw new YamlReaderException("Duplicate key found '" + key + "'");
 					}
-					if(config.readConfig.autoMerge && "<<".equals(key) && value!=null)
+					if (config.readConfig.autoMerge && "<<".equals(key) && value != null)
 						mergeMap((Map)object, value);
 					else
 						((Map)object).put(key, value);
@@ -417,20 +421,20 @@ public class YamlReader {
 
 	/** see http://yaml.org/type/merge.html */
 	@SuppressWarnings("unchecked")
-	private void mergeMap(Map<String, Object> dest, Object source) throws YamlReaderException {
-		if(source instanceof Collection) {
-			for(Object item : ((Collection<Object>)source))
+	private void mergeMap (Map<String, Object> dest, Object source) throws YamlReaderException {
+		if (source instanceof Collection) {
+			for (Object item : ((Collection<Object>)source))
 				mergeMap(dest, item);
-		} else if(source instanceof Map) {
+		} else if (source instanceof Map) {
 			Map<String, Object> map = (Map<String, Object>)source;
-			for(Map.Entry<String, Object> entry : map.entrySet()) {
-				if(!dest.containsKey(entry.getKey()))
-					dest.put(entry.getKey(), entry.getValue());
-				
+			for (Map.Entry<String, Object> entry : map.entrySet()) {
+				if (!dest.containsKey(entry.getKey())) dest.put(entry.getKey(), entry.getValue());
+
 			}
 		} else
-			throw new YamlReaderException("Expected a mapping or a sequence of mappings for a '<<' merge field but found: " + source.getClass().getSimpleName());
-		
+			throw new YamlReaderException("Expected a mapping or a sequence of mappings for a '<<' merge field but found: "
+				+ source.getClass().getSimpleName());
+
 	}
 
 	/** Returns a new object of the requested type. */
@@ -449,11 +453,6 @@ public class YamlReader {
 		public YamlReaderException (String message) {
 			this(message, null);
 		}
-	}
-
-	static public class Meow {
-		public String tag;
-		public String value;
 	}
 
 	public static void main (String[] args) throws Exception {
