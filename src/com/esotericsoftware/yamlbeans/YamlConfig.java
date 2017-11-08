@@ -233,6 +233,7 @@ public class YamlConfig {
 		boolean ignoreUnknownProperties;
 		boolean autoMerge = true;
 		boolean classTags = true;
+		boolean guessNumberTypes = true;
 
 		ReadConfig () {
 		}
@@ -274,6 +275,12 @@ public class YamlConfig {
 		/** When false, tags are not used to look up classes. Default is true. */
 		public void setClassTags (boolean classTags) {
 			this.classTags = classTags;
+		}
+
+		/** When true, if the type for a scalar value is unknown and it looks like a number, it is read as an integer or float. When
+		 * false, if the type for a scalar value is unknown it is always read a string. Default is true. */
+		public void setGuessNumberTypes (boolean guessNumberTypes) {
+			this.guessNumberTypes = guessNumberTypes;
 		}
 	}
 
