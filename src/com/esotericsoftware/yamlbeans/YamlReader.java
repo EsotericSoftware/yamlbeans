@@ -202,17 +202,19 @@ public class YamlReader {
 			case SCALAR:
 				if (config.readConfig.guessNumberTypes) {
 					String value = ((ScalarEvent)event).value;
-					try {
-						Integer convertedValue = Integer.decode(value);
-						if (anchor != null) anchors.put(anchor, convertedValue);
-						return convertedValue;
-					} catch (NumberFormatException ex) {
-					}
-					try {
-						Float convertedValue = Float.valueOf(value);
-						if (anchor != null) anchors.put(anchor, convertedValue);
-						return convertedValue;
-					} catch (NumberFormatException ex) {
+					if (value != null) {
+						try {
+							Integer convertedValue = Integer.decode(value);
+							if (anchor != null) anchors.put(anchor, convertedValue);
+							return convertedValue;
+						} catch (NumberFormatException ex) {
+						}
+						try {
+							Float convertedValue = Float.valueOf(value);
+							if (anchor != null) anchors.put(anchor, convertedValue);
+							return convertedValue;
+						} catch (NumberFormatException ex) {
+						}
 					}
 				}
 				type = String.class;
