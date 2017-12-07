@@ -5,16 +5,17 @@ import java.io.StringWriter;
 import org.junit.Test;
 
 import com.esotericsoftware.yamlbeans.YamlConfig;
+import com.esotericsoftware.yamlbeans.YamlConfig.WriteClassName;
 import com.esotericsoftware.yamlbeans.YamlException;
 import com.esotericsoftware.yamlbeans.YamlWriter;
-import com.esotericsoftware.yamlbeans.YamlConfig.WriteClassName;
-import com.esotericsoftware.yamlbeans.document.YamlDocument;
-import com.esotericsoftware.yamlbeans.document.YamlDocumentReader;
 
-import static org.junit.Assert.*;
+import junit.framework.TestCase;
 
-public class YamlDocumentTest {
-	
+public class YamlDocumentTest extends TestCase  {
+	protected void setUp () throws Exception {
+		System.setProperty("line.separator", "\n");
+	}
+
 	@Test
 	public void testThatTaggedDocumentIsCopied() throws Exception {
 		testEquals("--- !someTag\nscalar: value\n");
