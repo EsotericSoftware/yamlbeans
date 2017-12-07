@@ -206,12 +206,14 @@ public class YamlReader {
 						try {
 							Integer convertedValue = Integer.decode(value);
 							if (anchor != null) anchors.put(anchor, convertedValue);
+							parser.getNextEvent();
 							return convertedValue;
 						} catch (NumberFormatException ex) {
 						}
 						try {
 							Float convertedValue = Float.valueOf(value);
 							if (anchor != null) anchors.put(anchor, convertedValue);
+							parser.getNextEvent();
 							return convertedValue;
 						} catch (NumberFormatException ex) {
 						}
