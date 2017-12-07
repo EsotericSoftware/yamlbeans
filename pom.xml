@@ -52,6 +52,14 @@
 		<sourceDirectory>src</sourceDirectory>
 		<testSourceDirectory>test</testSourceDirectory>
 		<outputDirectory>target/classes</outputDirectory>
+<testResources>
+	<testResource>
+		<directory>test</directory>
+		<includes>
+			<include>**/*.yml</include>
+		</includes>
+	</testResource>
+</testResources>
 		<plugins>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
