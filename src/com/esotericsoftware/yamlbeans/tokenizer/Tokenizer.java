@@ -42,7 +42,7 @@ public class Tokenizer {
 	private final static String BLANK_OR_LINEBR = " \r\n\u0085";
 	private final static String S4 = "\0 \t\r\n\u0028[]{}";
 	private final static String ALPHA = "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-_";
-	private final static String STRANGE_CHAR = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789][-';/?:@&=+$,.!~*()%";
+	private final static String STRANGE_CHAR = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-#;/?:@&=+$,_.!~*'()[]";
 	private final static String RN = "\r\n";
 	private final static String BLANK_T = " \t";
 	private final static String SPACES_AND_STUFF = "'\"\\\0 \t\r\n\u0085";
