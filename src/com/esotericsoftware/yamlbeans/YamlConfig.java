@@ -233,7 +233,7 @@ public class YamlConfig {
 		boolean ignoreUnknownProperties;
 		boolean autoMerge = true;
 		boolean classTags = true;
-		boolean guessNumberTypes = true;
+		boolean guessNumberTypes;
 
 		ReadConfig () {
 		}

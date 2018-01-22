@@ -1,0 +1,17 @@
+language: java
+jdk:
+  - openjdk7
+  - oraclejdk8
+# We don't need an install before
+# we run the unit and integration tests.
+install: true
+script: "mvn --show-version --errors --batch-mode clean verify"
+cache:
+    directories:
+    - $HOME/.m2
+branches:
+    except:
+        - gh-pages
+notifications:
+    email:
+        - dev@tchemit.fr
