@@ -1,5 +1,7 @@
 package com.esotericsoftware.yamlbeans;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -11,8 +13,8 @@ import static org.junit.Assert.*;
 public class MergeTest {
 
 	@Test
-	public void testMerge() throws YamlException {
-		InputStream input = Thread.currentThread().getContextClassLoader().getResourceAsStream("test-merge.yml");
+	public void testMerge() throws FileNotFoundException, YamlException {
+		InputStream input = new FileInputStream("test/test-merge.yml");
 		Reader reader = new InputStreamReader(input);
 		Map data = new YamlReader(reader).read(Map.class);
 		Map stuff = (Map)data.get("merged");
