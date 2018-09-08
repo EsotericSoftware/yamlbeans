@@ -42,14 +42,25 @@ class DeferredConstruction {
 		try {
 			Object[] parameters = new Object[parameterValues.length];
 			int i = 0;
+			boolean missingParameter = false;
 			for (ParameterValue parameter : parameterValues) {
 				if (parameter == null)
-					throw new InvocationTargetException(new YamlException("Missing constructor property: " + parameterNames[i]));
-				parameters[i++] = parameter.value;
+					missingParameter = true;
+				else
+					parameters[i++] = parameter.value;
 			}
-			Object object = constructor.newInstance(parameters);
-			for (PropertyValue propertyValue : propertyValues)
-				propertyValue.property.set(object, propertyValue.value);
+			Object object;
+			if (missingParameter) {
+				try {
+					object = constructor.getDeclaringClass().getConstructor().newInstance();
+				} catch (Exception ex) {
+					throw new InvocationTargetException(new YamlException("Missing constructor property: " + parameterNames[i]));
+				}
+			} else object = constructor.newInstance(parameters);
+			for (PropertyValue propertyValue : propertyValues) {
+				if (propertyValue.value != null)
+					propertyValue.property.set(object, propertyValue.value);
+			}
 			return object;
 		} catch (Exception ex) {
 			throw new InvocationTargetException(ex, "Error constructing instance of class: "
