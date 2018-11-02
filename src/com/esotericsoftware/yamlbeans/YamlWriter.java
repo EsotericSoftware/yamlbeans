@@ -179,9 +179,9 @@ public class YamlWriter {
 		if ((unknownType || valueClass != fieldClass || config.writeConfig.writeClassName == WriteClassName.ALWAYS)
 			&& config.writeConfig.writeClassName != WriteClassName.NEVER) {
 			showTag = true;
-			if ((unknownType || fieldClass == List.class) && valueClass == ArrayList.class) showTag = false;
-			if ((unknownType || fieldClass == Map.class) && valueClass == HashMap.class) showTag = false;
-			if (fieldClass == Set.class && valueClass == HashSet.class) showTag = false;
+			if ((unknownType || fieldClass == List.class) && List.class.isAssignableFrom(valueClass)) showTag = false;
+			if ((unknownType || fieldClass == Map.class) && HashMap.class.isAssignableFrom(valueClass)) showTag = false;
+			if (fieldClass == Set.class && HashSet.class.isAssignableFrom(valueClass)) showTag = false;
 			if (valueClass == defaultType) showTag = false;
 			if (showTag) {
 				tag = config.classNameToTag.get(valueClass.getName());
