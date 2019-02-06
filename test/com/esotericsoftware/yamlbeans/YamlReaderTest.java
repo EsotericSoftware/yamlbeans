@@ -30,7 +30,7 @@ public class YamlReaderTest extends TestCase {
 		"stringValue: moo\ufec9moo\n" + //
 			"intValue: !!int 123\n" + //
 			"floatValue: 0.3\n" + //
-			"doubleValue: 0.0002\n" + //
+			"doubleValue: 0.0002 # comment\n" + //
 			"longValue: 999999\n" + //
 			"shortValue: 125\n" + //
 			"charValue: j\n" + //
