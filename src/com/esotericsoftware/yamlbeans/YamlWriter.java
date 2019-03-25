@@ -151,7 +151,8 @@ public class YamlWriter {
 		if (unknownType) fieldClass = valueClass;
 
 		if (object instanceof Enum) {
-            emitter.emit(new ScalarEvent(null, null, new boolean[] {true, true}, ((Enum)object).name(), this.config.writeConfig.getQuoteChar() ));
+			emitter.emit(
+				new ScalarEvent(null, null, new boolean[] {true, true}, ((Enum)object).name(), this.config.writeConfig.quote.c));
 			return;
 		}
 
@@ -203,7 +204,7 @@ public class YamlWriter {
 			if (valueClass == String.class) {
 				try {
 					Float.parseFloat(string);
-					style = this.config.writeConfig.getQuoteChar(); // = '\'';
+					style = this.config.writeConfig.quote.c;
 				} catch (NumberFormatException ignored) {
 				}
 			}
@@ -240,7 +241,7 @@ public class YamlWriter {
 							char style = 0;
 							try {
 								Float.parseFloat(string);
-								style = this.config.writeConfig.getQuoteChar(); // = '\'';
+								style = this.config.writeConfig.quote.c;
 							} catch (NumberFormatException ignored) {
 							}
 							writeValue(key, null, null, null);
@@ -291,7 +292,8 @@ public class YamlWriter {
 					if (propertyValue == null && prototypeValue == null) continue;
 					if (propertyValue != null && prototypeValue != null && prototypeValue.equals(propertyValue)) continue;
 				}
-				emitter.emit(new ScalarEvent(null, null, new boolean[] {true, true}, property.getName(), this.config.writeConfig.getQuoteChar() ));
+				emitter.emit(
+					new ScalarEvent(null, null, new boolean[] {true, true}, property.getName(), this.config.writeConfig.quote.c));
 				Class propertyElementType = config.propertyToElementType.get(property);
 				Class propertyDefaultType = config.propertyToDefaultType.get(property);
 				writeValue(propertyValue, property.getType(), propertyElementType, propertyDefaultType);

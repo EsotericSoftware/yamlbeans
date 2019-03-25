@@ -139,7 +139,7 @@ public class YamlConfig {
 		boolean autoAnchor = true;
 		boolean keepBeanPropertyOrder = false;
 		WriteClassName writeClassName = WriteClassName.AUTO;
-        QuoteCharEnum quoteChar         = QuoteCharEnum.SINGLEQUOTE;
+		Quote quote = Quote.NONE;
 		EmitterConfig emitterConfig = new EmitterConfig();
 
 		WriteConfig () {
@@ -226,21 +226,11 @@ public class YamlConfig {
 			writeClassName = write;
 		}
 
-        /** define the quote character you'd like to use, when writing YAML output. */
-        public void setQuoteChar (QuoteCharEnum _qc) {
-            this.quoteChar = _qc;
-        }
-        
-        /** Utility function: primarily for use within YamlWriter, to get the quote-character */
-        public char getQuoteChar() {
-            switch (this.quoteChar ) {
-                case NONE:         return ' ';
-                case SINGLEQUOTE:  return '\'';
-                case DOUBLEQUOTE:  return '\"';
-                default: return '\'';
-            }
-        }
-    }
+		/** The type of quotes to use when writing YAML output. */
+		public void setQuoteChar (Quote quote) {
+			this.quote = quote;
+		}
+	}
 
 	static public class ReadConfig {
 		Version defaultVersion = new Version(1, 1);
@@ -309,8 +299,13 @@ public class YamlConfig {
 		ALWAYS, NEVER, AUTO
 	}
 
-    public static enum QuoteCharEnum {
-        NONE, SINGLEQUOTE, DOUBLEQUOTE
-    }
-    
+	public static enum Quote {
+		NONE('\0'), SINGLE('\''), DOUBLE('"');
+
+		char c;
+
+		Quote (char c) {
+			this.c = c;
+		}
+	}
 }
