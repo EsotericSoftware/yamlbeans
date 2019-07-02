@@ -36,6 +36,8 @@ public class YamlWriterTest extends TestCase {
 	private static final String LINE_SEPARATOR = System.getProperty("line.separator");
 
 	public void testPrivateFields () throws Exception {
+		YamlWriter yamlWriter = new com.esotericsoftware.yamlbeans.YamlWriter(new java.io.OutputStreamWriter(System.out));
+		
 		ArrayList list = new ArrayList();
 		list.add("abc");
 		list.add("123");
