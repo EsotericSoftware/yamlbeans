@@ -209,6 +209,8 @@ class Beans {
 			}
 			return new FieldProperty(field);
 		}
+
+		if (!name.startsWith("_")) return getProperty(type, "_" + name, beanProperties, privateFields, config);
 		return null;
 	}
 
@@ -292,15 +294,15 @@ class Beans {
 					if (actualTypeArguments.length > 0) {
 						final Type cType = actualTypeArguments[actualTypeArguments.length - 1];
 						if (cType instanceof Class) {
-							return (Class) cType;
+							return (Class)cType;
 						} else if (cType instanceof WildcardType) {
-							WildcardType t = (WildcardType) cType;
+							WildcardType t = (WildcardType)cType;
 							final Type bound = t.getUpperBounds()[0];
-							return bound instanceof Class ? (Class) bound : null;
+							return bound instanceof Class ? (Class)bound : null;
 						} else if (cType instanceof ParameterizedType) {
-							ParameterizedType t = (ParameterizedType) cType;
+							ParameterizedType t = (ParameterizedType)cType;
 							final Type rt = t.getRawType();
-							return rt instanceof Class ? (Class) rt : null;
+							return rt instanceof Class ? (Class)rt : null;
 						}
 					}
 				}
