@@ -247,37 +247,37 @@ public class YamlReader {
 				if (type == String.class) {
 					convertedValue = value;
 				} else if (type == Integer.TYPE) {
-					convertedValue = value.length() == 0 ? 0 : Integer.decode(value);
+					convertedValue = value == null ? null : Integer.decode(value);
 				} else if (type == Integer.class) {
-					convertedValue = value.length() == 0 ? null : Integer.decode(value);
+					convertedValue = value == null ? null : Integer.decode(value);
 				} else if (type == Boolean.TYPE) {
-					convertedValue = value.length() == 0 ? false : Boolean.valueOf(value);
+					convertedValue = value == null ? null : Boolean.valueOf(value);
 				} else if (type == Boolean.class) {
-					convertedValue = value.length() == 0 ? null : Boolean.valueOf(value);
+					convertedValue = value == null ? null : Boolean.valueOf(value);
 				} else if (type == Float.TYPE) {
-					convertedValue = value.length() == 0 ? 0 : Float.valueOf(value);
+					convertedValue = value == null ? null : Float.valueOf(value);
 				} else if (type == Float.class) {
-					convertedValue = value.length() == 0 ? null : Float.valueOf(value);
+					convertedValue = value == null ? null : Float.valueOf(value);
 				} else if (type == Double.TYPE) {
-					convertedValue = value.length() == 0 ? 0 : Double.valueOf(value);
+					convertedValue = value == null ? null : Double.valueOf(value);
 				} else if (type == Double.class) {
-					convertedValue = value.length() == 0 ? null : Double.valueOf(value);
+					convertedValue = value == null ? null : Double.valueOf(value);
 				} else if (type == Long.TYPE) {
-					convertedValue = value.length() == 0 ? 0 : Long.decode(value);
+					convertedValue = value == null ? null : Long.decode(value);
 				} else if (type == Long.class) {
-					convertedValue = value.length() == 0 ? null : Long.decode(value);
+					convertedValue = value == null ? null : Long.decode(value);
 				} else if (type == Short.TYPE) {
-					convertedValue = value.length() == 0 ? 0 : Short.decode(value);
+					convertedValue = value == null ? null : Short.decode(value);
 				} else if (type == Short.class) {
-					convertedValue = value.length() == 0 ? null : Short.decode(value);
+					convertedValue = value == null ? null : Short.decode(value);
 				} else if (type == Character.TYPE) {
-					convertedValue = value.length() == 0 ? 0 : value.charAt(0);
+					convertedValue = value == null ? null : value.charAt(0);
 				} else if (type == Character.class) {
-					convertedValue = value.length() == 0 ? null : value.charAt(0);
+					convertedValue = value == null ? null : value.charAt(0);
 				} else if (type == Byte.TYPE) {
-					convertedValue = value.length() == 0 ? 0 : Byte.decode(value);
+					convertedValue = value == null ? null : Byte.decode(value);
 				} else if (type == Byte.class) {
-					convertedValue = value.length() == 0 ? null : Byte.decode(value);
+					convertedValue = value == null ? null : Byte.decode(value);
 				} else
 					throw new YamlException("Unknown field type.");
 				if (anchor != null) anchors.put(anchor, convertedValue);
@@ -291,7 +291,7 @@ public class YamlReader {
 			Event event = parser.getNextEvent();
 			if (event.type != SCALAR) throw new YamlReaderException("Expected scalar for enum type but found: " + event.type);
 			String enumValueName = ((ScalarEvent)event).value;
-			if (enumValueName.length() == 0) return null;
+			if (enumValueName == null) return null;
 			try {
 				return Enum.valueOf(type, enumValueName);
 			} catch (Exception ex) {
@@ -427,8 +427,7 @@ public class YamlReader {
 			return array;
 		}
 		case SCALAR:
-			// Interpret an empty scalar as null.
-			if (((ScalarEvent)event).value.length() == 0) {
+			if (((ScalarEvent)event).value == null) {
 				event = parser.getNextEvent();
 				return null;
 			}
