@@ -211,7 +211,7 @@ public class YamlConfig {
 			emitterConfig.setWrapColumn(wrapColumn);
 		}
 
-		/** If false, tags will never be surrounded by angle brackets (eg, "!<java.util.LinkedList>"). Default is false. */
+		/** If false, tags will never be surrounded by angle brackets (eg, "!&lt;java.util.LinkedList&gt;"). Default is false. */
 		public void setUseVerbatimTags (boolean useVerbatimTags) {
 			emitterConfig.setUseVerbatimTags(useVerbatimTags);
 		}
