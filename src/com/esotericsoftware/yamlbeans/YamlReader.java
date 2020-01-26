@@ -41,8 +41,10 @@ import com.esotericsoftware.yamlbeans.parser.ScalarEvent;
 import com.esotericsoftware.yamlbeans.scalar.ScalarSerializer;
 import com.esotericsoftware.yamlbeans.tokenizer.Tokenizer.TokenizerException;
 
-/** Deserializes Java objects from YAML.
- * @author <a href="mailto:misc@n4te.com">Nathan Sweet</a> */
+/**
+ * Deserializes Java objects from YAML.
+ * @author <a href="mailto:misc@n4te.com">Nathan Sweet</a>
+ */
 public class YamlReader {
 	private final YamlConfig config;
 	Parser parser;
@@ -69,8 +71,12 @@ public class YamlReader {
 		return config;
 	}
 
-	/** Return the object with the given alias, or null. This is only valid after objects have been read and before
-	 * {@link #close()} */
+	/**
+	 * Return the object with the given alias, or null. This is only valid after objects have been read and before
+	 * {@link #close()}
+	 * @param alias Name of object alias
+	 * @return Object with a given alias
+	 */
 	public Object get (String alias) {
 		return anchors.get(alias);
 	}
@@ -80,20 +86,33 @@ public class YamlReader {
 		anchors.clear();
 	}
 
-	/** Reads the next YAML document and deserializes it into an object. The type of object is defined by the YAML tag. If there is
-	 * no YAML tag, the object will be an {@link ArrayList}, {@link HashMap}, or String. */
+	/**
+	 * Reads the next YAML document and deserializes it into an object. The type of object is defined by the YAML tag. If there is
+	 * no YAML tag, the object will be an {@link ArrayList}, {@link HashMap}, or String.
+	 * @throws YamlException If there is any problem parsing or tokenizing the YAML
+	 * @return Java object representing a deserialized YAML document
+	 */
 	public Object read () throws YamlException {
 		return read(null);
 	}
 
-	/** Reads an object of the specified type from YAML.
-	 * @param type The type of object to read. If null, behaves the same as {{@link #read()}. */
+	/**
+	 * Reads an object of the specified type from YAML.
+	 * @param type The type of object to read. If null, behaves the same as {{@link #read()}.
+	 * @throws YamlException If there is any problem parsing or tokenizing the YAML
+	 * @return Object of type T deserialized from YAML
+	 */
 	public <T> T read (Class<T> type) throws YamlException {
 		return read(type, null);
 	}
 
-	/** Reads an array, Map, List, or Collection object of the specified type from YAML, using the specified element type.
-	 * @param type The type of object to read. If null, behaves the same as {{@link #read()}. */
+	/**
+	 * Reads an array, Map, List, or Collection object of the specified type from YAML, using the specified element type.
+	 * @param type The type of object to read. If null, behaves the same as {{@link #read()}.
+	 * @param elementType Specifies whether to return Array, Map, List, or Collection element type
+	 * @throws YamlException If there is any problem parsing or tokenizing the YAML
+	 * @return Array, Map, List, or Collection of type T deserialized from YAML
+	 */
 	public <T> T read (Class<T> type, Class elementType) throws YamlException {
 		try {
 			while (true) {
@@ -110,7 +129,16 @@ public class YamlReader {
 		}
 	}
 
-	/** Reads an object from the YAML. Can be overidden to take some action for any of the objects returned. */
+	/**
+	 * Reads an object from the YAML. Can be overidden to take some action for any of the objects returned.
+	 * @param type The type of object to read. If null, behaves the same as {{@link #read()}.
+	 * @param elementType Specifies whether to return Array, Map, List, or Collection element type
+	 * @param defaultType Default element type (from Array, Map, List, or Collection) to expect
+	 * @throws YamlException If there is any problem parsing or tokenizing the YAML
+	 * @throws ParserException If there is any problem parsing the YAML
+	 * @throws TokenizerException If there is any problem tokenizing the YAML
+	 * @return Object deserialized from YAML
+	 */
 	protected Object readValue (Class type, Class elementType, Class defaultType)
 		throws YamlException, ParserException, TokenizerException {
 		String tag = null, anchor = null;
@@ -166,7 +194,8 @@ public class YamlReader {
 		return providedType;
 	}
 
-	/** Used during reading when a tag is present, and {@link YamlConfig#setClassTag(String, Class)} was not used for that tag.
+	/**
+	 * Used during reading when a tag is present, and {@link YamlConfig#setClassTag(String, Class)} was not used for that tag.
 	 * Attempts to load the class corresponding to that tag.
 	 * 
 	 * If this returns a non-null Class, that will be used as the deserialization type regardless of whether a type was explicitly
@@ -186,7 +215,12 @@ public class YamlReader {
 	 * and never returns null.
 	 * 
 	 * You can override this to handle cases where you do not want to respect the type tags found in a document - e.g., if they
-	 * were output by another program using classes that do not exist on your classpath. */
+	 * were output by another program using classes that do not exist on your classpath.
+	 * @param tag Name of tag found in YAML
+	 * @param classLoader Classloader responsible for loading the YAML data
+	 * @throws ClassNotFoundException If class specified by "tag" was not found
+	 * @return Class of type ? corresponding to the specified tag
+	 */
 	protected Class<?> findTagClass (String tag, ClassLoader classLoader) throws ClassNotFoundException {
 		return Class.forName(tag, true, classLoader);
 	}
@@ -437,7 +471,9 @@ public class YamlReader {
 		}
 	}
 
-	/** see http://yaml.org/type/merge.html */
+	/**
+	 * see http://yaml.org/type/merge.html
+	 */
 	@SuppressWarnings("unchecked")
 	private void mergeMap (Map<String, Object> dest, Object source) throws YamlReaderException {
 		if (source instanceof Collection) {
@@ -455,7 +491,12 @@ public class YamlReader {
 
 	}
 
-	/** Returns a new object of the requested type. */
+	/**
+	 * Returns a new object of the requested type.
+	 * @param type Java type to return
+	 * @throws InvocationTargetException If specified Java type encounters an error during creation
+	 * @return New Object of the requested type
+	 */
 	protected Object createObject (Class type) throws InvocationTargetException {
 		// Use deferred construction if a non-zero-arg constructor is available.
 		DeferredConstruction deferredConstruction = Beans.getDeferredConstruction(type, config);

@@ -30,13 +30,20 @@ import com.esotericsoftware.yamlbeans.emitter.EmitterConfig;
 import com.esotericsoftware.yamlbeans.scalar.DateSerializer;
 import com.esotericsoftware.yamlbeans.scalar.ScalarSerializer;
 
-/** Stores configuration for reading and writing YAML.
- * @author <a href="mailto:misc@n4te.com">Nathan Sweet</a> */
+/**
+ * Stores configuration for reading and writing YAML.
+ * 
+ * @author <a href="mailto:misc@n4te.com">Nathan Sweet</a>
+ */
 public class YamlConfig {
-	/** Configuration for writing YAML. */
+	/**
+	 * Configuration for writing YAML.
+	 */
 	public final WriteConfig writeConfig = new WriteConfig();
 
-	/** Configuration for reading YAML. */
+	/**
+	 * Configuration for reading YAML.
+	 */
 	public final ReadConfig readConfig = new ReadConfig();
 
 	final Map<String, String> classNameToTag = new HashMap();
@@ -50,7 +57,7 @@ public class YamlConfig {
 	boolean allowDuplicates = true;
 	String tagSuffix;
 
-	public YamlConfig () {
+	public YamlConfig() {
 		scalarSerializers.put(Date.class, new DateSerializer());
 
 		tagToClass.put("tag:yaml.org,2002:str", String.class);
@@ -60,73 +67,123 @@ public class YamlConfig {
 		tagToClass.put("tag:yaml.org,2002:float", Float.class);
 	}
 
-	/** Allows duplicate keys in YAML document. Default is true. */
-	public void setAllowDuplicates (boolean allowDuplicates) {
+	/**
+	 * Allows duplicate keys in YAML document
+	 * 
+	 * @param allowDuplicates Flag to allow duplicate keys in YAML. Default is true.
+	 */
+	public void setAllowDuplicates(boolean allowDuplicates) {
 		this.allowDuplicates = allowDuplicates;
 	}
 
-	/** Allows the specified tag to be used in YAML instead of the full class name. */
-	public void setClassTag (String tag, Class type) {
-		if (tag == null) throw new IllegalArgumentException("tag cannot be null.");
-		if (type == null) throw new IllegalArgumentException("type cannot be null.");
+	/**
+	 * Allows the specified tag to be used in YAML instead of the full class name.
+	 * 
+	 * @param tag Name of tag
+	 * @param type Java class to associate with the tag
+	 */
+	public void setClassTag(String tag, Class type) {
+		if (tag == null)
+			throw new IllegalArgumentException("tag cannot be null.");
+		if (type == null)
+			throw new IllegalArgumentException("type cannot be null.");
 		classNameToTag.put(type.getName(), tag);
 		tagToClass.put(tag, type);
 	}
 
-	/** Adds a serializer for the specified scalar type. */
-	public void setScalarSerializer (Class type, ScalarSerializer serializer) {
-		if (type == null) throw new IllegalArgumentException("type cannot be null.");
-		if (serializer == null) throw new IllegalArgumentException("serializer cannot be null.");
+	/**
+	 * Adds a serializer for the specified scalar type.
+	 * @param type Java type to serialize
+	 * @param serializer Serializer object to use for the specified type
+	 */
+	public void setScalarSerializer(Class type, ScalarSerializer serializer) {
+		if (type == null)
+			throw new IllegalArgumentException("type cannot be null.");
+		if (serializer == null)
+			throw new IllegalArgumentException("serializer cannot be null.");
 		scalarSerializers.put(type, serializer);
 	}
 
-	/** Sets the default type of elements in a Collection or Map property. No tag will be output for elements of this type. This
-	 * type will be used for each element if no tag is found. */
-	public void setPropertyElementType (Class type, String propertyName, Class elementType) {
-		if (type == null) throw new IllegalArgumentException("type cannot be null.");
-		if (propertyName == null) throw new IllegalArgumentException("propertyName cannot be null.");
-		if (elementType == null) throw new IllegalArgumentException("propertyType cannot be null.");
+	/**
+	 * Sets the default type of elements in a Collection or Map property. No tag
+	 * will be output for elements of this type. This type will be used for each
+	 * element if no tag is found.
+	 * @param type Java type to serialize
+	 * @param propertyName Name of map element in YAML
+	 * @param elementType Java class which is expected to populate the named YAML map element
+	 */
+	public void setPropertyElementType(Class type, String propertyName, Class elementType) {
+		if (type == null)
+			throw new IllegalArgumentException("type cannot be null.");
+		if (propertyName == null)
+			throw new IllegalArgumentException("propertyName cannot be null.");
+		if (elementType == null)
+			throw new IllegalArgumentException("propertyType cannot be null.");
 		Property property = Beans.getProperty(type, propertyName, beanProperties, privateFields, this);
 		if (property == null)
-			throw new IllegalArgumentException("The class " + type.getName() + " does not have a property named: " + propertyName);
+			throw new IllegalArgumentException(
+					"The class " + type.getName() + " does not have a property named: " + propertyName);
 		if (!Collection.class.isAssignableFrom(property.getType()) && !Map.class.isAssignableFrom(property.getType())) {
 			throw new IllegalArgumentException("The '" + propertyName + "' property on the " + type.getName()
-				+ " class must be a Collection or Map: " + property.getType());
+					+ " class must be a Collection or Map: " + property.getType());
 		}
 		propertyToElementType.put(property, elementType);
 	}
 
-	/** Sets the default type of a property. No tag will be output for values of this type. This type will be used if no tag is
-	 * found. */
-	public void setPropertyDefaultType (Class type, String propertyName, Class defaultType) {
-		if (type == null) throw new IllegalArgumentException("type cannot be null.");
-		if (propertyName == null) throw new IllegalArgumentException("propertyName cannot be null.");
-		if (defaultType == null) throw new IllegalArgumentException("defaultType cannot be null.");
+	/**
+	 * Sets the default type of a property. No tag will be output for values of this
+	 * type. This type will be used if no tag is found.
+	 * @param type Java type to serialize
+	 * @param propertyName Name of map element in YAML
+	 * @param defaultType Java class which should be expected by default in the named YAML map element
+	 */
+	public void setPropertyDefaultType(Class type, String propertyName, Class defaultType) {
+		if (type == null)
+			throw new IllegalArgumentException("type cannot be null.");
+		if (propertyName == null)
+			throw new IllegalArgumentException("propertyName cannot be null.");
+		if (defaultType == null)
+			throw new IllegalArgumentException("defaultType cannot be null.");
 		Property property = Beans.getProperty(type, propertyName, beanProperties, privateFields, this);
 		if (property == null)
-			throw new IllegalArgumentException("The class " + type.getName() + " does not have a property named: " + propertyName);
+			throw new IllegalArgumentException(
+					"The class " + type.getName() + " does not have a property named: " + propertyName);
 		propertyToDefaultType.put(property, defaultType);
 	}
 
-	/** If true, bean properties with both a getter and setter will be used. Note the getter and setter methods must be named the
-	 * same as the field they get or set. Default is true. */
-	public void setBeanProperties (boolean beanProperties) {
+	/**
+	 * If true, bean properties with both a getter and setter will be used. Note the
+	 * getter and setter methods must be named the same as the field they get or
+	 * set. Default is true.
+	 * @param beanProperties Whether bean properties with both a getter and setter will be used. Defaults to true.
+	 */
+	public void setBeanProperties(boolean beanProperties) {
 		this.beanProperties = beanProperties;
 	}
 
-	/** If true, private non-transient fields will be used. Default is false. */
-	public void setPrivateFields (boolean privateFields) {
+	/**
+	 * If true, private non-transient fields will be used. Default is false.
+	 * @param privateFields Whether private non-transient fields will be used. Defaults to false.
+	 */
+	public void setPrivateFields(boolean privateFields) {
 		this.privateFields = privateFields;
 	}
 
-	/** If true, private no-arg constructors will be used. Default is true. */
-	public void setPrivateConstructors (boolean privateConstructors) {
+	/**
+	 * If true, private no-arg constructors will be used. Default is true.
+	 * @param privateConstructors Whether private no-arg constructors will be used. Defaults to true.
+	 */
+	public void setPrivateConstructors(boolean privateConstructors) {
 		this.privateConstructors = privateConstructors;
 	}
 
-	/** When not null, YAML read into a {@link Map} stores any value tags using key + tagSuffix, and when writing YAML the value
-	 * tags are output. Key tags are not stored in the map. Default is null. */
-	public void setTagSuffix (String tagSuffix) {
+	/**
+	 * When not null, YAML read into a {@link Map} stores any value tags using key +
+	 * tagSuffix, and when writing YAML the value tags are output. Key tags are not
+	 * stored in the map. Default is null.
+	 * @param tagSuffix Name of tag suffix to use when YAML is read into a Map
+	 */
+	public void setTagSuffix(String tagSuffix) {
 		this.tagSuffix = tagSuffix;
 	}
 
@@ -142,92 +199,150 @@ public class YamlConfig {
 		Quote quote = Quote.NONE;
 		EmitterConfig emitterConfig = new EmitterConfig();
 
-		WriteConfig () {
+		WriteConfig() {
 			emitterConfig.setUseVerbatimTags(false);
 		}
 
-		/** If true, the first document will have a document start token (---). Default is false. */
-		public void setExplicitFirstDocument (boolean explicitFirstDocument) {
+		/**
+		 * If true, the first document will have a document start token (---). Default
+		 * is false.
+		 * @param explicitFirstDocument Whether first document will have a standard YAML start token (---). Defaults to false.
+		 */
+		public void setExplicitFirstDocument(boolean explicitFirstDocument) {
 			this.explicitFirstDocument = explicitFirstDocument;
 		}
 
-		/** If true, the every document will have a document end token (...). Default is false. */
-		public void setExplicitEndDocument (boolean explicitEndDocument) {
+		/**
+		 * If true, the every document will have a document end token (...). Default is
+		 * false.
+		 * @param explicitEndDocument Whether every document will have a standard YAML end token (...). Defaults to false.
+		 */
+		public void setExplicitEndDocument(boolean explicitEndDocument) {
 			this.explicitEndDocument = explicitEndDocument;
 		}
 
-		/** If true, the root of each YAML document will have a tag defining the class that was written, if necessary. Tags are not
-		 * necessary for primitive types, Strings, {@link ArrayList}, or {@link HashMap}. It is useful to set this to false when
-		 * planning to read the object with the {@link YamlReader#read(Class)} method. Default is true. */
-		public void setWriteRootTags (boolean writeRootTags) {
+		/**
+		 * If true, the root of each YAML document will have a tag defining the class
+		 * that was written, if necessary. Tags are not necessary for primitive types,
+		 * Strings, {@link ArrayList}, or {@link HashMap}. It is useful to set this to
+		 * false when planning to read the object with the
+		 * {@link YamlReader#read(Class)} method. Default is true.
+		 * @param writeRootTags Whether to include a tag defining the Java class which was written for non-Collection, non-Map types, if necessary. Defaults to true.
+		 */
+		public void setWriteRootTags(boolean writeRootTags) {
 			this.writeRootTags = writeRootTags;
 		}
 
-		/** If true, the elements of a Collection or Map root for each YAML document will have a tag defining the class that was
-		 * written, if necessary. Tags are not necessary for primitive types, Strings, {@link ArrayList}, or {@link HashMap}. It is
-		 * useful to set this to false when planning to read the object with the {@link YamlReader#read(Class, Class)} method.
-		 * Default is true. */
-		public void setWriteRootElementTags (boolean writeRootElementTags) {
+		/**
+		 * If true, the elements of a Collection or Map root for each YAML document will
+		 * have a tag defining the class that was written, if necessary. Tags are not
+		 * necessary for primitive types, Strings, {@link ArrayList}, or
+		 * {@link HashMap}. It is useful to set this to false when planning to read the
+		 * object with the {@link YamlReader#read(Class, Class)} method. Default is
+		 * true.
+		 * @param writeRootElementTags Whether to include a tag defining the Java class which was written for Collection or Map types. Defaults to true.
+		 */
+		public void setWriteRootElementTags(boolean writeRootElementTags) {
 			this.writeRootElementTags = writeRootElementTags;
 		}
 
-		/** If false, object fields with default values will not be written. A prototype object is created to determine the default
-		 * value for each field on the object. Default is false. */
-		public void setWriteDefaultValues (boolean writeDefaultValues) {
+		/**
+		 * If false, object fields with default values will not be written. A prototype
+		 * object is created to determine the default value for each field on the
+		 * object. Default is false.
+		 * @param writeDefaultValues Whether object fields with default values will be written. Defaults to false.
+		 */
+		public void setWriteDefaultValues(boolean writeDefaultValues) {
 			this.writeDefaultValues = writeDefaultValues;
 		}
 
-		/** If true, values that are referenced multiple times will use an anchor. This works across YAML documents (ie multiple
-		 * calls to {@link YamlWriter#write(Object)}). When true, objects are not actually written until
-		 * {@link YamlWriter#clearAnchors()} or {@link YamlWriter#close()} is called. If changing auto anchor to false,
-		 * {@link YamlWriter#clearAnchors()} should be called first to output any buffered objects. Default is true. */
-		public void setAutoAnchor (boolean autoAnchor) {
+		/**
+		 * If true, values that are referenced multiple times will use an anchor. This
+		 * works across YAML documents (ie multiple calls to
+		 * {@link YamlWriter#write(Object)}). When true, objects are not actually
+		 * written until {@link YamlWriter#clearAnchors()} or {@link YamlWriter#close()}
+		 * is called. If changing auto anchor to false,
+		 * {@link YamlWriter#clearAnchors()} should be called first to output any
+		 * buffered objects. Default is true.
+		 * @param autoAnchor Whether to values referenced multiple times will be represented by an anchor instead of actual repeated entries. Defaults to true.
+		 */
+		public void setAutoAnchor(boolean autoAnchor) {
 			this.autoAnchor = autoAnchor;
 		}
 
-		/** If true, bean fields/properties are written in the same order as the fields are defined in the bean class. If false,
-		 * they are sorted alphabetically. Default is false. */
-		public void setKeepBeanPropertyOrder (boolean keepBeanPropertyOrder) {
+		/**
+		 * If true, bean fields/properties are written in the same order as the fields
+		 * are defined in the bean class. If false, they are sorted alphabetically.
+		 * Default is false.
+		 * @param keepBeanPropertyOrder Whether bean fields/properties are written in exact order (true) or alphabetically (false). Defaults to false.
+		 */
+		public void setKeepBeanPropertyOrder(boolean keepBeanPropertyOrder) {
 			this.keepBeanPropertyOrder = keepBeanPropertyOrder;
 		}
 
-		/** Sets the YAML version to output. Default is 1.1. */
-		public void setVersion (Version version) {
+		/**
+		 * Sets the YAML version to output. Default is 1.1.
+		 * @param version YAML version to output. Defaults to 1.1.
+		 */
+		public void setVersion(Version version) {
 			emitterConfig.setVersion(version);
 		}
 
-		/** If true, the YAML output will be canonical. Default is false. */
-		public void setCanonical (boolean canonical) {
+		/**
+		 * If true, the YAML output will be canonical. Default is false.
+		 * @param canonical Whether YAML output is canonical. Defaults to false.
+		 */
+		public void setCanonical(boolean canonical) {
 			emitterConfig.setCanonical(canonical);
 		}
 
-		/** Sets the number of spaces to indent. Default is 3. */
-		public void setIndentSize (int indentSize) {
+		/**
+		 * Sets the number of spaces to indent. Default is 3.
+		 * @param indentSize Number of spaces to indent. Defaults to 3.
+		 */
+		public void setIndentSize(int indentSize) {
 			emitterConfig.setIndentSize(indentSize);
 		}
 
-		/** Sets the column at which values will attempt to wrap. Default is 100. */
-		public void setWrapColumn (int wrapColumn) {
+		/**
+		 * Sets the column at which values will attempt to wrap. Default is 100.
+		 * @param wrapColumn Column at which values will attemp to wrap. Defaults to 100.
+		 */
+		public void setWrapColumn(int wrapColumn) {
 			emitterConfig.setWrapColumn(wrapColumn);
 		}
 
-		/** If false, tags will never be surrounded by angle brackets (eg, "!<java.util.LinkedList>"). Default is false. */
-		public void setUseVerbatimTags (boolean useVerbatimTags) {
+		/**
+		 * If false, tags will never be surrounded by angle brackets (eg,
+		 * "!&lt;java.util.LinkedList&gt;"). Default is false.
+		 * @param useVerbatimTags Whether tags will be surrounded by angle brackets. Defaults to false.
+		 */
+		public void setUseVerbatimTags(boolean useVerbatimTags) {
 			emitterConfig.setUseVerbatimTags(useVerbatimTags);
 		}
 
-		/** If false, unicode characters will be output instead of the escaped unicode character code. */
-		public void setEscapeUnicode (boolean escapeUnicode) {
+		/**
+		 * If false, unicode characters will be output instead of the escaped unicode
+		 * character code.
+		 * @param escapeUnicode Whether unicode characters will be output as UTF-8 (true) or escaped unicode characters (false).
+		 */
+		public void setEscapeUnicode(boolean escapeUnicode) {
 			emitterConfig.setEscapeUnicode(escapeUnicode);
 		}
 
-		/** based on Ennumeration parameter, class name tags will be output. */
-		public void setWriteClassname (WriteClassName write) {
+		/**
+		 * based on Ennumeration parameter, class name tags will be output.
+		 * @param write Whether class name tags will be output (ALWAYS, NEVER, or AUTO)
+		 */
+		public void setWriteClassname(WriteClassName write) {
 			writeClassName = write;
 		}
 
-		/** The type of quotes to use when writing YAML output. */
-		public void setQuoteChar (Quote quote) {
+		/**
+		 * The type of quotes to use when writing YAML output.
+		 * @param quote Type of quotation to use when writing YAML output.
+		 */
+		public void setQuoteChar(Quote quote) {
 			this.quote = quote;
 		}
 	}
@@ -241,51 +356,79 @@ public class YamlConfig {
 		boolean classTags = true;
 		boolean guessNumberTypes;
 
-		ReadConfig () {
+		ReadConfig() {
 		}
 
-		/** Sets the default YAML version to expect if a YAML document does not explicitly specify a version. Default is 1.1. */
-		public void setDefaultVersion (Version defaultVersion) {
-			if (defaultVersion == null) throw new IllegalArgumentException("defaultVersion cannot be null.");
+		/**
+		 * Sets the default YAML version to expect if a YAML document does not
+		 * explicitly specify a version. Default is 1.1.
+		 * @param defaultVersion Default YAML version to expect. Defaults to 1.1.
+		 */
+		public void setDefaultVersion(Version defaultVersion) {
+			if (defaultVersion == null)
+				throw new IllegalArgumentException("defaultVersion cannot be null.");
 			this.defaultVersion = defaultVersion;
 		}
 
-		/** Sets the class loader to use to find classes read from the YAML. */
-		public void setClassLoader (ClassLoader classLoader) {
+		/**
+		 * Sets the class loader to use to find classes read from the YAML.
+		 * @param classLoader Which classloader to use to find classes for reading from YAML
+		 */
+		public void setClassLoader(ClassLoader classLoader) {
 			this.classLoader = classLoader;
 		}
 
-		/** Sets the names of the constructor parameters so classes without no-arg constructors can be instantiated. The Java 6+
-		 * annotation java.beans.ConstructorProperties can be used instead of this method. */
-		public void setConstructorParameters (Class type, Class[] parameterTypes, String[] parameterNames) {
-			if (type == null) throw new IllegalArgumentException("type cannot be null.");
-			if (parameterTypes == null) throw new IllegalArgumentException("parameterTypes cannot be null.");
-			if (parameterNames == null) throw new IllegalArgumentException("parameterNames cannot be null.");
+		/**
+		 * Sets the names of the constructor parameters so classes without no-arg
+		 * constructors can be instantiated. The Java 6+ annotation
+		 * java.beans.ConstructorProperties can be used instead of this method.
+		 * @param type The Java type to be instantiated
+		 * @param parameterTypes The Java types of constructor parameters
+		 * @param parameterNames The names of constructor parameters
+		 */
+		public void setConstructorParameters(Class type, Class[] parameterTypes, String[] parameterNames) {
+			if (type == null)
+				throw new IllegalArgumentException("type cannot be null.");
+			if (parameterTypes == null)
+				throw new IllegalArgumentException("parameterTypes cannot be null.");
+			if (parameterNames == null)
+				throw new IllegalArgumentException("parameterNames cannot be null.");
 			ConstructorParameters parameters = new ConstructorParameters();
 			try {
 				parameters.constructor = type.getConstructor(parameterTypes);
 			} catch (Exception ex) {
 				throw new IllegalArgumentException(
-					"Unable to find constructor: " + type.getName() + "(" + Arrays.toString(parameterTypes) + ")", ex);
+						"Unable to find constructor: " + type.getName() + "(" + Arrays.toString(parameterTypes) + ")",
+						ex);
 			}
 			parameters.parameterNames = parameterNames;
 			constructorParameters.put(type, parameters);
 		}
 
-		/** When true, fields in the YAML that are not found on the class will not throw a {@link YamlException}. Default is
-		 * false. */
-		public void setIgnoreUnknownProperties (boolean allowUnknownProperties) {
+		/**
+		 * When true, fields in the YAML that are not found on the class will not throw
+		 * a {@link YamlException}. Default is false.
+		 * @param allowUnknownProperties Whether fields in the YAML which are not found on the class will throw a YamlException. Defaults to false.
+		 */
+		public void setIgnoreUnknownProperties(boolean allowUnknownProperties) {
 			this.ignoreUnknownProperties = allowUnknownProperties;
 		}
 
-		/** When false, tags are not used to look up classes. Default is true. */
-		public void setClassTags (boolean classTags) {
+		/**
+		 * When false, tags are not used to look up classes. Default is true.
+		 * @param classTags Whether tags are used to look up Java classes. Defaults to true.
+		 */
+		public void setClassTags(boolean classTags) {
 			this.classTags = classTags;
 		}
 
-		/** When true, if the type for a scalar value is unknown and it looks like a number, it is read as an integer or float. When
-		 * false, if the type for a scalar value is unknown it is always read a string. Default is true. */
-		public void setGuessNumberTypes (boolean guessNumberTypes) {
+		/**
+		 * When true, if the type for a scalar value is unknown and it looks like a
+		 * number, it is read as an integer or float. When false, if the type for a
+		 * scalar value is unknown it is always read a string. Default is true.
+		 * @param guessNumberTypes Whether to read unknown scalar value types as integer/float (true) or string (false). Defaults to true.
+		 */
+		public void setGuessNumberTypes(boolean guessNumberTypes) {
 			this.guessNumberTypes = guessNumberTypes;
 		}
 	}
@@ -304,7 +447,7 @@ public class YamlConfig {
 
 		char c;
 
-		Quote (char c) {
+		Quote(char c) {
 			this.c = c;
 		}
 	}
