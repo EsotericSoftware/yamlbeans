@@ -310,8 +310,8 @@ public class Tokenizer {
 		}
 		if (BEG.matcher(prefix(2)).find()) return fetchPlain();
 		if (ch == '\t') throw new TokenizerException("Tabs cannot be used for indentation.");
-		throw new TokenizerException("While scanning for the next token, a character that cannot begin a token was found: "
-			+ ch(ch));
+		throw new TokenizerException(
+			"While scanning for the next token, a character that cannot begin a token was found: " + ch(ch));
 	}
 
 	private int nextPossibleSimpleKey () {
@@ -568,14 +568,12 @@ public class Tokenizer {
 			length++;
 			ch = peek(length);
 		}
-		if (zlen)
-			throw new TokenizerException("While scanning for a directive name, expected an alpha or numeric character but found: "
-				+ ch(ch));
+		if (zlen) throw new TokenizerException(
+			"While scanning for a directive name, expected an alpha or numeric character but found: " + ch(ch));
 		String value = prefixForward(length);
 		// forward(length);
-		if (NULL_BL_LINEBR.indexOf(peek()) == -1)
-			throw new TokenizerException("While scanning for a directive name, expected an alpha or numeric character but found: "
-				+ ch(ch));
+		if (NULL_BL_LINEBR.indexOf(peek()) == -1) throw new TokenizerException(
+			"While scanning for a directive name, expected an alpha or numeric character but found: " + ch(ch));
 		return value;
 	}
 
@@ -656,9 +654,8 @@ public class Tokenizer {
 			throw new TokenizerException("While scanning an " + name + ", a non-alpha, non-numeric character was found.");
 		String value = prefixForward(length);
 		// forward(length);
-		if (NON_ALPHA_OR_NUM.indexOf(peek()) == -1)
-			throw new TokenizerException("While scanning an " + name + ", expected an alpha or numeric character but found: "
-				+ ch(peek()));
+		if (NON_ALPHA_OR_NUM.indexOf(peek()) == -1) throw new TokenizerException(
+			"While scanning an " + name + ", expected an alpha or numeric character but found: " + ch(peek()));
 		if (tok instanceof AnchorToken)
 			((AnchorToken)tok).setInstanceName(value);
 		else
@@ -767,16 +764,14 @@ public class Tokenizer {
 			ch = peek();
 			if (Character.isDigit(ch)) {
 				increment = Integer.parseInt(("" + ch));
-				if (increment == 0)
-					throw new TokenizerException(
-						"While scanning a black scaler, expected indentation indicator between 1 and 9 but found: 0");
+				if (increment == 0) throw new TokenizerException(
+					"While scanning a black scaler, expected indentation indicator between 1 and 9 but found: 0");
 				forward();
 			}
 		} else if (Character.isDigit(ch)) {
 			increment = Integer.parseInt(("" + ch));
-			if (increment == 0)
-				throw new TokenizerException(
-					"While scanning a black scaler, expected indentation indicator between 1 and 9 but found: 0");
+			if (increment == 0) throw new TokenizerException(
+				"While scanning a black scaler, expected indentation indicator between 1 and 9 but found: 0");
 			forward();
 			ch = peek();
 			if (ch == '-' || ch == '+') {
@@ -784,9 +779,8 @@ public class Tokenizer {
 				forward();
 			}
 		}
-		if (NULL_BL_LINEBR.indexOf(peek()) == -1)
-			throw new TokenizerException("While scanning a block scalar, expected chomping or indentation indicators but found: "
-				+ ch(peek()));
+		if (NULL_BL_LINEBR.indexOf(peek()) == -1) throw new TokenizerException(
+			"While scanning a block scalar, expected chomping or indentation indicators but found: " + ch(peek()));
 		return new Object[] {Boolean.valueOf(chomping), increment};
 	}
 
@@ -1033,7 +1027,7 @@ public class Tokenizer {
 		while (peek() == '%') {
 			forward();
 			try {
-				bytes.append(Integer.parseInt(prefix(2), 16));
+				bytes.append(Character.toChars(Integer.parseInt(prefix(2), 16)));
 			} catch (NumberFormatException nfe) {
 				throw new TokenizerException("While scanning a " + name
 					+ ", expected a URI escape sequence of 2 hexadecimal numbers but found: " + ch(peek(1)) + " and " + ch(peek(2)));
