@@ -50,7 +50,7 @@ public class EmitterConfig {
 		this.wrapColumn = wrapColumn;
 	}
 
-	/** If false, tags will never be surrounded by angle brackets (eg, "!<java.util.LinkedList>"). Default is true. */
+	/** If false, tags will never be surrounded by angle brackets (eg, "!&lt;java.util.LinkedList&gt;"). Default is true. */
 	public void setUseVerbatimTags (boolean useVerbatimTags) {
 		this.useVerbatimTags = useVerbatimTags;
 	}
