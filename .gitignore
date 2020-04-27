@@ -7,3 +7,10 @@ bin/
 target/
 .idea
 *.iml
+
+# Eclipse
+.settings/
+.metadata/
+.classpath
+.project
+
