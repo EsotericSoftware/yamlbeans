@@ -51,7 +51,7 @@ public class Tokenizer {
 	private final static Pattern NON_PRINTABLE = Pattern.compile("[^\u0009\n\r\u0020-\u007E\u0085\u00A0-\u00FF]");
 	private final static Pattern NOT_HEXA = Pattern.compile("[^0-9A-Fa-f]");
 	private final static Pattern NON_ALPHA = Pattern.compile("[^-0-9A-Za-z_]");
-	private final static Pattern R_FLOWZERO = Pattern.compile("[\0 \t\r\n\u0085]|(:[\0 \t\r\n\u0028])");
+	private final static Pattern R_FLOWZERO = Pattern.compile("[\0 \t\r\n\u0085]|(:[\0 \t\r\n\u0085])");
 	private final static Pattern R_FLOWNONZERO = Pattern.compile("[\0 \t\r\n\u0085\\[\\]{},:?]");
 	private final static Pattern END_OR_START = Pattern.compile("^(---|\\.\\.\\.)[\0 \t\r\n\u0085]$");
 	private final static Pattern ENDING = Pattern.compile("^---[\0 \t\r\n\u0085]$");
