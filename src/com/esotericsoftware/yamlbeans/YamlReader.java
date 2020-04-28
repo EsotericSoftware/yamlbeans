@@ -203,19 +203,13 @@ public class YamlReader {
 				if (config.readConfig.guessNumberTypes) {
 					String value = ((ScalarEvent)event).value;
 					if (value != null) {
-						try {
-							Integer convertedValue = Integer.decode(value);
-							if (anchor != null) anchors.put(anchor, convertedValue);
+						Number number = valueConvertedNumber(value);
+						if (number != null) {
+							if (anchor != null) {
+								anchors.put(anchor, number);
+							}
 							parser.getNextEvent();
-							return convertedValue;
-						} catch (NumberFormatException ex) {
-						}
-						try {
-							Float convertedValue = Float.valueOf(value);
-							if (anchor != null) anchors.put(anchor, convertedValue);
-							parser.getNextEvent();
-							return convertedValue;
-						} catch (NumberFormatException ex) {
+							return number;
 						}
 					}
 				}
@@ -471,6 +465,25 @@ public class YamlReader {
 		public YamlReaderException (String message) {
 			this(message, null);
 		}
+	}
+
+	private Number valueConvertedNumber(String value) {
+
+		Number number = null;
+		if (value.matches("-?[0-9]+.?[0-9]*")) {
+			if (value.contains(".")) {
+				try {
+					number = Double.parseDouble(value);
+				} catch (NumberFormatException e) {
+				}
+			} else {
+				try {
+					number = Long.parseLong(value);
+				} catch (NumberFormatException e) {
+				}
+			}
+		}
+		return number;
 	}
 
 	public static void main (String[] args) throws Exception {
