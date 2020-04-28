@@ -17,6 +17,8 @@
 package com.esotericsoftware.yamlbeans;
 
 import java.io.StringReader;
+import java.io.StringWriter;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -446,5 +448,41 @@ public class YamlReaderTest extends TestCase {
 		assertEquals("Superior", lake.name);
 		assertEquals(1, lake.fish.size());
 		assertEquals("Walleye", lake.fish.get(0).species);
+	}
+
+	/**
+	 * issue #105
+	 *
+	 * @throws YamlException
+	 */
+	public void testGuessNumberTypes() throws YamlException {
+
+		long invoice = 3484312312313131l;
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("invoice", invoice);
+		map.put("date", "2001-01-23");
+
+		YamlConfig config = new YamlConfig();
+		config.readConfig.guessNumberTypes = true;
+		StringWriter sw = new StringWriter();
+		YamlWriter writer = new YamlWriter(sw, config);
+		writer.write(map);
+		writer.close();
+		YamlReader reader = new YamlReader(sw.toString(), config);
+		Map<String, Object> result = (Map<String, Object>) reader.read();
+		long invoiceValue = (Long) result.get("invoice");
+		assertEquals(invoice, invoiceValue);
+
+		Double money = 123.456;
+		map.put("money", money);
+
+		writer = new YamlWriter(sw, config);
+		writer.write(map);
+		writer.close();
+
+		reader = new YamlReader(sw.toString(), config);
+		result = (Map<String, Object>) reader.read();
+		double moneyValue = (Double) result.get("money");
+		assertEquals(money, moneyValue);
 	}
 }
