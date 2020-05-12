@@ -151,8 +151,9 @@ public class YamlWriter {
 		if (unknownType) fieldClass = valueClass;
 
 		if (object instanceof Enum) {
-			emitter.emit(
-				new ScalarEvent(null, null, new boolean[] {true, true}, ((Enum)object).name(), this.config.writeConfig.quote.c));
+			emitter.emit(new ScalarEvent(null, object.getClass().getName(),
+					new boolean[] { object.getClass().equals(fieldClass), object.getClass().equals(fieldClass) },
+					((Enum) object).name(), this.config.writeConfig.quote.c));
 			return;
 		}
 
