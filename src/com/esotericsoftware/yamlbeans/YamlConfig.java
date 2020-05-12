@@ -283,7 +283,7 @@ public class YamlConfig {
 			this.classTags = classTags;
 		}
 
-		/** When true, if the type for a scalar value is unknown and it looks like a number, it is read as an integer or float. When
+		/** When true, if the type for a scalar value is unknown and it looks like a number, it is read as a double or long. When
 		 * false, if the type for a scalar value is unknown it is always read a string. Default is true. */
 		public void setGuessNumberTypes (boolean guessNumberTypes) {
 			this.guessNumberTypes = guessNumberTypes;
