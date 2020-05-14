@@ -112,46 +112,12 @@ class Beans {
 
 	static public Set<Property> getProperties (Class type, boolean beanProperties, boolean privateFields, YamlConfig config) {
 		if (type == null) throw new IllegalArgumentException("type cannot be null.");
-		Class[] noArgs = new Class[0], oneArg = new Class[1];
 		Set<Property> properties = config.writeConfig.keepBeanPropertyOrder ? new LinkedHashSet() : new TreeSet();
 		for (Field field : getAllFields(type)) {
-			String name = field.getName();
-
-			if (beanProperties) {
-				DeferredConstruction deferredConstruction = getDeferredConstruction(type, config);
-				boolean constructorProperty = deferredConstruction != null && deferredConstruction.hasParameter(name);
-
-				String nameUpper = Character.toUpperCase(name.charAt(0)) + name.substring(1);
-				Method getMethod = null, setMethod = null;
-				try {
-					oneArg[0] = field.getType();
-					setMethod = type.getMethod("set" + nameUpper, oneArg);
-				} catch (Exception ignored) {
-				}
-				try {
-					getMethod = type.getMethod("get" + nameUpper, noArgs);
-				} catch (Exception ignored) {
-				}
-				if (getMethod == null && (field.getType().equals(Boolean.class) || field.getType().equals(boolean.class))) {
-					try {
-						getMethod = type.getMethod("is" + nameUpper, noArgs);
-					} catch (Exception ignored) {
-					}
-				}
-				if (getMethod != null && (setMethod != null || constructorProperty)) {
-					properties.add(new MethodProperty(name, setMethod, getMethod));
-					continue;
-				}
+			Property property = getProperty(type, beanProperties, privateFields, config, field);
+			if (property != null) {
+				properties.add(property);
 			}
-
-			int modifiers = field.getModifiers();
-			if (Modifier.isStatic(modifiers) || Modifier.isTransient(modifiers)) continue;
-			if (!Modifier.isPublic(modifiers) && !privateFields) continue;
-			try {
-				field.setAccessible(true);
-			} catch (Exception ignored) {
-			}
-			properties.add(new FieldProperty(field));
 		}
 		return properties;
 	}
@@ -171,47 +137,64 @@ class Beans {
 		if (name == null || name.length() == 0) throw new IllegalArgumentException("name cannot be null or empty.");
 		name = toJavaIdentifier(name);
 
+		Property property = null;
+		for (Field field : getAllFields(type)) {
+			if (field.getName().equals(name)) {
+				property = getProperty(type, beanProperties, privateFields, config, field);
+				break;
+			}
+		}
+		return property;
+	}
+
+	private static Property getProperty(Class<?> type, boolean beanProperties, boolean privateFields, YamlConfig config,
+			Field field) {
+		Property property = null;
 		if (beanProperties) {
+			String name = field.getName();
 			DeferredConstruction deferredConstruction = getDeferredConstruction(type, config);
 			boolean constructorProperty = deferredConstruction != null && deferredConstruction.hasParameter(name);
 
 			String nameUpper = Character.toUpperCase(name.charAt(0)) + name.substring(1);
+			String setMethodName = "set" + nameUpper;
+			String getMethodName = "get" + nameUpper;
+			if (field.getType().equals(Boolean.class) || field.getType().equals(boolean.class)) {
+				setMethodName = name.startsWith("is")
+						? "set" + Character.toUpperCase(name.charAt(2)) + name.substring(3)
+						: setMethodName;
+				getMethodName = name.startsWith("is") ? name : "is" + nameUpper;
+			}
+
 			Method getMethod = null;
+			Method setMethod = null;
 			try {
-				getMethod = type.getMethod("get" + nameUpper);
+				setMethod = type.getMethod(setMethodName, field.getType());
 			} catch (Exception ignored) {
 			}
-			if (getMethod == null) {
+			try {
+				getMethod = type.getMethod(getMethodName);
+			} catch (Exception ignored) {
+			}
+
+			// field.getType() is boolean, but getMethodName is getFieldName(E.g: getBool).
+			if (getMethod == null && (field.getType().equals(Boolean.class) || field.getType().equals(boolean.class))) {
 				try {
-					getMethod = type.getMethod("is" + nameUpper);
+					getMethod = type.getMethod("get" + nameUpper);
 				} catch (Exception ignored) {
 				}
 			}
-			if (getMethod != null) {
-				Method setMethod = null;
-				try {
-					setMethod = type.getMethod("set" + nameUpper, getMethod.getReturnType());
-				} catch (Exception ignored) {
-				}
-				if (getMethod != null && (setMethod != null || constructorProperty))
-					return new MethodProperty(name, setMethod, getMethod);
+			if (getMethod != null && (setMethod != null || constructorProperty)) {
+				property = new MethodProperty(name, setMethod, getMethod);
 			}
 		}
 
-		for (Field field : getAllFields(type)) {
-			if (!field.getName().equals(name)) continue;
-			int modifiers = field.getModifiers();
-			if (Modifier.isStatic(modifiers) || Modifier.isTransient(modifiers)) continue;
-			if (!Modifier.isPublic(modifiers) && !privateFields) continue;
-			try {
-				field.setAccessible(true);
-			} catch (Exception ignored) {
-			}
-			return new FieldProperty(field);
+		int modifiers = field.getModifiers();
+		if (!Modifier.isStatic(modifiers) && !Modifier.isTransient(modifiers)
+				&& (Modifier.isPublic(modifiers) || privateFields)) {
+			field.setAccessible(true);
+			property = new FieldProperty(field);
 		}
-
-		if (!name.startsWith("_")) return getProperty(type, "_" + name, beanProperties, privateFields, config);
-		return null;
+		return property;
 	}
 
 	static private ArrayList<Field> getAllFields (Class type) {
