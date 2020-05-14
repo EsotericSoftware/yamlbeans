@@ -163,7 +163,7 @@ public class YamlWriter {
 			if (config.writeConfig.autoAnchor) {
 				Integer count = referenceCount.get(object);
 				if (count == null) {
-					emitter.emit(new AliasEvent(anchoredObjects.get(object)));
+					emitter.emit(new AliasEvent(anchor));
 					return;
 				}
 				if (count > 1) {
