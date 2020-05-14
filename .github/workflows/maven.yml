@@ -10,7 +10,7 @@ on:
     branches: [ master ]
 
 jobs:
-  build-jdk_1.8:
+  build-jdk1.8:
 
     runs-on: ubuntu-latest
 
@@ -22,7 +22,7 @@ jobs:
         java-version: 1.8
     - name: Build with Maven
       run: mvn test
-  build-jdk_1.7:
+  build-jdk1.7:
 
     runs-on: ubuntu-latest
 
