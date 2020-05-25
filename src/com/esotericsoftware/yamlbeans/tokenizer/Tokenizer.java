@@ -953,7 +953,8 @@ public class Tokenizer {
 	private String scanPlainSpaces () {
 		StringBuilder chunks = new StringBuilder();
 		int length = 0;
-		while (peek(length) == ' ')
+        // YAML recognizes two white space characters: space and tab.
+        while (peek(length) == ' ' || peek(length) == '\t')
 			length++;
 		String whitespaces = prefixForward(length);
 		// forward(length);
