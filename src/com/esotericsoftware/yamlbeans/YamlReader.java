@@ -467,24 +467,21 @@ public class YamlReader {
 		}
 	}
 
-	private Number valueConvertedNumber(String value) {
+    private Number valueConvertedNumber(String value) {
 
-		Number number = null;
-		if (value.matches("-?[0-9]+.?[0-9]*")) {
-			if (value.contains(".")) {
-				try {
-					number = Double.parseDouble(value);
-				} catch (NumberFormatException e) {
-				}
-			} else {
-				try {
-					number = Long.parseLong(value);
-				} catch (NumberFormatException e) {
-				}
-			}
-		}
-		return number;
-	}
+        Number number = null;
+        try {
+            number = Long.decode(value);
+        } catch (NumberFormatException e) {
+        }
+        if (number == null) {
+            try {
+                number = Double.parseDouble(value);
+            } catch (NumberFormatException e) {
+            }
+        }
+        return number;
+    }
 
 	public static void main (String[] args) throws Exception {
 		YamlReader reader = new YamlReader(new FileReader("test/test.yml"));

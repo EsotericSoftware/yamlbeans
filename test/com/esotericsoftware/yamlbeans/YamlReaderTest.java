@@ -486,6 +486,23 @@ public class YamlReaderTest extends TestCase {
 		assertEquals(money, moneyValue);
 	}
 
+    public void testGuessOctNumberAndHexNumber() throws YamlException {
+
+        // Octal number string
+        String str = "{octNumber: 011}";
+        YamlConfig config = new YamlConfig();
+        config.readConfig.guessNumberTypes = true;
+        YamlReader reader = new YamlReader(str, config);
+        int octNumber = ((Map<String, Long>) reader.read()).get("octNumber").intValue();
+        assertEquals(9, octNumber);
+
+        // Hex number string
+        str = "{hexNumber: 0x11}";
+        reader = new YamlReader(str, config);
+        int hexNumber = ((Map<String, Long>) reader.read()).get("hexNumber").intValue();
+        assertEquals(17, hexNumber);
+    }
+
     /**
      * issue #34
      *
