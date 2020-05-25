@@ -485,4 +485,24 @@ public class YamlReaderTest extends TestCase {
 		double moneyValue = (Double) result.get("money");
 		assertEquals(money, moneyValue);
 	}
+
+    /**
+     * issue #34
+     *
+     * @throws YamlException
+     */
+    public void testWhiteSpaceCharacters() throws YamlException {
+
+        String stringWithSpace = "test test";
+        YamlReader reader = new YamlReader(stringWithSpace);
+        assertEquals(stringWithSpace, reader.read(String.class));
+
+        String stringWithTab = "test\ttesttest";
+        reader = new YamlReader(stringWithTab);
+        assertEquals(stringWithTab, reader.read(String.class));
+
+        String stringWithSpaceAndTab = "test test\ttest \ttest";
+        reader = new YamlReader(stringWithSpaceAndTab);
+        assertEquals(stringWithSpaceAndTab, reader.read(String.class));
+    }
 }
