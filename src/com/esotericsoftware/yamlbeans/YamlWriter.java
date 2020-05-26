@@ -150,15 +150,8 @@ public class YamlWriter {
 		boolean unknownType = fieldClass == null;
 		if (unknownType) fieldClass = valueClass;
 
-		if (object instanceof Enum) {
-			emitter.emit(new ScalarEvent(null, object.getClass().getName(),
-					new boolean[] { object.getClass().equals(fieldClass), object.getClass().equals(fieldClass) },
-					((Enum) object).name(), this.config.writeConfig.quote.c));
-			return;
-		}
-
 		String anchor = null;
-		if (!Beans.isScalar(valueClass)) {
+		if (!Beans.isScalar(valueClass) && !(object instanceof Enum)) {
 			anchor = anchoredObjects.get(object);
 			if (config.writeConfig.autoAnchor) {
 				Integer count = referenceCount.get(object);
@@ -210,6 +203,13 @@ public class YamlWriter {
 				}
 			}
 			emitter.emit(new ScalarEvent(null, tag, new boolean[] {true, true}, string, style));
+			return;
+		}
+
+		if (object instanceof Enum) {
+			emitter.emit(new ScalarEvent(null, object.getClass().getName(),
+					new boolean[] { object.getClass().equals(fieldClass), object.getClass().equals(fieldClass) },
+					((Enum) object).name(), this.config.writeConfig.quote.c));
 			return;
 		}
 
