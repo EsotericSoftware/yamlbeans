@@ -281,18 +281,6 @@ public class YamlReader {
 			}
 		}
 
-		if (Enum.class.isAssignableFrom(type)) {
-			Event event = parser.getNextEvent();
-			if (event.type != SCALAR) throw new YamlReaderException("Expected scalar for enum type but found: " + event.type);
-			String enumValueName = ((ScalarEvent)event).value;
-			if (enumValueName == null) return null;
-			try {
-				return Enum.valueOf(type, enumValueName);
-			} catch (Exception ex) {
-				throw new YamlReaderException("Unable to find enum value '" + enumValueName + "' for enum class: " + type.getName());
-			}
-		}
-
 		for (Entry<Class, ScalarSerializer> entry : config.scalarSerializers.entrySet()) {
 			if (entry.getKey().isAssignableFrom(type)) {
 				ScalarSerializer serializer = entry.getValue();
@@ -303,6 +291,18 @@ public class YamlReader {
 				if (anchor != null) anchors.put(anchor, value);
 				return value;
 			}
+		}
+
+		if (Enum.class.isAssignableFrom(type)) {
+		    Event event = parser.getNextEvent();
+		    if (event.type != SCALAR) throw new YamlReaderException("Expected scalar for enum type but found: " + event.type);
+		    String enumValueName = ((ScalarEvent)event).value;
+		    if (enumValueName == null) return null;
+		    try {
+		        return Enum.valueOf(type, enumValueName);
+		    } catch (Exception ex) {
+		        throw new YamlReaderException("Unable to find enum value '" + enumValueName + "' for enum class: " + type.getName());
+		    }
 		}
 
 		Event event = parser.peekNextEvent();
