@@ -35,6 +35,7 @@ import com.esotericsoftware.yamlbeans.Beans.Property;
 import com.esotericsoftware.yamlbeans.parser.AliasEvent;
 import com.esotericsoftware.yamlbeans.parser.CollectionStartEvent;
 import com.esotericsoftware.yamlbeans.parser.Event;
+import com.esotericsoftware.yamlbeans.parser.EventType;
 import com.esotericsoftware.yamlbeans.parser.Parser;
 import com.esotericsoftware.yamlbeans.parser.Parser.ParserException;
 import com.esotericsoftware.yamlbeans.parser.ScalarEvent;
@@ -364,7 +365,21 @@ public class YamlReader {
 
 						Property property = Beans.getProperty(type, (String)key, config.beanProperties, config.privateFields, config);
 						if (property == null) {
-							if (config.readConfig.ignoreUnknownProperties) continue;
+							if (config.readConfig.ignoreUnknownProperties) {
+								// if next event is sequence, mapping... start, go though all of it until
+								// corresponding sequence, mapping... end
+								Event nextEvent = parser.peekNextEvent();
+								EventType nextType = nextEvent.type;
+								if (nextType == SEQUENCE_START || nextType == MAPPING_START
+										|| nextType == DOCUMENT_START || nextType == EventType.STREAM_START) {
+									skipRange();
+								} else {
+									// go though the next event, because this is a value of missing property
+									parser.getNextEvent();
+								}
+
+								continue;
+							}
 							throw new YamlReaderException("Unable to find property '" + key + "' on class: " + type.getName());
 						}
 						Class propertyElementType = config.propertyToElementType.get(property);
@@ -482,6 +497,43 @@ public class YamlReader {
         }
         return number;
     }
+
+	private void skipRange() {
+		Event nextEvent;
+		int depth = 0;
+		do {
+			nextEvent = parser.getNextEvent();
+			switch (nextEvent.type) {
+			case SEQUENCE_START:
+				depth++;
+				break;
+			case MAPPING_START:
+				depth++;
+				break;
+			case DOCUMENT_START:
+				depth++;
+				break;
+			case STREAM_START:
+				depth++;
+				break;
+			case SEQUENCE_END:
+				depth--;
+				break;
+			case MAPPING_END:
+				depth--;
+				break;
+			case DOCUMENT_END:
+				depth--;
+				break;
+			case STREAM_END:
+				depth--;
+				break;
+			default:
+				// ignore
+				break;
+			}
+		} while (depth > 0);
+	}
 
 	public static void main (String[] args) throws Exception {
 		YamlReader reader = new YamlReader(new FileReader("test/test.yml"));
