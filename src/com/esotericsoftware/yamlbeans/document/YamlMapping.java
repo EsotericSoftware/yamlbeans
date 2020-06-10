@@ -1,6 +1,7 @@
 package com.esotericsoftware.yamlbeans.document;
 
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -140,5 +141,9 @@ public class YamlMapping extends YamlElement implements YamlDocument {
 
 	public void addElement(YamlElement element) throws YamlException {
 		throw new YamlException("Can only add element on sequence!");
+	}
+
+	public Iterator<YamlEntry> iterator() {
+		return entries.iterator();
 	}
 }
