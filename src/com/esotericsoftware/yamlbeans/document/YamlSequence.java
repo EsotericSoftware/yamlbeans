@@ -1,6 +1,7 @@
 package com.esotericsoftware.yamlbeans.document;
 
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -120,5 +121,7 @@ public class YamlSequence extends YamlElement implements YamlDocument {
 		elements.add(new YamlScalar(value));
 	}
 
-
+	public Iterator<YamlElement> iterator() {
+		return elements.iterator();
+	}
 }

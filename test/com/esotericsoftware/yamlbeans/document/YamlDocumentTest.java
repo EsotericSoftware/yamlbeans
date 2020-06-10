@@ -1,6 +1,7 @@
 package com.esotericsoftware.yamlbeans.document;
 
 import java.io.StringWriter;
+import java.util.Iterator;
 
 import org.junit.Test;
 
@@ -130,6 +131,41 @@ public class YamlDocumentTest extends TestCase  {
 		assertEquals("- 123\n", actual);
 	}
 
+	@Test
+	public void testYamlSequenceIterator() throws YamlException {
+		YamlDocument yaml = readDocument("- 111\n- 222\n");
+		Iterator<YamlScalar> iterator = yaml.iterator();
+		assertEquals(true, iterator.hasNext());
+		YamlScalar yamlScalar = iterator.next();
+		assertEquals("111", yamlScalar.getValue());
+		assertEquals(true, iterator.hasNext());
+		yamlScalar = iterator.next();
+		assertEquals("222", yamlScalar.getValue());
+		assertEquals(false, iterator.hasNext());
+		try {
+			iterator.next();
+			fail("Already read to the end.");
+		} catch (Exception e) {
+		}
+	}
+
+	@Test
+	public void testYamlMappingIterator() throws YamlException {
+		YamlDocument yaml = readDocument("name: Andi\nage: 18\n");
+		Iterator<YamlEntry> iterator = yaml.iterator();
+		assertEquals(true, iterator.hasNext());
+		YamlEntry yamlEntry = iterator.next();
+		assertEquals("Andi", ((YamlScalar) yamlEntry.getValue()).getValue());
+		assertEquals(true, iterator.hasNext());
+		yamlEntry = iterator.next();
+		assertEquals("18", ((YamlScalar) yamlEntry.getValue()).getValue());
+		assertEquals(false, iterator.hasNext());
+		try {
+			iterator.next();
+			fail("Already read to the end.");
+		} catch (Exception e) {
+		}
+	}
 
 	private YamlDocument readDocument(String yaml) throws YamlException {
 		YamlDocumentReader reader = new YamlDocumentReader(yaml);

@@ -1,5 +1,7 @@
 package com.esotericsoftware.yamlbeans.document;
 
+import java.util.Iterator;
+
 import com.esotericsoftware.yamlbeans.YamlException;
 
 public interface YamlDocument {
@@ -23,5 +25,7 @@ public interface YamlDocument {
 	void addElement(Number value) throws YamlException;
 	void addElement(String value) throws YamlException;
 	void addElement(YamlElement element) throws YamlException;
-	
+
+	Iterator iterator();
+
 }
