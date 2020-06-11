@@ -339,7 +339,23 @@ public class YamlReaderTest extends TestCase {
 			fail("Unknown properties were supposed to be allowed.");
 		}
 	}
-	
+
+	public void testIgnoreUnknownPropertiesSprcialType() throws Exception {
+		String input = "a: 1\nb: 2\nc: 3\n" + "sequence: \n" + "  - 1\n" + "  - 2\n" + "mapping: \n  key: value\n"
+				+ "stream: {a: 7}\ndocument: ---\na: 9\n...\n";
+
+		YamlConfig config = new YamlConfig();
+		config.readConfig.setIgnoreUnknownProperties(true);
+		try {
+			ACD pojo = new YamlReader(input, config).read(ACD.class);
+			assertEquals(1, pojo.a);
+			assertEquals(3, pojo.c);
+			assertEquals(4, pojo.d);
+		} catch (YamlException e) {
+			fail("Unknown properties were supposed to be allowed.");
+		}
+	}
+
 	public void testDuplicateKeysAreNotAllowedIfAllowDuplicateIsSetSo () {
 		String inputWithDuplicates = "a: 1\na: 2\nc: 3";
 		YamlConfig yamlConfig = new YamlConfig();
