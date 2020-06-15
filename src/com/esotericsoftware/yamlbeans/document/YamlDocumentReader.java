@@ -67,15 +67,20 @@ public class YamlDocumentReader {
 	}
 
 	private YamlDocument readDocument() {
+		YamlDocument yamlDocument = null;
 		Event event = parser.peekNextEvent();
 		switch (event.type) {
-			case MAPPING_START:
-				return readMapping();
-			case SEQUENCE_START:
-				return readSequence();
-			default:
-				throw new IllegalStateException();
+		case MAPPING_START:
+			yamlDocument = readMapping();
+			break;
+		case SEQUENCE_START:
+			yamlDocument = readSequence();
+			break;
+		default:
+			throw new IllegalStateException();
 		}
+		parser.getNextEvent(); // consume it(DOCUMENT_END)
+		return yamlDocument;
 	}
 
 	private YamlMapping readMapping() {

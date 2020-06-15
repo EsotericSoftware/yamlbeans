@@ -5,6 +5,7 @@ import java.util.Iterator;
 
 import org.junit.Test;
 
+import com.esotericsoftware.yamlbeans.Version;
 import com.esotericsoftware.yamlbeans.YamlConfig;
 import com.esotericsoftware.yamlbeans.YamlConfig.WriteClassName;
 import com.esotericsoftware.yamlbeans.YamlException;
@@ -134,6 +135,7 @@ public class YamlDocumentTest extends TestCase  {
 	@Test
 	public void testYamlSequenceIterator() throws YamlException {
 		YamlDocument yaml = readDocument("- 111\n- 222\n");
+		@SuppressWarnings("unchecked")
 		Iterator<YamlScalar> iterator = yaml.iterator();
 		assertEquals(true, iterator.hasNext());
 		YamlScalar yamlScalar = iterator.next();
@@ -152,6 +154,7 @@ public class YamlDocumentTest extends TestCase  {
 	@Test
 	public void testYamlMappingIterator() throws YamlException {
 		YamlDocument yaml = readDocument("name: Andi\nage: 18\n");
+		@SuppressWarnings("unchecked")
 		Iterator<YamlEntry> iterator = yaml.iterator();
 		assertEquals(true, iterator.hasNext());
 		YamlEntry yamlEntry = iterator.next();
@@ -164,6 +167,54 @@ public class YamlDocumentTest extends TestCase  {
 			iterator.next();
 			fail("Already read to the end.");
 		} catch (Exception e) {
+		}
+	}
+
+	@Test
+	public void testVersion1_0() throws YamlException {
+		String yaml = "version: !str 1.0";
+		YamlDocumentReader reader = new YamlDocumentReader(yaml, new Version(1, 0));
+		YamlMapping yamlMapping = (YamlMapping) reader.read();
+		assertEquals("1.0", ((YamlScalar) yamlMapping.getEntry("version").getValue()).getValue());
+	}
+
+	@Test
+	public void testVersion1_0ThrowsYamlException() {
+		String yaml = "version: !!str 1.1";
+		YamlDocumentReader reader = new YamlDocumentReader(yaml, new Version(1, 0));
+		try {
+			reader.read();
+			fail("1.0 Version tag is single '!'");
+		} catch (YamlException e) {
+		}
+	}
+
+	@Test
+	public void testVersion1_1() throws YamlException {
+		String yaml = "version: !!str 1.1";
+		YamlDocumentReader reader = new YamlDocumentReader(yaml, new Version(1, 1));
+		YamlMapping yamlMapping = (YamlMapping) reader.read();
+		assertEquals("1.1", ((YamlScalar) yamlMapping.getEntry("version").getValue()).getValue());
+	}
+
+	@Test
+	public void testReadMultipleDocuments() throws YamlException {
+		String yaml = "key: 111\n---\nkey: 222";
+		YamlDocumentReader reader = new YamlDocumentReader(yaml);
+		assertEquals(true, reader.read() != null);
+		assertEquals(true, reader.read() != null);
+		assertEquals(true, reader.read() == null);
+		assertEquals(true, reader.read() == null);
+	}
+
+	@Test
+	public void testReadThrowsYamlException() {
+		String yaml = "\tkey: value";
+		YamlDocumentReader reader = new YamlDocumentReader(yaml);
+		try {
+			reader.read();
+			fail("Tabs cannot be used for indentation.");
+		} catch (YamlException e) {
 		}
 	}
 
