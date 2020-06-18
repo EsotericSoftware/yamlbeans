@@ -945,7 +945,7 @@ public class Tokenizer {
 			chunks.append(prefixForward(length));
 			// forward(length);
 			spaces = scanPlainSpaces();
-			if (spaces == null || flowLevel == 0 && column < ind) break;
+			if (spaces.length() == 0 || flowLevel == 0 && column < ind) break;
 		}
 		return new ScalarToken(chunks.toString(), true);
 	}
