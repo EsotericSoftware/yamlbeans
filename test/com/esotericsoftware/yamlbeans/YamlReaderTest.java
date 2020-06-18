@@ -538,4 +538,23 @@ public class YamlReaderTest extends TestCase {
         reader = new YamlReader(stringWithSpaceAndTab);
         assertEquals(stringWithSpaceAndTab, reader.read(String.class));
     }
+
+	/**
+	 * Test multiple documents, the document is a scalar, followed by "---" or
+	 * "...", the test read is normal.
+	 *
+	 * @throws YamlException
+	 */
+	public void testReadMultiTpyeDocuments() throws YamlException {
+		String yaml = "scalar\n---\nkey: value\n---\nscalar\n...\n";
+		YamlReader reader = new YamlReader(yaml);
+		String str = reader.read(String.class);
+		assertEquals("scalar", str);
+
+		Map<String, String> map = (Map<String, String>) reader.read(HashMap.class);
+		assertEquals("value", map.get("key"));
+
+		str = reader.read(String.class);
+		assertEquals("scalar", str);
+	}
 }
