@@ -27,6 +27,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -108,7 +109,39 @@ public class YamlReader {
 			throw new YamlException("Error parsing YAML.", ex);
 		} catch (TokenizerException ex) {
 			throw new YamlException("Error tokenizing YAML.", ex);
+		} finally{
+			parser.getNextEvent(); // consume it(DOCUMENT_END)
 		}
+	}
+
+	/**
+	 * Reads all documents from YAML into Objects.
+	 * 
+	 * @param type specify Object type
+	 * @return an iterator reads documents in order
+	 */
+	public <T> Iterator<T> readAll(final Class<T> type) {
+		Iterator<T> iterator = new Iterator<T>() {
+
+			public boolean hasNext() {
+				Event event = parser.peekNextEvent();
+				return event != null && event.type != STREAM_END;
+			}
+
+			public T next() {
+				try {
+					return read(type);
+				} catch (YamlException e) {
+					throw new RuntimeException("Iterative reading documents exception", e);
+				}
+			}
+
+			public void remove() {
+				throw new UnsupportedOperationException();
+			}
+		};
+
+		return iterator;
 	}
 
 	/** Reads an object from the YAML. Can be overidden to take some action for any of the objects returned. */
