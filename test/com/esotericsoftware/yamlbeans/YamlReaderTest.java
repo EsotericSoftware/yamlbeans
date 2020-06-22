@@ -18,10 +18,15 @@ package com.esotericsoftware.yamlbeans;
 
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
+import org.junit.Test;
+
+import com.esotericsoftware.yamlbeans.YamlWriterTest.Obj;
 
 import junit.framework.TestCase;
 
@@ -556,5 +561,47 @@ public class YamlReaderTest extends TestCase {
 
 		str = reader.read(String.class);
 		assertEquals("scalar", str);
+	}
+
+	public void testReadAll() throws YamlException {
+
+		StringBuilder sb = new StringBuilder();
+		sb.append("- 1").append("\n");
+		sb.append("- 2").append("\n");
+		sb.append("- 3").append("\n");
+		sb.append("---\n").append("key: value").append("\n");
+		sb.append("--- !com.esotericsoftware.yamlbeans.YamlReaderTest$Test\n");
+		sb.append("stringValue: test\n");
+		YamlReader reader = new YamlReader(sb.toString());
+		Iterator<Object> iterator = reader.readAll(Object.class);
+		List<Object> list = new ArrayList<Object>();
+		while (iterator.hasNext()) {
+			list.add(iterator.next());
+		}
+		assertEquals(3, list.size());
+		assertEquals("test", ((Test) list.get(2)).stringValue);
+	}
+
+	public void testReadAllCallingNextThrowsRuntimeException() {
+		String yaml = "\ttest";
+		YamlReader reader = new YamlReader(yaml);
+		Iterator<Object> iterator = reader.readAll(Object.class);
+		try {
+			iterator.next();
+			fail();
+		} catch (Exception e) {
+		}
+	}
+
+	public void testReadAllCallingRemoveUnsupportedOperationException() {
+		String yaml = "test";
+		YamlReader reader = new YamlReader(yaml);
+		Iterator<Object> iterator = reader.readAll(Object.class);
+		try {
+			iterator.remove();
+			;
+			fail();
+		} catch (Exception e) {
+		}
 	}
 }

@@ -1,7 +1,9 @@
 package com.esotericsoftware.yamlbeans.document;
 
 import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import org.junit.Test;
 
@@ -215,6 +217,51 @@ public class YamlDocumentTest extends TestCase  {
 			reader.read();
 			fail("Tabs cannot be used for indentation.");
 		} catch (YamlException e) {
+		}
+	}
+
+	@Test
+	public void testReadAll() throws YamlException {
+
+		StringBuilder sb = new StringBuilder();
+		sb.append("&1 scalar").append("\n");
+		sb.append("---\n").append("*1").append("\n");
+		sb.append("---\n").append("key: value").append("\n");
+		sb.append("---\n").append("- 1\n").append("- 2\n").append("- 3\n");
+		YamlDocumentReader reader = new YamlDocumentReader(sb.toString());
+		Iterator<YamlElement> iterator = reader.readAll(YamlElement.class);
+		List<YamlElement> list = new ArrayList<YamlElement>();
+		while (iterator.hasNext()) {
+			list.add(iterator.next());
+		}
+		assertEquals(4, list.size());
+		assertEquals(true, YamlScalar.class == list.get(0).getClass());
+		assertEquals(true, YamlAlias.class == list.get(1).getClass());
+		assertEquals(true, YamlMapping.class == list.get(2).getClass());
+		assertEquals(true, YamlSequence.class == list.get(3).getClass());
+	}
+
+	@Test
+	public void testReadAllCallingNextThrowsRuntimeException() {
+		String yaml = "\ttest";
+		YamlDocumentReader reader = new YamlDocumentReader(yaml);
+		Iterator<YamlElement> iterator = reader.readAll(YamlElement.class);
+		try {
+			iterator.next();
+			fail("");
+		} catch (Exception e) {
+		}
+	}
+
+	@Test
+	public void testReadAllCallingRemoveUnsupportedOperationException() {
+		String yaml = "test";
+		YamlDocumentReader reader = new YamlDocumentReader(yaml);
+		Iterator<YamlElement> iterator = reader.readAll(YamlElement.class);
+		try {
+			iterator.remove();
+			fail("");
+		} catch (Exception e) {
 		}
 	}
 
