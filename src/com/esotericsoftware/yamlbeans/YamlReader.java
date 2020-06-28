@@ -18,7 +18,6 @@ package com.esotericsoftware.yamlbeans;
 
 import static com.esotericsoftware.yamlbeans.parser.EventType.*;
 
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
@@ -104,13 +103,13 @@ public class YamlReader {
 				if (event.type == STREAM_END) return null;
 				if (event.type == DOCUMENT_START) break;
 			}
-			return (T)readValue(type, elementType, null);
+			Object object = readValue(type, elementType, null);
+			parser.getNextEvent(); // consume it(DOCUMENT_END)
+			return (T) object;
 		} catch (ParserException ex) {
 			throw new YamlException("Error parsing YAML.", ex);
 		} catch (TokenizerException ex) {
 			throw new YamlException("Error tokenizing YAML.", ex);
-		} finally{
-			parser.getNextEvent(); // consume it(DOCUMENT_END)
 		}
 	}
 
@@ -257,14 +256,6 @@ public class YamlReader {
 			}
 		}
 
-		if (type == String.class) {
-			Event event = parser.getNextEvent();
-			if (event.type != SCALAR) throw new YamlReaderException("Expected scalar for String type but found: " + event.type);
-			String value = ((ScalarEvent)event).value;
-			if (anchor != null) anchors.put(anchor, value);
-			return value;
-		}
-
 		if (Beans.isScalar(type)) {
 			Event event = parser.getNextEvent();
 			if (event.type != SCALAR) throw new YamlReaderException(
@@ -272,40 +263,26 @@ public class YamlReader {
 			String value = ((ScalarEvent)event).value;
 			try {
 				Object convertedValue;
-				if (type == String.class) {
+				if (value == null) {
+					convertedValue = null;
+				} else if (type == String.class) {
 					convertedValue = value;
-				} else if (type == Integer.TYPE) {
-					convertedValue = value == null ? null : Integer.decode(value);
-				} else if (type == Integer.class) {
-					convertedValue = value == null ? null : Integer.decode(value);
-				} else if (type == Boolean.TYPE) {
-					convertedValue = value == null ? null : Boolean.valueOf(value);
-				} else if (type == Boolean.class) {
-					convertedValue = value == null ? null : Boolean.valueOf(value);
-				} else if (type == Float.TYPE) {
-					convertedValue = value == null ? null : Float.valueOf(value);
-				} else if (type == Float.class) {
-					convertedValue = value == null ? null : Float.valueOf(value);
-				} else if (type == Double.TYPE) {
-					convertedValue = value == null ? null : Double.valueOf(value);
-				} else if (type == Double.class) {
-					convertedValue = value == null ? null : Double.valueOf(value);
-				} else if (type == Long.TYPE) {
-					convertedValue = value == null ? null : Long.decode(value);
-				} else if (type == Long.class) {
-					convertedValue = value == null ? null : Long.decode(value);
-				} else if (type == Short.TYPE) {
-					convertedValue = value == null ? null : Short.decode(value);
-				} else if (type == Short.class) {
-					convertedValue = value == null ? null : Short.decode(value);
-				} else if (type == Character.TYPE) {
-					convertedValue = value == null ? null : value.charAt(0);
-				} else if (type == Character.class) {
-					convertedValue = value == null ? null : value.charAt(0);
-				} else if (type == Byte.TYPE) {
-					convertedValue = value == null ? null : Byte.decode(value);
-				} else if (type == Byte.class) {
-					convertedValue = value == null ? null : Byte.decode(value);
+				} else if (type == Integer.TYPE || type == Integer.class) {
+					convertedValue = Integer.decode(value);
+				} else if (type == Boolean.TYPE || type == Boolean.class) {
+					convertedValue = Boolean.valueOf(value);
+				} else if (type == Float.TYPE || type == Float.class) {
+					convertedValue = Float.valueOf(value);
+				} else if (type == Double.TYPE || type == Double.class) {
+					convertedValue = Double.valueOf(value);
+				} else if (type == Long.TYPE || type == Long.class) {
+					convertedValue = Long.decode(value);
+				} else if (type == Short.TYPE || type == Short.class) {
+					convertedValue = Short.decode(value);
+				} else if (type == Character.TYPE || type == Character.class) {
+					convertedValue = value.charAt(0);
+				} else if (type == Byte.TYPE || type == Byte.class) {
+					convertedValue = Byte.decode(value);
 				} else
 					throw new YamlException("Unknown field type.");
 				if (anchor != null) anchors.put(anchor, convertedValue);
@@ -403,8 +380,7 @@ public class YamlReader {
 								// corresponding sequence, mapping... end
 								Event nextEvent = parser.peekNextEvent();
 								EventType nextType = nextEvent.type;
-								if (nextType == SEQUENCE_START || nextType == MAPPING_START
-										|| nextType == DOCUMENT_START || nextType == EventType.STREAM_START) {
+								if (nextType == SEQUENCE_START || nextType == MAPPING_START) {
 									skipRange();
 								} else {
 									// go though the next event, because this is a value of missing property
@@ -468,12 +444,6 @@ public class YamlReader {
 			if (anchor != null) anchors.put(anchor, array);
 			return array;
 		}
-		case SCALAR:
-			if (((ScalarEvent)event).value == null) {
-				event = parser.getNextEvent();
-				return null;
-			}
-			// Fall through.
 		default:
 			throw new YamlReaderException("Expected data for a " + type.getName() + " field but found: " + event.type);
 		}
@@ -543,22 +513,10 @@ public class YamlReader {
 			case MAPPING_START:
 				depth++;
 				break;
-			case DOCUMENT_START:
-				depth++;
-				break;
-			case STREAM_START:
-				depth++;
-				break;
 			case SEQUENCE_END:
 				depth--;
 				break;
 			case MAPPING_END:
-				depth--;
-				break;
-			case DOCUMENT_END:
-				depth--;
-				break;
-			case STREAM_END:
 				depth--;
 				break;
 			default:
@@ -566,10 +524,5 @@ public class YamlReader {
 				break;
 			}
 		} while (depth > 0);
-	}
-
-	public static void main (String[] args) throws Exception {
-		YamlReader reader = new YamlReader(new FileReader("test/test.yml"));
-		System.out.println(reader.read());
 	}
 }
