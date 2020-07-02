@@ -92,7 +92,8 @@ public class YamlWriter {
 				emitter.emit(Event.STREAM_START);
 				started = true;
 			}
-			emitter.emit(new DocumentStartEvent(config.writeConfig.explicitFirstDocument, null, null));
+			emitter.emit(new DocumentStartEvent(config.writeConfig.explicitFirstDocument, config.writeConfig.version,
+					config.writeConfig.tags));
 			isRoot = true;
 			writeValue(object, config.writeConfig.writeRootTags ? null : object.getClass(), null, null);
 			emitter.emit(new DocumentEndEvent(config.writeConfig.explicitEndDocument));

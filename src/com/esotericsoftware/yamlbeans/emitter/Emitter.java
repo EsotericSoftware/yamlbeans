@@ -144,7 +144,7 @@ public class Emitter {
 							throw new EmitterException("Unsupported YAML version: " + documentStartEvent.version);
 						writer.writeVersionDirective(documentStartEvent.version.toString());
 					}
-					if ((documentStartEvent.version != null && documentStartEvent.version.equals(1, 0)) || config.version.equals(1, 0)) {
+					if ((documentStartEvent.version != null && documentStartEvent.version.equals(1, 0))) {
 						isVersion10 = true;
 						tagPrefixes = new HashMap(DEFAULT_TAG_PREFIXES_1_0);
 					} else
