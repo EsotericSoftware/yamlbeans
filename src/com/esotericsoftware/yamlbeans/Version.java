@@ -31,11 +31,13 @@ public class Version {
 		if (dotIndex == -1) throw new IllegalArgumentException("value must contain a period: " + value);
 		major = Integer.parseInt(value.substring(0, dotIndex));
 		minor = Integer.parseInt(value.substring(dotIndex + 1));
+		check();
 	}
 
 	public Version (int major, int minor) {
 		this.major = major;
 		this.minor = minor;
+		check();
 	}
 
 	public String toString () {
@@ -62,5 +64,10 @@ public class Version {
 		if (major != other.major) return false;
 		if (minor != other.minor) return false;
 		return true;
+	}
+
+	private void check() {
+		if (major != 1) throw new IllegalArgumentException("major must be 1.");
+		if (minor < 0 || minor > 1) throw new IllegalArgumentException("minor must be 0 or 1.");
 	}
 }

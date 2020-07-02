@@ -140,6 +140,8 @@ public class YamlConfig {
 		boolean keepBeanPropertyOrder = false;
 		WriteClassName writeClassName = WriteClassName.AUTO;
 		Quote quote = Quote.NONE;
+		Version version;
+		Map<String,String> tags;
 		EmitterConfig emitterConfig = new EmitterConfig();
 
 		WriteConfig () {
@@ -193,7 +195,12 @@ public class YamlConfig {
 
 		/** Sets the YAML version to output. Default is 1.1. */
 		public void setVersion (Version version) {
-			emitterConfig.setVersion(version);
+			this.version = version;
+		}
+
+		/** Sets the YAML tags to output. */
+		public void setTags(Map<String, String> tags) {
+			this.tags = tags;
 		}
 
 		/** If true, the YAML output will be canonical. Default is false. */

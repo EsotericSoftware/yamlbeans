@@ -16,22 +16,13 @@
 
 package com.esotericsoftware.yamlbeans.emitter;
 
-import com.esotericsoftware.yamlbeans.Version;
-
 /** @author <a href="mailto:misc@n4te.com">Nathan Sweet</a> */
 public class EmitterConfig {
-	Version version = new Version(1, 1);
 	boolean canonical;
 	boolean useVerbatimTags = true;
 	int indentSize = 3;
 	int wrapColumn = 100;
 	boolean escapeUnicode = true;
-
-	/** Sets the YAML version to output. Default is 1.1. */
-	public void setVersion (Version version) {
-		if (version == null) throw new IllegalArgumentException("version cannot be null.");
-		this.version = version;
-	}
 
 	/** If true, the YAML output will be canonical. Default is false. */
 	public void setCanonical (boolean canonical) {
