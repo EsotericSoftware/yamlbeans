@@ -482,7 +482,7 @@ public class YamlReaderTest extends TestCase {
 		map.put("date", "2001-01-23");
 
 		YamlConfig config = new YamlConfig();
-		config.readConfig.guessNumberTypes = true;
+		config.readConfig.setGuessNumberTypes(true);
 		StringWriter sw = new StringWriter();
 		YamlWriter writer = new YamlWriter(sw, config);
 		writer.write(map);
@@ -660,7 +660,7 @@ public class YamlReaderTest extends TestCase {
 		sb.append("--- !com.esotericsoftware.yamlbeans.YamlReaderTest$Test\n");
 		sb.append("stringValue: test\n");
 		YamlConfig yamlConfig = new YamlConfig();
-		yamlConfig.readConfig.classTags = false;
+		yamlConfig.readConfig.setClassTags(false);
 		yamlConfig.setPropertyDefaultType(Test.class, "stringValue", String.class);
 		YamlReader reader = new YamlReader(sb.toString(), yamlConfig);
 		assertEquals("test", reader.read(Test.class).stringValue);
