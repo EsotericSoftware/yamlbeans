@@ -365,12 +365,37 @@ public class YamlConfigTest {
 
 	@Test
 	public void testSetCanonical() throws YamlException {
+		int indentSize = 3;
+		yamlConfig.writeConfig.setIndentSize(indentSize);
 		yamlConfig.writeConfig.setCanonical(true);
 		StringWriter stringWriter = new StringWriter();
 		YamlWriter yamlWriter = new YamlWriter(stringWriter, yamlConfig);
 		yamlWriter.write("test");
 		yamlWriter.close();
 		assertEquals("--- " + LINE_SEPARATOR + "!java.lang.String \"test\"" + LINE_SEPARATOR, stringWriter.toString());
+
+		List<String> list = new ArrayList<String>();
+		list.add("111");
+		list.add("222");
+		stringWriter = new StringWriter();
+		yamlWriter = new YamlWriter(stringWriter, yamlConfig);
+		yamlWriter.write(list);
+		yamlWriter.close();
+		assertEquals("--- " + LINE_SEPARATOR + "[" + LINE_SEPARATOR + multipleSpaces(indentSize)
+				+ "!java.lang.String \"111\"," + LINE_SEPARATOR + multipleSpaces(indentSize)
+				+ "!java.lang.String \"222\"" + LINE_SEPARATOR + "]" + LINE_SEPARATOR, stringWriter.toString());
+
+		Map<String, String> map = new HashMap<String, String>();
+		map.put("key", "value");
+		stringWriter = new StringWriter();
+		yamlWriter = new YamlWriter(stringWriter, yamlConfig);
+		yamlWriter.write(map);
+		yamlWriter.close();
+		assertEquals(
+				"--- " + LINE_SEPARATOR + "{" + LINE_SEPARATOR + multipleSpaces(indentSize)
+						+ "? !java.lang.String \"key\"" + LINE_SEPARATOR + multipleSpaces(indentSize)
+						+ ": !java.lang.String \"value\"" + LINE_SEPARATOR + "}" + LINE_SEPARATOR,
+				stringWriter.toString());
 	}
 
 	@Test
@@ -386,7 +411,7 @@ public class YamlConfigTest {
 		yamlWriter.write(list);
 		yamlWriter.close();
 		assertEquals("--- " + LINE_SEPARATOR + "[" + LINE_SEPARATOR + multipleSpaces(indentSize)
-				+ "!java.lang.Integer \"1\"," + LINE_SEPARATOR + "]" + LINE_SEPARATOR, stringWriter.toString());
+				+ "!java.lang.Integer \"1\"" + LINE_SEPARATOR + "]" + LINE_SEPARATOR, stringWriter.toString());
 
 		try {
 			yamlConfig.writeConfig.setIndentSize(1);
