@@ -184,7 +184,7 @@ class Beans {
 				}
 			}
 			if (getMethod != null && (setMethod != null || constructorProperty)) {
-				property = new MethodProperty(name, setMethod, getMethod);
+				return new MethodProperty(name, setMethod, getMethod);
 			}
 		}
 
