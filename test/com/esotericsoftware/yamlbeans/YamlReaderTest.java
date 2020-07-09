@@ -635,6 +635,19 @@ public class YamlReaderTest extends TestCase {
 		assertEquals(123, ((Long) reader.get("1")).intValue());
 	}
 
+	public void testAnchorAndAlias() throws YamlException {
+		String yaml = "key: &1 value\nkey1: *1\n---\nkey: *1";
+		YamlReader reader = new YamlReader(yaml);
+		assertEquals("value", ((Map<String, String>) reader.read()).get("key1"));
+		assertEquals("value", reader.get("1"));
+
+		try {
+			reader.read();
+		} catch (YamlReaderException e) {
+			assertTrue(e.getMessage().contains("Unknown anchor: "));
+		}
+	}
+
 	public void testReadExpectExpectThrowsParserException() {
 		String yaml = "[1,2,3";
 		YamlReader reader = new YamlReader(yaml);

@@ -96,6 +96,7 @@ public class YamlReader {
 	/** Reads an array, Map, List, or Collection object of the specified type from YAML, using the specified element type.
 	 * @param type The type of object to read. If null, behaves the same as {{@link #read()}. */
 	public <T> T read (Class<T> type, Class elementType) throws YamlException {
+		anchors.clear();
 		try {
 			while (true) {
 				Event event = parser.getNextEvent();
