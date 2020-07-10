@@ -222,7 +222,7 @@ public class Parser {
 					if (tokenizer.peekNextTokenType() == ANCHOR) anchor = ((AnchorToken)tokenizer.getNextToken()).getInstanceName();
 				}
 				String tag = null;
-				if (tagHandle != null && !tagHandle.equals("!")) {
+				if (tagHandle != null) {
 					if (!tagHandles.containsKey(tagHandle)) throw new ParserException("Undefined tag handle: " + tagHandle);
 					tag = tagHandles.get(tagHandle) + tagSuffix;
 				} else

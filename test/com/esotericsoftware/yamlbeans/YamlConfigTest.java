@@ -36,9 +36,11 @@ public class YamlConfigTest {
 	@Test
 	public void testSetClassTag() throws YamlException {
 		yamlConfig.setClassTag("String", String.class);
-		String yaml = "!String test";
+		yamlConfig.setClassTag("!Int", Integer.class);
+		String yaml = "!String test\n---\n!Int 1";
 		YamlReader yamlReader = new YamlReader(yaml, yamlConfig);
 		assertEquals("test", yamlReader.read());
+		assertEquals(1, yamlReader.read());
 
 		try {
 			yamlConfig.setClassTag(null, String.class);

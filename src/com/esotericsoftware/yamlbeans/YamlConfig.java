@@ -69,6 +69,7 @@ public class YamlConfig {
 	public void setClassTag (String tag, Class type) {
 		if (tag == null) throw new IllegalArgumentException("tag cannot be null.");
 		if (type == null) throw new IllegalArgumentException("type cannot be null.");
+		if (!tag.startsWith("!")) tag = "!" + tag;
 		classNameToTag.put(type.getName(), tag);
 		tagToClass.put(tag, type);
 	}
