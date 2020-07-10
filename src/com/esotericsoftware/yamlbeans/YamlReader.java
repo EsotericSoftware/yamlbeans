@@ -182,6 +182,7 @@ public class YamlReader {
 			ClassLoader classLoader = (config.readConfig.classLoader == null ? this.getClass().getClassLoader()
 				: config.readConfig.classLoader);
 
+			tag = tag.replace("!", "");
 			try {
 				Class<?> loadedFromTag = findTagClass(tag, classLoader);
 				if (loadedFromTag != null) {
