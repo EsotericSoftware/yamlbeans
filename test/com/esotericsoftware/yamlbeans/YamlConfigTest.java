@@ -198,15 +198,16 @@ public class YamlConfigTest {
 		YamlWriter yamlWriter = new YamlWriter(stringWriter, yamlConfig);
 		Map<String, String> map = new HashMap<String, String>();
 		map.put("a", "111");
-		map.put("btag", "222");
+		map.put("atag", "!222");
 		yamlWriter.write(map);
 		yamlWriter.close();
 
+		assertEquals("a: !222 111" + LINE_SEPARATOR, stringWriter.toString());
+
+		yamlConfig.setClassTag("!222", String.class);
 		YamlReader yamlReader = new YamlReader(stringWriter.toString(), yamlConfig);
 		Map<String, String> result = yamlReader.read(Map.class);
-		assertTrue(result.containsKey("a"));
-		assertFalse(result.containsKey("btag"));
-		assertTrue(result.containsKey("atag"));
+		assertEquals(map.toString(), result.toString());
 	}
 
 	@Test

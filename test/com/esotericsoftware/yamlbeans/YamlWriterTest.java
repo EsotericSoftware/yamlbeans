@@ -24,6 +24,7 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -307,6 +308,23 @@ public class YamlWriterTest extends TestCase {
 		object.file = new File("some/path/andFile.txt");
 		ClassWithFile roundTrip = roundTrip(object, ClassWithFile.class, config);
 		assertEquals(object.file, roundTrip.file);
+	}
+
+	public void testSetAlias() throws YamlException {
+		Map<String, Test> map = new LinkedHashMap<String, Test>();
+		Test test = new Test();
+		test.stringValue = "test";
+		map.put("key1", test);
+		map.put("key2", test);
+
+		StringWriter sw = new StringWriter();
+		YamlWriter yamlWriter = new YamlWriter(sw);
+		yamlWriter.setAlias(test, "t");
+		yamlWriter.write(map);
+		yamlWriter.close();
+		assertEquals("!java.util.LinkedHashMap" + LINE_SEPARATOR
+				+ "key1: &t !com.esotericsoftware.yamlbeans.YamlWriterTest$Test" + LINE_SEPARATOR
+				+ "   stringValue: test" + LINE_SEPARATOR + "key2: *t" + LINE_SEPARATOR, sw.toString());
 	}
 
 	private Object roundTrip (Object object) throws Exception {

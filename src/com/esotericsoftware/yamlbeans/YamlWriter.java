@@ -104,11 +104,6 @@ public class YamlWriter {
 		}
 	}
 
-	/** Returns the YAML emitter, which allows the YAML output to be configured. */
-	public Emitter getEmitter () {
-		return emitter;
-	}
-
 	/** Writes any buffered objects, then resets the list of anchored objects.
 	 * @see WriteConfig#setAutoAnchor(boolean) */
 	public void clearAnchors () throws YamlException {
