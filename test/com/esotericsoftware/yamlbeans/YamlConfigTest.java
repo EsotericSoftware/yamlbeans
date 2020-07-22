@@ -337,7 +337,7 @@ public class YamlConfigTest {
 		yamlWriter.close();
 		assertEquals("test" + LINE_SEPARATOR, stringWriter.toString());
 
-		Version version = new Version(1, 0);
+		Version version = Version.V1_0;
 		yamlConfig.writeConfig.setVersion(version);
 		stringWriter = new StringWriter();
 		yamlWriter = new YamlWriter(stringWriter, yamlConfig);
@@ -345,7 +345,7 @@ public class YamlConfigTest {
 		yamlWriter.close();
 		assertEquals("%YAML 1.0" + LINE_SEPARATOR + "--- test" + LINE_SEPARATOR, stringWriter.toString());
 
-		version = new Version(1, 1);
+		version = Version.V1_1;
 		yamlConfig.writeConfig.setVersion(version);
 		stringWriter = new StringWriter();
 		yamlWriter = new YamlWriter(stringWriter, yamlConfig);
@@ -496,7 +496,7 @@ public class YamlConfigTest {
 	@Test
 	public void testSetDefaultVersion() throws YamlException {
 		String yaml = "!!str test";
-		yamlConfig.readConfig.setDefaultVersion(new Version(1, 1));
+		yamlConfig.readConfig.setDefaultVersion(Version.V1_1);
 		YamlReader yamlReader = new YamlReader(yaml, yamlConfig);
 		assertEquals("test", yamlReader.read(String.class));
 

@@ -18,6 +18,7 @@ package com.esotericsoftware.yamlbeans.emitter;
 
 import static com.esotericsoftware.yamlbeans.parser.EventType.*;
 
+import com.esotericsoftware.yamlbeans.Version;
 import com.esotericsoftware.yamlbeans.parser.CollectionStartEvent;
 import com.esotericsoftware.yamlbeans.parser.DocumentEndEvent;
 import com.esotericsoftware.yamlbeans.parser.DocumentStartEvent;
@@ -140,11 +141,11 @@ public class Emitter {
 				if (event.type == DOCUMENT_START) {
 					DocumentStartEvent documentStartEvent = (DocumentStartEvent)event;
 					if (documentStartEvent.version != null) {
-						if (documentStartEvent.version.major != 1)
+						if (documentStartEvent.version.getMajor() != 1)
 							throw new EmitterException("Unsupported YAML version: " + documentStartEvent.version);
 						writer.writeVersionDirective(documentStartEvent.version.toString());
 					}
-					if ((documentStartEvent.version != null && documentStartEvent.version.equals(1, 0))) {
+					if ((documentStartEvent.version == Version.V1_0)) {
 						isVersion10 = true;
 						tagPrefixes = new HashMap(DEFAULT_TAG_PREFIXES_1_0);
 					} else

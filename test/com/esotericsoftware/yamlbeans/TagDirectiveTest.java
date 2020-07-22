@@ -63,17 +63,17 @@ public class TagDirectiveTest {
 	public void testVersion() throws YamlException {
 		String yaml = "!str test";
 		YamlConfig yamlConfig = new YamlConfig();
-		yamlConfig.readConfig.setDefaultVersion(new Version(1, 0));
+		yamlConfig.readConfig.setDefaultVersion(Version.V1_0);
 		YamlReader yamlReader = new YamlReader(yaml, yamlConfig);
 		assertEquals("test", yamlReader.read());
 
 		yaml = "!!str test";
-		yamlConfig.readConfig.setDefaultVersion(new Version(1, 1));
+		yamlConfig.readConfig.setDefaultVersion(Version.V1_1);
 		yamlReader = new YamlReader(yaml, yamlConfig);
 		assertEquals("test", yamlReader.read());
 
 		yaml = "!!str test";
-		yamlConfig.readConfig.setDefaultVersion(new Version(1, 0));
+		yamlConfig.readConfig.setDefaultVersion(Version.V1_0);
 		yamlReader = new YamlReader(yaml, yamlConfig);
 		try {
 			yamlReader.read();

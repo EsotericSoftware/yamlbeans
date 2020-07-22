@@ -175,7 +175,7 @@ public class YamlDocumentTest extends TestCase  {
 	@Test
 	public void testVersion1_0() throws YamlException {
 		String yaml = "version: !str 1.0";
-		YamlDocumentReader reader = new YamlDocumentReader(yaml, new Version(1, 0));
+		YamlDocumentReader reader = new YamlDocumentReader(yaml, Version.V1_0);
 		YamlMapping yamlMapping = (YamlMapping) reader.read();
 		assertEquals("1.0", ((YamlScalar) yamlMapping.getEntry("version").getValue()).getValue());
 	}
@@ -183,7 +183,7 @@ public class YamlDocumentTest extends TestCase  {
 	@Test
 	public void testVersion1_0ThrowsYamlException() {
 		String yaml = "version: !!str 1.1";
-		YamlDocumentReader reader = new YamlDocumentReader(yaml, new Version(1, 0));
+		YamlDocumentReader reader = new YamlDocumentReader(yaml, Version.V1_0);
 		try {
 			reader.read();
 			fail("1.0 Version tag is single '!'");
@@ -194,7 +194,7 @@ public class YamlDocumentTest extends TestCase  {
 	@Test
 	public void testVersion1_1() throws YamlException {
 		String yaml = "version: !!str 1.1";
-		YamlDocumentReader reader = new YamlDocumentReader(yaml, new Version(1, 1));
+		YamlDocumentReader reader = new YamlDocumentReader(yaml, Version.V1_1);
 		YamlMapping yamlMapping = (YamlMapping) reader.read();
 		assertEquals("1.1", ((YamlScalar) yamlMapping.getEntry("version").getValue()).getValue());
 	}
