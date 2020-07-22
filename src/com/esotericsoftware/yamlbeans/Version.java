@@ -19,55 +19,57 @@ package com.esotericsoftware.yamlbeans;
 /** Represents the version of a YAML document.
  * @author <a href="mailto:misc@n4te.com">Nathan Sweet</a> */
 public class Version {
-	
-	public static final Version DEFAULT_VERSION = new Version(1, 1);
-	
-	public final int major;
-	public final int minor;
 
-	public Version (String value) {
-		if (value == null) throw new IllegalArgumentException("value cannot be null.");
-		int dotIndex = value.indexOf('.');
-		if (dotIndex == -1) throw new IllegalArgumentException("value must contain a period: " + value);
-		major = Integer.parseInt(value.substring(0, dotIndex));
-		minor = Integer.parseInt(value.substring(dotIndex + 1));
-		check();
-	}
+	public static final Version V1_0 = new Version(1, 0);
 
-	public Version (int major, int minor) {
+	public static final Version V1_1 = new Version(1, 1);
+
+	/**
+	 * YAML 1.1
+	 */
+	public static final Version DEFAULT_VERSION = V1_1;
+
+	private final int major;
+	private final int minor;
+
+	private Version (int major, int minor) {
 		this.major = major;
 		this.minor = minor;
-		check();
+	}
+
+	public static Version getVersion(String value) {
+		Version version = null;
+		if (value != null) {
+			int dotIndex = value.indexOf('.');
+			int major = 0;
+			int minor = 0;
+			if (dotIndex > 0) {
+				try {
+					major = Integer.parseInt(value.substring(0, dotIndex));
+					minor = Integer.parseInt(value.substring(dotIndex + 1));
+				} catch (NumberFormatException e) {
+					return null;
+				}
+			}
+
+			if (major == V1_0.major && minor == V1_0.minor) {
+				version = V1_0;
+			} else if (major == V1_1.major && minor == V1_1.minor) {
+				version = V1_1;
+			}
+		}
+		return version;
+	}
+
+	public int getMajor() {
+		return major;
+	}
+
+	public int getMinor() {
+		return minor;
 	}
 
 	public String toString () {
 		return major + "." + minor;
-	}
-
-	public int hashCode () {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + major;
-		result = prime * result + minor;
-		return result;
-	}
-
-	public boolean equals (int minor, int major) {
-		return this.minor == minor && this.major == major;
-	}
-
-	public boolean equals (Object obj) {
-		if (this == obj) return true;
-		if (obj == null) return false;
-		if (getClass() != obj.getClass()) return false;
-		final Version other = (Version)obj;
-		if (major != other.major) return false;
-		if (minor != other.minor) return false;
-		return true;
-	}
-
-	private void check() {
-		if (major != 1) throw new IllegalArgumentException("major must be 1.");
-		if (minor < 0 || minor > 1) throw new IllegalArgumentException("minor must be 0 or 1.");
 	}
 }

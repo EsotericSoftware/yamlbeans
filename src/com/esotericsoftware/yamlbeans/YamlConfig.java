@@ -241,7 +241,7 @@ public class YamlConfig {
 	}
 
 	static public class ReadConfig {
-		Version defaultVersion = new Version(1, 1);
+		Version defaultVersion = Version.DEFAULT_VERSION;
 		ClassLoader classLoader;
 		final Map<Class, ConstructorParameters> constructorParameters = new IdentityHashMap();
 		boolean ignoreUnknownProperties;
