@@ -59,7 +59,7 @@ public class YamlSequence extends YamlElement implements YamlDocument {
 	
 	@Override
 	public void emitEvent(Emitter emitter, WriteConfig config) throws EmitterException, IOException {
-		emitter.emit(new SequenceStartEvent(anchor, tag, tag==null, false));
+		emitter.emit(new SequenceStartEvent(anchor, tag, tag==null, config.isFlowStyle()));
 		for (YamlElement element : elements)
 			element.emitEvent(emitter, config);
 		emitter.emit(Event.SEQUENCE_END);	

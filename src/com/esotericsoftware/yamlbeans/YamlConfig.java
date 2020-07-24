@@ -143,6 +143,7 @@ public class YamlConfig {
 		Quote quote = Quote.NONE;
 		Version version;
 		Map<String,String> tags;
+		boolean flowStyle;
 		EmitterConfig emitterConfig = new EmitterConfig();
 
 		WriteConfig () {
@@ -237,6 +238,15 @@ public class YamlConfig {
 		/** The type of quotes to use when writing YAML output. */
 		public void setQuoteChar (Quote quote) {
 			this.quote = quote;
+		}
+
+		/** If true, the YAML output will be flow. Default is false. */
+		public void setFlowStyle(boolean flowStyle) {
+			this.flowStyle = flowStyle;
+		}
+
+		public boolean isFlowStyle() {
+			return flowStyle;
 		}
 	}
 
