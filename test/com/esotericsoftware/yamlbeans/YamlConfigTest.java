@@ -542,6 +542,44 @@ public class YamlConfigTest {
 
 	}
 
+	@Test
+	public void testSetFlowStyle() throws YamlException {
+		List<String> list = new ArrayList<String>();
+		list.add("111");
+		list.add("222");
+		list.add("333");
+
+		Map<String, String> map = new HashMap<String, String>();
+		map.put("key", "value");
+
+		StringWriter stringWriter = new StringWriter();
+		YamlWriter yamlWriter = new YamlWriter(stringWriter, yamlConfig);
+		yamlWriter.write(list);
+		yamlWriter.close();
+
+		assertEquals("- 111" + LINE_SEPARATOR + "- 222" + LINE_SEPARATOR + "- 333" + LINE_SEPARATOR,
+				stringWriter.toString());
+
+		stringWriter = new StringWriter();
+		yamlWriter = new YamlWriter(stringWriter, yamlConfig);
+		yamlWriter.write(map);
+		yamlWriter.close();
+		assertEquals("key: value" + LINE_SEPARATOR, stringWriter.toString());
+
+		yamlConfig.writeConfig.setFlowStyle(true);
+		stringWriter = new StringWriter();
+		yamlWriter = new YamlWriter(stringWriter, yamlConfig);
+		yamlWriter.write(list);
+		yamlWriter.close();
+		assertEquals("[111, 222, 333]" + LINE_SEPARATOR, stringWriter.toString());
+
+		stringWriter = new StringWriter();
+		yamlWriter = new YamlWriter(stringWriter, yamlConfig);
+		yamlWriter.write(map);
+		yamlWriter.close();
+		assertEquals("{key: value}" + LINE_SEPARATOR, stringWriter.toString());
+	}
+
 	private String multipleSpaces(int indentSize) {
 		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < indentSize; i++) {

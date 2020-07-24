@@ -74,7 +74,7 @@ public class YamlMapping extends YamlElement implements YamlDocument {
 	
 	@Override
 	public void emitEvent(Emitter emitter, WriteConfig config) throws EmitterException, IOException {
-		emitter.emit(new MappingStartEvent(anchor, tag, tag==null, false));
+		emitter.emit(new MappingStartEvent(anchor, tag, tag==null, config.isFlowStyle()));
 		for(YamlEntry entry : entries)
 			entry.emitEvent(emitter, config);
 		emitter.emit(Event.MAPPING_END);

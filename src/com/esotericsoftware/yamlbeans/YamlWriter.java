@@ -210,7 +210,7 @@ public class YamlWriter {
 		}
 
 		if (object instanceof Collection) {
-			emitter.emit(new SequenceStartEvent(anchor, tag, !showTag, false));
+			emitter.emit(new SequenceStartEvent(anchor, tag, !showTag, config.writeConfig.isFlowStyle()));
 			for (Object item : (Collection)object) {
 				if (isRoot && !config.writeConfig.writeRootElementTags) elementType = item.getClass();
 				writeValue(item, elementType, null, null);
@@ -220,7 +220,7 @@ public class YamlWriter {
 		}
 
 		if (object instanceof Map) {
-			emitter.emit(new MappingStartEvent(anchor, tag, !showTag, false));
+			emitter.emit(new MappingStartEvent(anchor, tag, !showTag, config.writeConfig.isFlowStyle()));
 			Map map = (Map)object;
 			for (Object item : map.entrySet()) {
 				Entry entry = (Entry)item;
