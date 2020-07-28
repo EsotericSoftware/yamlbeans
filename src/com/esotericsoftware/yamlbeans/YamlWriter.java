@@ -138,7 +138,8 @@ public class YamlWriter {
 			((YamlElement)object).emitEvent(emitter, config.writeConfig);
 			return;
 		} else if (object == null) {
-			emitter.emit(new ScalarEvent(null, null, new boolean[] {true, true}, null, (char)0));
+			emitter.emit(
+					new ScalarEvent(null, null, new boolean[] { true, true }, null, this.config.writeConfig.quote.c));
 			return;
 		}
 
@@ -183,22 +184,15 @@ public class YamlWriter {
 		for (Entry<Class, ScalarSerializer> entry : config.scalarSerializers.entrySet()) {
 			if (entry.getKey().isAssignableFrom(valueClass)) {
 				ScalarSerializer serializer = entry.getValue();
-				emitter.emit(new ScalarEvent(null, tag, new boolean[] {tag == null, tag == null}, serializer.write(object), (char)0));
+				emitter.emit(new ScalarEvent(null, tag, new boolean[] { tag == null, tag == null },
+						serializer.write(object), this.config.writeConfig.quote.c));
 				return;
 			}
 		}
 
 		if (Beans.isScalar(valueClass)) {
-			char style = 0;
-			String string = String.valueOf(object);
-			if (valueClass == String.class) {
-				try {
-					Float.parseFloat(string);
-					style = this.config.writeConfig.quote.c;
-				} catch (NumberFormatException ignored) {
-				}
-			}
-			emitter.emit(new ScalarEvent(null, tag, new boolean[] {true, true}, string, style));
+			emitter.emit(new ScalarEvent(null, tag, new boolean[] { true, true }, String.valueOf(object),
+					this.config.writeConfig.quote.c));
 			return;
 		}
 
@@ -234,15 +228,9 @@ public class YamlWriter {
 					if (value instanceof String) {
 						Object valueTag = map.get(key + config.tagSuffix);
 						if (valueTag instanceof String) {
-							String string = (String)value;
-							char style = 0;
-							try {
-								Float.parseFloat(string);
-								style = this.config.writeConfig.quote.c;
-							} catch (NumberFormatException ignored) {
-							}
 							writeValue(key, null, null, null);
-							emitter.emit(new ScalarEvent(null, (String)valueTag, new boolean[] {false, false}, string, style));
+							emitter.emit(new ScalarEvent(null, (String) valueTag, new boolean[] { false, false },
+									(String) value, this.config.writeConfig.quote.c));
 							continue;
 						}
 					}

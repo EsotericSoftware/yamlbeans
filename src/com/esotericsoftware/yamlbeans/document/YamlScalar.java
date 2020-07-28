@@ -44,7 +44,6 @@ public class YamlScalar extends YamlElement {
 	
 	@Override
 	public void emitEvent(Emitter emitter, WriteConfig config) throws EmitterException, IOException {
-		char style = 0; // TODO determine style
-		emitter.emit(new ScalarEvent(anchor, tag, new boolean[] {true, true}, value, style));
+		emitter.emit(new ScalarEvent(anchor, tag, new boolean[] {true, true}, value, config.getQuote().getStyle()));
 	}
 }
