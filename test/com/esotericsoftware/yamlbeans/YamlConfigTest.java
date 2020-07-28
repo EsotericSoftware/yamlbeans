@@ -470,27 +470,32 @@ public class YamlConfigTest {
 
 	@Test
 	public void testSetQuoteChar() throws YamlException {
-
+		TestObject testObject = new TestObject();
+		testObject.age = 18;
+		testObject.name = "xxx";
 		StringWriter stringWriter = new StringWriter();
+		yamlConfig.writeConfig.setWriteRootTags(false);
 		yamlConfig.writeConfig.setQuoteChar(Quote.NONE);
 		YamlWriter yamlWriter = new YamlWriter(stringWriter, yamlConfig);
-		yamlWriter.write("123");
+		yamlWriter.write(testObject);
 		yamlWriter.close();
-		assertEquals("123" + LINE_SEPARATOR, stringWriter.toString());
+		assertEquals("name: xxx" + LINE_SEPARATOR + "age: 18" + LINE_SEPARATOR, stringWriter.toString());
 
 		stringWriter = new StringWriter();
 		yamlConfig.writeConfig.setQuoteChar(Quote.SINGLE);
 		yamlWriter = new YamlWriter(stringWriter, yamlConfig);
-		yamlWriter.write("123");
+		yamlWriter.write(testObject);
 		yamlWriter.close();
-		assertEquals("\'123\'" + LINE_SEPARATOR, stringWriter.toString());
+		assertEquals("\'name\': \'xxx\'" + LINE_SEPARATOR + "\'age\': \'18\'" + LINE_SEPARATOR,
+				stringWriter.toString());
 
 		stringWriter = new StringWriter();
 		yamlConfig.writeConfig.setQuoteChar(Quote.DOUBLE);
 		yamlWriter = new YamlWriter(stringWriter, yamlConfig);
-		yamlWriter.write("123");
+		yamlWriter.write(testObject);
 		yamlWriter.close();
-		assertEquals("\"123\"" + LINE_SEPARATOR, stringWriter.toString());
+		assertEquals("\"name\": \"xxx\"" + LINE_SEPARATOR + "\"age\": \"18\"" + LINE_SEPARATOR,
+				stringWriter.toString());
 	}
 
 	@Test

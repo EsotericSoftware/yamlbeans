@@ -240,6 +240,10 @@ public class YamlConfig {
 			this.quote = quote;
 		}
 
+		public Quote getQuote() {
+			return quote;
+		}
+
 		/** If true, the YAML output will be flow. Default is false. */
 		public void setFlowStyle(boolean flowStyle) {
 			this.flowStyle = flowStyle;
@@ -324,6 +328,10 @@ public class YamlConfig {
 
 		Quote (char c) {
 			this.c = c;
+		}
+
+		public char getStyle() {
+			return c;
 		}
 	}
 }
