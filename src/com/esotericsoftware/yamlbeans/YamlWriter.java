@@ -244,7 +244,7 @@ public class YamlWriter {
 
 		if (fieldClass.isArray()) {
 			elementType = fieldClass.getComponentType();
-			emitter.emit(new SequenceStartEvent(anchor, null, true, false));
+			emitter.emit(new SequenceStartEvent(anchor, null, true, config.writeConfig.isFlowStyle()));
 			for (int i = 0, n = Array.getLength(object); i < n; i++)
 				writeValue(Array.get(object, i), elementType, null, null);
 			emitter.emit(Event.SEQUENCE_END);
@@ -267,7 +267,7 @@ public class YamlWriter {
 		}
 
 		Set<Property> properties = Beans.getProperties(valueClass, config.beanProperties, config.privateFields, config);
-		emitter.emit(new MappingStartEvent(anchor, tag, !showTag, false));
+		emitter.emit(new MappingStartEvent(anchor, tag, !showTag, config.writeConfig.isFlowStyle()));
 		for (Property property : properties) {
 			try {
 				Object propertyValue = property.get(object);

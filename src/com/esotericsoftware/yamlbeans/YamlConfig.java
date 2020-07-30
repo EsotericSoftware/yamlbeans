@@ -322,7 +322,7 @@ public class YamlConfig {
 	}
 
 	public static enum Quote {
-		NONE('\0'), SINGLE('\''), DOUBLE('"');
+		NONE('\0'), SINGLE('\''), DOUBLE('"'), LITERAL('|'), FOLDED('>');
 
 		char c;
 
