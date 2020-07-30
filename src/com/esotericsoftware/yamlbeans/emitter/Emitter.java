@@ -525,14 +525,20 @@ public class Emitter {
 		ScalarEvent ev = (ScalarEvent)event;
 		if (analysis == null) analysis = ScalarAnalysis.analyze(ev.value, config.escapeUnicode);
 		if (ev.style == '"' || config.canonical) return '"';
-		if (ev.style == 0 && !(simpleKeyContext && (analysis.empty || analysis.multiline))
-			&& ((flowLevel != 0 && analysis.allowFlowPlain) || (flowLevel == 0 && analysis.allowBlockPlain))) return 0;
-		if (ev.style == 0 && ev.implicit[0] && !(simpleKeyContext && (analysis.empty || analysis.multiline))
-			&& ((flowLevel != 0 && analysis.allowFlowPlain) || (flowLevel == 0 && analysis.allowBlockPlain))) return 0;
-		if ((ev.style == '|' || ev.style == '>') && flowLevel == 0 && analysis.allowBlock) return '\'';
-		if ((ev.style == 0 || ev.style == '\'') && analysis.allowSingleQuoted && !(simpleKeyContext && analysis.multiline))
+		if ((ev.style == 0 || ev.style == '|' || ev.style == '>')
+				&& !(simpleKeyContext && (analysis.empty || analysis.multiline))
+				&& ((flowLevel != 0 && analysis.allowFlowPlain) || (flowLevel == 0 && analysis.allowBlockPlain))) {
+			return 0;
+		}
+		if ((ev.style == 0 || ev.style == '\'') && analysis.allowSingleQuoted
+				&& !(simpleKeyContext && analysis.multiline)) {
 			return '\'';
-		if (ev.style == 0 && analysis.multiline && flowLevel == 0 && analysis.allowBlock) return '|';
+		}
+		if ((ev.style == 0 || ev.style == '|' || ev.style == '>') && analysis.multiline && flowLevel == 0
+				&& analysis.allowBlock) {
+			return ev.style == 0 ? '|' : ev.style;
+		}
+
 		return '"';
 	}
 

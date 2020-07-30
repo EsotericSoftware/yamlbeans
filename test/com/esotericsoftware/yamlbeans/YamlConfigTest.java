@@ -496,6 +496,24 @@ public class YamlConfigTest {
 		yamlWriter.close();
 		assertEquals("\"name\": \"xxx\"" + LINE_SEPARATOR + "\"age\": \"18\"" + LINE_SEPARATOR,
 				stringWriter.toString());
+
+		stringWriter = new StringWriter();
+		yamlConfig.writeConfig.setQuoteChar(Quote.LITERAL);
+		yamlWriter = new YamlWriter(stringWriter, yamlConfig);
+		yamlWriter.write("test\ntest");
+		yamlWriter.close();
+		System.out.println(stringWriter.toString());
+		assertEquals("|-" + LINE_SEPARATOR + "   test" + LINE_SEPARATOR + "   test" + LINE_SEPARATOR,
+				stringWriter.toString());
+
+		stringWriter = new StringWriter();
+		yamlConfig.writeConfig.setQuoteChar(Quote.FOLDED);
+		yamlWriter = new YamlWriter(stringWriter, yamlConfig);
+		yamlWriter.write("test\ntest");
+		yamlWriter.close();
+		System.out.println(stringWriter.toString());
+		assertEquals(">-" + LINE_SEPARATOR + "   test" + LINE_SEPARATOR + LINE_SEPARATOR + "   test" + LINE_SEPARATOR,
+				stringWriter.toString());
 	}
 
 	@Test
