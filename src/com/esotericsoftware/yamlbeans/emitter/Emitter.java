@@ -25,14 +25,11 @@ import com.esotericsoftware.yamlbeans.parser.DocumentStartEvent;
 import com.esotericsoftware.yamlbeans.parser.Event;
 import com.esotericsoftware.yamlbeans.parser.MappingStartEvent;
 import com.esotericsoftware.yamlbeans.parser.NodeEvent;
-import com.esotericsoftware.yamlbeans.parser.Parser;
 import com.esotericsoftware.yamlbeans.parser.ScalarEvent;
 import com.esotericsoftware.yamlbeans.parser.SequenceStartEvent;
 
 import java.io.BufferedWriter;
-import java.io.FileReader;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -644,15 +641,5 @@ public class Emitter {
 
 		DEFAULT_TAG_PREFIXES_1_1.put("!", "!");
 		DEFAULT_TAG_PREFIXES_1_1.put("tag:yaml.org,2002:", "!!");
-	}
-
-	public static void main (String[] args) throws IOException {
-		Parser parser = new Parser(new FileReader("test/test.yml"));
-		Emitter emitter = new Emitter(new OutputStreamWriter(System.out));
-		while (true) {
-			Event event = parser.getNextEvent();
-			if (event == null) break;
-			emitter.emit(event);
-		}
 	}
 }
