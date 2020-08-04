@@ -252,6 +252,11 @@ public class YamlConfig {
 		public boolean isFlowStyle() {
 			return flowStyle;
 		}
+
+		/** If true, the YAML output will be pretty flow. Default is false. */
+		public void setPrettyFlow(boolean prettyFlow) {
+			emitterConfig.setPrettyFlow(prettyFlow);
+		}
 	}
 
 	static public class ReadConfig {

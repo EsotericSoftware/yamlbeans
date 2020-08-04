@@ -8,6 +8,7 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -502,7 +503,6 @@ public class YamlConfigTest {
 		yamlWriter = new YamlWriter(stringWriter, yamlConfig);
 		yamlWriter.write("test\ntest");
 		yamlWriter.close();
-		System.out.println(stringWriter.toString());
 		assertEquals("|-" + LINE_SEPARATOR + "   test" + LINE_SEPARATOR + "   test" + LINE_SEPARATOR,
 				stringWriter.toString());
 
@@ -511,7 +511,6 @@ public class YamlConfigTest {
 		yamlWriter = new YamlWriter(stringWriter, yamlConfig);
 		yamlWriter.write("test\ntest");
 		yamlWriter.close();
-		System.out.println(stringWriter.toString());
 		assertEquals(">-" + LINE_SEPARATOR + "   test" + LINE_SEPARATOR + LINE_SEPARATOR + "   test" + LINE_SEPARATOR,
 				stringWriter.toString());
 	}
@@ -601,6 +600,47 @@ public class YamlConfigTest {
 		yamlWriter.write(map);
 		yamlWriter.close();
 		assertEquals("{key: value}" + LINE_SEPARATOR, stringWriter.toString());
+	}
+
+	@Test
+	public void testSetPrettyFlow() throws YamlException {
+		Map<String, String> map = new LinkedHashMap<String, String>();
+		map.put("key1", "value1");
+		map.put("key2", "value2");
+
+		List<String> list = new ArrayList<String>();
+		list.add("111");
+		list.add("222");
+		list.add("333");
+
+		yamlConfig.writeConfig.setWriteRootTags(false);
+		yamlConfig.writeConfig.setFlowStyle(true);
+		StringWriter stringWriter = new StringWriter();
+		YamlWriter yamlWriter = new YamlWriter(stringWriter, yamlConfig);
+		yamlWriter.write(map);
+		yamlWriter.close();
+		assertEquals("{key1: value1, key2: value2}" + LINE_SEPARATOR, stringWriter.toString());
+
+		stringWriter = new StringWriter();
+		yamlWriter = new YamlWriter(stringWriter, yamlConfig);
+		yamlWriter.write(list);
+		yamlWriter.close();
+		assertEquals("[111, 222, 333]" + LINE_SEPARATOR, stringWriter.toString());
+
+		yamlConfig.writeConfig.setPrettyFlow(true);
+		stringWriter = new StringWriter();
+		yamlWriter = new YamlWriter(stringWriter, yamlConfig);
+		yamlWriter.write(map);
+		yamlWriter.close();
+		assertEquals("{" + LINE_SEPARATOR + "   key1: value1," + LINE_SEPARATOR + "   key2: value2" + LINE_SEPARATOR
+				+ "}" + LINE_SEPARATOR, stringWriter.toString());
+
+		stringWriter = new StringWriter();
+		yamlWriter = new YamlWriter(stringWriter, yamlConfig);
+		yamlWriter.write(list);
+		yamlWriter.close();
+		assertEquals("[" + LINE_SEPARATOR + "   111," + LINE_SEPARATOR + "   222," + LINE_SEPARATOR + "   333"
+				+ LINE_SEPARATOR + "]" + LINE_SEPARATOR, stringWriter.toString());
 	}
 
 	private String multipleSpaces(int indentSize) {

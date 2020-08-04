@@ -23,6 +23,7 @@ public class EmitterConfig {
 	int indentSize = 3;
 	int wrapColumn = 100;
 	boolean escapeUnicode = true;
+	boolean prettyFlow;
 
 	/** If true, the YAML output will be canonical. Default is false. */
 	public void setCanonical (boolean canonical) {
@@ -49,5 +50,10 @@ public class EmitterConfig {
 	/** If false, UTF-8 unicode characters will be output instead of the escaped unicode character code. */
 	public void setEscapeUnicode (boolean escapeUnicode) {
 		this.escapeUnicode = escapeUnicode;
+	}
+
+	/** If true, the YAML output will be pretty flow. Default is false. */
+	public void setPrettyFlow(boolean prettyFlow) {
+		this.prettyFlow = prettyFlow;
 	}
 }
