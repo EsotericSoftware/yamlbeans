@@ -202,6 +202,9 @@ public class Emitter {
 					writer.writeIndicator("]", false, false, false);
 					state = states.remove(0);
 				} else {
+					if (config.prettyFlow) {
+						writer.writeIndent(flowLevel * config.indentSize);
+					}
 					if (config.canonical || writer.column > config.wrapColumn) writer.writeIndent(indent);
 					states.add(0, S_FLOW_SEQUENCE_ITEM);
 					expectNode(false, true, false, false);
@@ -213,6 +216,9 @@ public class Emitter {
 				if (event.type == SEQUENCE_END) {
 					indent = indents.remove(0);
 					flowLevel--;
+					if (config.prettyFlow) {
+						writer.writeIndent(flowLevel * config.indentSize);
+					}
 					if (config.canonical) {
 						writer.writeIndent(indent);
 					}
@@ -220,6 +226,9 @@ public class Emitter {
 					state = states.remove(0);
 				} else {
 					writer.writeIndicator(",", false, false, false);
+					if (config.prettyFlow) {
+						writer.writeIndent(flowLevel * config.indentSize);
+					}
 					if (config.canonical || writer.column > config.wrapColumn) writer.writeIndent(indent);
 					states.add(0, S_FLOW_SEQUENCE_ITEM);
 					expectNode(false, true, false, false);
@@ -234,6 +243,9 @@ public class Emitter {
 					writer.writeIndicator("}", false, false, false);
 					state = states.remove(0);
 				} else {
+					if (config.prettyFlow) {
+						writer.writeIndent(flowLevel * config.indentSize);
+					}
 					if (config.canonical || writer.column > config.wrapColumn) writer.writeIndent(indent);
 					if (!config.canonical && checkSimpleKey()) {
 						states.add(0, S_FLOW_MAPPING_SIMPLE_VALUE);
@@ -266,6 +278,9 @@ public class Emitter {
 				if (event.type == MAPPING_END) {
 					indent = indents.remove(0);
 					flowLevel--;
+					if (config.prettyFlow) {
+						writer.writeIndent(flowLevel * config.indentSize);
+					}
 					if (config.canonical) {
 						writer.writeIndent(indent);
 					}
@@ -273,6 +288,9 @@ public class Emitter {
 					state = states.remove(0);
 				} else {
 					writer.writeIndicator(",", false, false, false);
+					if (config.prettyFlow) {
+						writer.writeIndent(flowLevel * config.indentSize);
+					}
 					if (config.canonical || writer.column > config.wrapColumn) writer.writeIndent(indent);
 					if (!config.canonical && checkSimpleKey()) {
 						states.add(0, S_FLOW_MAPPING_SIMPLE_VALUE);
