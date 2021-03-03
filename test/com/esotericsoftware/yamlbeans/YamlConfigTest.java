@@ -21,6 +21,7 @@ import com.esotericsoftware.yamlbeans.YamlConfig.Quote;
 import com.esotericsoftware.yamlbeans.YamlReader.YamlReaderException;
 import com.esotericsoftware.yamlbeans.scalar.DateSerializer;
 
+@SuppressWarnings("synthetic-access")
 public class YamlConfigTest {
 
 	private static final String LINE_SEPARATOR = System.getProperty("line.separator");
