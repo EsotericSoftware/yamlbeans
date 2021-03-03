@@ -137,14 +137,13 @@ class Beans {
 		if (name == null || name.length() == 0) throw new IllegalArgumentException("name cannot be null or empty.");
 		name = toJavaIdentifier(name);
 
-		Property property = null;
-		for (Field field : getAllFields(type)) {
-			if (field.getName().equals(name)) {
-				property = getProperty(type, beanProperties, privateFields, config, field);
-				break;
-			}
-		}
-		return property;
+		for (Field field : getAllFields(type))
+			if (field.getName().equals(name)) return getProperty(type, beanProperties, privateFields, config, field);
+
+		// If a property is not found, try prepending `_` for reserved field names (eg "class" in the data can be a "_class" field).
+		if (!name.startsWith("_")) return getProperty(type, "_" + name, beanProperties, privateFields, config);
+
+		return null;
 	}
 
 	private static Property getProperty(Class<?> type, boolean beanProperties, boolean privateFields, YamlConfig config,
