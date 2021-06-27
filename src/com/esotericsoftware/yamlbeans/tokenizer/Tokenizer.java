@@ -705,7 +705,7 @@ public class Tokenizer {
 		StringBuilder chunks = new StringBuilder();
 		forward();
 		Object[] chompi = scanBlockScalarIndicators();
-		boolean chomping = ((Boolean)chompi[0]).booleanValue();
+		int chomping = ((Integer)chompi[0]).intValue();
 		int increment = ((Integer)chompi[1]).intValue();
 		scanBlockScalarIgnoredLine();
 		int minIndent = indent + 1;
@@ -746,7 +746,9 @@ public class Tokenizer {
 				break;
 		}
 
-		if (chomping) {
+		if (chomping == 0) {
+			chunks.append(lineBreak);
+		} else if (chomping == 2) {
 			chunks.append(lineBreak);
 			chunks.append(breaks);
 		}
@@ -755,11 +757,11 @@ public class Tokenizer {
 	}
 
 	private Object[] scanBlockScalarIndicators () {
-		boolean chomping = false;
+		int chomping = 0;  // 0 = clip, 1 = strip, 2 = keep
 		int increment = -1;
 		char ch = peek();
 		if (ch == '-' || ch == '+') {
-			chomping = ch == '+';
+			chomping = ch == '-' ? 1 : 2;
 			forward();
 			ch = peek();
 			if (Character.isDigit(ch)) {
@@ -775,13 +777,13 @@ public class Tokenizer {
 			forward();
 			ch = peek();
 			if (ch == '-' || ch == '+') {
-				chomping = ch == '+';
+				chomping = ch == '-' ? 1 : 2;
 				forward();
 			}
 		}
 		if (NULL_BL_LINEBR.indexOf(peek()) == -1) throw new TokenizerException(
 			"While scanning a block scalar, expected chomping or indentation indicators but found: " + ch(peek()));
-		return new Object[] {Boolean.valueOf(chomping), increment};
+		return new Object[] {Integer.valueOf(chomping), increment};
 	}
 
 	private String scanBlockScalarIgnoredLine () {
