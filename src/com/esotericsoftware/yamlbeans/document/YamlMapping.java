@@ -1,6 +1,7 @@
 package com.esotericsoftware.yamlbeans.document;
 
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -73,7 +74,7 @@ public class YamlMapping extends YamlElement implements YamlDocument {
 	
 	@Override
 	public void emitEvent(Emitter emitter, WriteConfig config) throws EmitterException, IOException {
-		emitter.emit(new MappingStartEvent(anchor, tag, tag==null, false));
+		emitter.emit(new MappingStartEvent(anchor, tag, tag==null, config.isFlowStyle()));
 		for(YamlEntry entry : entries)
 			entry.emitEvent(emitter, config);
 		emitter.emit(Event.MAPPING_END);
@@ -140,5 +141,9 @@ public class YamlMapping extends YamlElement implements YamlDocument {
 
 	public void addElement(YamlElement element) throws YamlException {
 		throw new YamlException("Can only add element on sequence!");
+	}
+
+	public Iterator<YamlEntry> iterator() {
+		return entries.iterator();
 	}
 }

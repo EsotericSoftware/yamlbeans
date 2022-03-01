@@ -51,7 +51,7 @@ public class Parser {
 	Event peekedEvent;
 
 	public Parser (Reader reader) {
-		this(reader, new Version(1, 1));
+		this(reader, Version.DEFAULT_VERSION);
 	}
 
 	public Parser (Reader reader, Version defaultVersion) {
@@ -222,7 +222,7 @@ public class Parser {
 					if (tokenizer.peekNextTokenType() == ANCHOR) anchor = ((AnchorToken)tokenizer.getNextToken()).getInstanceName();
 				}
 				String tag = null;
-				if (tagHandle != null && !tagHandle.equals("!")) {
+				if (tagHandle != null) {
 					if (!tagHandles.containsKey(tagHandle)) throw new ParserException("Undefined tag handle: " + tagHandle);
 					tag = tagHandles.get(tagHandle) + tagSuffix;
 				} else
@@ -590,9 +590,9 @@ public class Parser {
 			DirectiveToken token = (DirectiveToken)tokenizer.getNextToken();
 			if (token.getDirective().equals("YAML")) {
 				if (documentVersion != null) throw new ParserException("Duplicate YAML directive.");
-				documentVersion = new Version(token.getValue());
-				if (documentVersion.major != 1)
-					throw new ParserException("Unsupported YAML version (1.x is required): " + documentVersion);
+				documentVersion = Version.getVersion(token.getValue());
+				if (documentVersion == null || documentVersion.getMajor() != 1)
+					throw new ParserException("Unsupported YAML version (1.x is required): " + token.getValue());
 			} else if (token.getDirective().equals("TAG")) {
 				String[] values = token.getValue().split(" ");
 				String handle = values[0];
@@ -610,7 +610,7 @@ public class Parser {
 
 		Map<String, String> tags = null;
 		if (!tagHandles.isEmpty()) tags = new HashMap(tagHandles);
-		Map<String, String> baseTags = version.minor == 0 ? DEFAULT_TAGS_1_0 : DEFAULT_TAGS_1_1;
+		Map<String, String> baseTags = version.getMinor() == 0 ? DEFAULT_TAGS_1_0 : DEFAULT_TAGS_1_1;
 		for (String key : baseTags.keySet())
 			if (!tagHandles.containsKey(key)) tagHandles.put(key, baseTags.get(key));
 		return new DocumentStartEvent(explicit, version, tags);

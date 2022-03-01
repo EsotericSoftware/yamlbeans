@@ -1,9 +1,13 @@
 package com.esotericsoftware.yamlbeans.document;
 
 import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 import org.junit.Test;
 
+import com.esotericsoftware.yamlbeans.Version;
 import com.esotericsoftware.yamlbeans.YamlConfig;
 import com.esotericsoftware.yamlbeans.YamlConfig.WriteClassName;
 import com.esotericsoftware.yamlbeans.YamlException;
@@ -130,6 +134,136 @@ public class YamlDocumentTest extends TestCase  {
 		assertEquals("- 123\n", actual);
 	}
 
+	@Test
+	public void testYamlSequenceIterator() throws YamlException {
+		YamlDocument yaml = readDocument("- 111\n- 222\n");
+		@SuppressWarnings("unchecked")
+		Iterator<YamlScalar> iterator = yaml.iterator();
+		assertEquals(true, iterator.hasNext());
+		YamlScalar yamlScalar = iterator.next();
+		assertEquals("111", yamlScalar.getValue());
+		assertEquals(true, iterator.hasNext());
+		yamlScalar = iterator.next();
+		assertEquals("222", yamlScalar.getValue());
+		assertEquals(false, iterator.hasNext());
+		try {
+			iterator.next();
+			fail("Already read to the end.");
+		} catch (Exception e) {
+		}
+	}
+
+	@Test
+	public void testYamlMappingIterator() throws YamlException {
+		YamlDocument yaml = readDocument("name: Andi\nage: 18\n");
+		@SuppressWarnings("unchecked")
+		Iterator<YamlEntry> iterator = yaml.iterator();
+		assertEquals(true, iterator.hasNext());
+		YamlEntry yamlEntry = iterator.next();
+		assertEquals("Andi", ((YamlScalar) yamlEntry.getValue()).getValue());
+		assertEquals(true, iterator.hasNext());
+		yamlEntry = iterator.next();
+		assertEquals("18", ((YamlScalar) yamlEntry.getValue()).getValue());
+		assertEquals(false, iterator.hasNext());
+		try {
+			iterator.next();
+			fail("Already read to the end.");
+		} catch (Exception e) {
+		}
+	}
+
+	@Test
+	public void testVersion1_0() throws YamlException {
+		String yaml = "version: !str 1.0";
+		YamlDocumentReader reader = new YamlDocumentReader(yaml, Version.V1_0);
+		YamlMapping yamlMapping = (YamlMapping) reader.read();
+		assertEquals("1.0", ((YamlScalar) yamlMapping.getEntry("version").getValue()).getValue());
+	}
+
+	@Test
+	public void testVersion1_0ThrowsYamlException() {
+		String yaml = "version: !!str 1.1";
+		YamlDocumentReader reader = new YamlDocumentReader(yaml, Version.V1_0);
+		try {
+			reader.read();
+			fail("1.0 Version tag is single '!'");
+		} catch (YamlException e) {
+		}
+	}
+
+	@Test
+	public void testVersion1_1() throws YamlException {
+		String yaml = "version: !!str 1.1";
+		YamlDocumentReader reader = new YamlDocumentReader(yaml, Version.V1_1);
+		YamlMapping yamlMapping = (YamlMapping) reader.read();
+		assertEquals("1.1", ((YamlScalar) yamlMapping.getEntry("version").getValue()).getValue());
+	}
+
+	@Test
+	public void testReadMultipleDocuments() throws YamlException {
+		String yaml = "key: 111\n---\nkey: 222";
+		YamlDocumentReader reader = new YamlDocumentReader(yaml);
+		assertEquals(true, reader.read() != null);
+		assertEquals(true, reader.read() != null);
+		assertEquals(true, reader.read() == null);
+		assertEquals(true, reader.read() == null);
+	}
+
+	@Test
+	public void testReadThrowsYamlException() {
+		String yaml = "\tkey: value";
+		YamlDocumentReader reader = new YamlDocumentReader(yaml);
+		try {
+			reader.read();
+			fail("Tabs cannot be used for indentation.");
+		} catch (YamlException e) {
+		}
+	}
+
+	@Test
+	public void testReadAll() throws YamlException {
+
+		StringBuilder sb = new StringBuilder();
+		sb.append("&1 scalar").append("\n");
+		sb.append("---\n").append("*1").append("\n");
+		sb.append("---\n").append("key: value").append("\n");
+		sb.append("---\n").append("- 1\n").append("- 2\n").append("- 3\n");
+		YamlDocumentReader reader = new YamlDocumentReader(sb.toString());
+		Iterator<YamlElement> iterator = reader.readAll(YamlElement.class);
+		List<YamlElement> list = new ArrayList<YamlElement>();
+		while (iterator.hasNext()) {
+			list.add(iterator.next());
+		}
+		assertEquals(4, list.size());
+		assertEquals(true, YamlScalar.class == list.get(0).getClass());
+		assertEquals(true, YamlAlias.class == list.get(1).getClass());
+		assertEquals(true, YamlMapping.class == list.get(2).getClass());
+		assertEquals(true, YamlSequence.class == list.get(3).getClass());
+	}
+
+	@Test
+	public void testReadAllCallingNextThrowsRuntimeException() {
+		String yaml = "\ttest";
+		YamlDocumentReader reader = new YamlDocumentReader(yaml);
+		Iterator<YamlElement> iterator = reader.readAll(YamlElement.class);
+		try {
+			iterator.next();
+			fail("");
+		} catch (Exception e) {
+		}
+	}
+
+	@Test
+	public void testReadAllCallingRemoveUnsupportedOperationException() {
+		String yaml = "test";
+		YamlDocumentReader reader = new YamlDocumentReader(yaml);
+		Iterator<YamlElement> iterator = reader.readAll(YamlElement.class);
+		try {
+			iterator.remove();
+			fail("");
+		} catch (Exception e) {
+		}
+	}
 
 	private YamlDocument readDocument(String yaml) throws YamlException {
 		YamlDocumentReader reader = new YamlDocumentReader(yaml);

@@ -4,6 +4,7 @@ import static com.esotericsoftware.yamlbeans.parser.EventType.*;
 
 import java.io.Reader;
 import java.io.StringReader;
+import java.util.Iterator;
 
 import com.esotericsoftware.yamlbeans.Version;
 import com.esotericsoftware.yamlbeans.YamlException;
@@ -39,6 +40,11 @@ public class YamlDocumentReader {
 	}
 
 	public YamlDocument read() throws YamlException {
+		return read(YamlDocument.class);
+	}
+
+	@SuppressWarnings("unchecked")
+	public <T> T read(Class<T> type) throws YamlException {
 		try {
 			while (true) {
 				Event event = parser.peekNextEvent();
@@ -53,7 +59,7 @@ public class YamlDocumentReader {
 					return null;
 				case DOCUMENT_START:
 					parser.getNextEvent(); // consume it
-					return readDocument();
+					return (T)readDocument();
 				default:
 					throw new IllegalStateException();	
 				}
@@ -63,19 +69,53 @@ public class YamlDocumentReader {
 		} catch (TokenizerException ex) {
 			throw new YamlException("Error tokenizing YAML.", ex);
 		}
-		
 	}
 
-	private YamlDocument readDocument() {
+	public <T> Iterator<T> readAll(final Class<T> type) {
+		Iterator<T> iterator = new Iterator<T>() {
+
+			public boolean hasNext() {
+				Event event = parser.peekNextEvent();
+				return event != null && event.type != STREAM_END;
+			}
+
+			public T next() {
+				try {
+					return read(type);
+				} catch (YamlException e) {
+					throw new RuntimeException("Iterative reading documents exception", e);
+				}
+			}
+
+			public void remove() {
+				throw new UnsupportedOperationException();
+			}
+		};
+
+		return iterator;
+	}
+
+	private YamlElement readDocument() {
+		YamlElement yamlElement = null;
 		Event event = parser.peekNextEvent();
 		switch (event.type) {
-			case MAPPING_START:
-				return readMapping();
-			case SEQUENCE_START:
-				return readSequence();
-			default:
-				throw new IllegalStateException();
+		case SCALAR:
+			yamlElement = readScalar();
+			break;
+		case ALIAS:
+			yamlElement = readAlias();
+			break;
+		case MAPPING_START:
+			yamlElement = readMapping();
+			break;
+		case SEQUENCE_START:
+			yamlElement = readSequence();
+			break;
+		default:
+			throw new IllegalStateException();
 		}
+		parser.getNextEvent(); // consume it(DOCUMENT_END)
+		return yamlElement;
 	}
 
 	private YamlMapping readMapping() {
