@@ -46,7 +46,7 @@ import com.esotericsoftware.yamlbeans.tokenizer.Tokenizer.TokenizerException;
 
 /** Deserializes Java objects from YAML.
  * @author <a href="mailto:misc@n4te.com">Nathan Sweet</a> */
-public class YamlReader {
+public class YamlReader implements AutoCloseable {
 	private final YamlConfig config;
 	Parser parser;
 	private final Map<String, Object> anchors = new HashMap();

@@ -47,7 +47,7 @@ import com.esotericsoftware.yamlbeans.scalar.ScalarSerializer;
 
 /** Serializes Java objects as YAML.
  * @author <a href="mailto:misc@n4te.com">Nathan Sweet</a> */
-public class YamlWriter {
+public class YamlWriter implements AutoCloseable {
 	private final YamlConfig config;
 	private final Emitter emitter;
 	private boolean started;
