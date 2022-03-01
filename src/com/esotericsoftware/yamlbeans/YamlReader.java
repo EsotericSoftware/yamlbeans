@@ -22,6 +22,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
+import java.io.StringWriter;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -32,6 +33,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import com.esotericsoftware.yamlbeans.Beans.Property;
+import com.esotericsoftware.yamlbeans.YamlConfig.WriteClassName;
 import com.esotericsoftware.yamlbeans.parser.AliasEvent;
 import com.esotericsoftware.yamlbeans.parser.CollectionStartEvent;
 import com.esotericsoftware.yamlbeans.parser.Event;
@@ -476,6 +478,12 @@ public class YamlReader {
 
 	public static void main (String[] args) throws Exception {
 		YamlReader reader = new YamlReader(new FileReader("test/test.yml"));
-		System.out.println(reader.read());
+		Object object = reader.read();
+		System.out.println(object);
+		StringWriter string = new StringWriter();
+		YamlWriter writer = new YamlWriter(string);
+		writer.write(object);
+		writer.close();
+		System.out.println(string);
 	}
 }

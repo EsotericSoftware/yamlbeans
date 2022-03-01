@@ -221,7 +221,7 @@ public class YamlConfig {
 			emitterConfig.setEscapeUnicode(escapeUnicode);
 		}
 
-		/** based on Ennumeration parameter, class name tags will be output. */
+		/** Determines when class name tags are output. */
 		public void setWriteClassname (WriteClassName write) {
 			writeClassName = write;
 		}
