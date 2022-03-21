@@ -8,7 +8,7 @@
 而**YamlBeans**则可以让Java对象和YAML格式之间的转换（序列化和反序列化）变得更容易。
 
 Maven 仓库:
-http://repo1.maven.org/maven2/com/esotericsoftware/yamlbeans/yamlbeans/
+https://repo1.maven.org/maven2/com/esotericsoftware/yamlbeans/yamlbeans/
 
 ## 基本的反序列化
 
