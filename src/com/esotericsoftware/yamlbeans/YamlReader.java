@@ -84,19 +84,24 @@ public class YamlReader implements AutoCloseable {
 	}
 
 	/** Reads the next YAML document and deserializes it into an object. The type of object is defined by the YAML tag. If there is
-	 * no YAML tag, the object will be an {@link ArrayList}, {@link HashMap}, or String. */
+	 * no YAML tag, the object will be an {@link ArrayList}, {@link HashMap}, or String.
+	 * <p>
+	 * This method creates and configures an instance of a class specified by the YAML data, so should be used only with YAML data
+	 * from a trusted source. */
 	public Object read () throws YamlException {
 		return read(null);
 	}
 
 	/** Reads an object of the specified type from YAML.
-	 * @param type The type of object to read. If null, behaves the same as {{@link #read()}. */
+	 * @param type The type of object to read. If null, behaves the same as {{@link #read()}.
+	 * @throws YamlReaderException if the YAML data specifies a type that is incompatible with the specified type. */
 	public <T> T read (Class<T> type) throws YamlException {
 		return read(type, null);
 	}
 
 	/** Reads an array, Map, List, or Collection object of the specified type from YAML, using the specified element type.
-	 * @param type The type of object to read. If null, behaves the same as {{@link #read()}. */
+	 * @param type The type of object to read. If null, behaves the same as {{@link #read()}.
+	 * @throws YamlReaderException if the YAML data specifies a type that is incompatible with the specified type. */
 	public <T> T read (Class<T> type, Class elementType) throws YamlException {
 		anchors.clear();
 		try {
@@ -116,13 +121,10 @@ public class YamlReader implements AutoCloseable {
 		}
 	}
 
-	/** Reads all documents from YAML into Objects.
-	 * 
-	 * @param type specify Object type
-	 * @return an iterator reads documents in order */
+	/** Returns an iterator that reads all documents from YAML into objects.
+	 * @param type The type of object to read. If null, behaves the same as {{@link #read()}. */
 	public <T> Iterator<T> readAll (final Class<T> type) {
-		Iterator<T> iterator = new Iterator<T>() {
-
+		return new Iterator<T>() {
 			public boolean hasNext () {
 				Event event = parser.peekNextEvent();
 				return event != null && event.type != STREAM_END;
@@ -131,8 +133,8 @@ public class YamlReader implements AutoCloseable {
 			public T next () {
 				try {
 					return read(type);
-				} catch (YamlException e) {
-					throw new RuntimeException("Iterative reading documents exception", e);
+				} catch (YamlException ex) {
+					throw new RuntimeException("Error reading YAML document for iterator.", ex);
 				}
 			}
 
@@ -140,11 +142,11 @@ public class YamlReader implements AutoCloseable {
 				throw new UnsupportedOperationException();
 			}
 		};
-
-		return iterator;
 	}
 
-	/** Reads an object from the YAML. Can be overidden to take some action for any of the objects returned. */
+	/** Reads an object from the YAML. Can be overidden to take some action for any of the objects returned.
+	 * @param type May be null.
+	 * @throws YamlReaderException if the YAML data specifies a type that is incompatible with the specified type. */
 	protected Object readValue (Class type, Class elementType, Class defaultType)
 		throws YamlException, ParserException, TokenizerException {
 		String tag = null, anchor = null;
@@ -175,9 +177,7 @@ public class YamlReader implements AutoCloseable {
 	private Class<?> chooseType (String tag, Class<?> defaultType, Class<?> providedType) throws YamlReaderException {
 		if (tag != null && config.readConfig.classTags) {
 			Class<?> userConfiguredByTag = config.tagToClass.get(tag);
-			if (userConfiguredByTag != null) {
-				return userConfiguredByTag;
-			}
+			if (userConfiguredByTag != null) return userConfiguredByTag;
 
 			ClassLoader classLoader = (config.readConfig.classLoader == null ? this.getClass().getClassLoader()
 				: config.readConfig.classLoader);
@@ -186,6 +186,10 @@ public class YamlReader implements AutoCloseable {
 			try {
 				Class<?> loadedFromTag = findTagClass(tag, classLoader);
 				if (loadedFromTag != null) {
+					if (!providedType.isAssignableFrom(loadedFromTag)) {
+						throw new YamlReaderException("Class specified by tag is incompatible with expected type: "
+							+ loadedFromTag.getName() + " (expected " + providedType.getName() + ")");
+					}
 					return loadedFromTag;
 				}
 			} catch (ClassNotFoundException e) {
@@ -193,35 +197,28 @@ public class YamlReader implements AutoCloseable {
 			}
 		}
 
-		if (defaultType != null) {
-			return defaultType;
-		}
+		if (defaultType != null) return defaultType;
 
-		// This may be null.
-		return providedType;
+		return providedType; // May be null.
 	}
 
 	/** Used during reading when a tag is present, and {@link YamlConfig#setClassTag(String, Class)} was not used for that tag.
 	 * Attempts to load the class corresponding to that tag.
-	 * 
+	 * <p>
 	 * If this returns a non-null Class, that will be used as the deserialization type regardless of whether a type was explicitly
 	 * asked for or if a default type exists.
-	 * 
+	 * <p>
 	 * If this returns null, no guidance will be provided by the tag and we will fall back to the default type or a requested
 	 * target type, if any exist.
-	 * 
+	 * <p>
 	 * If this throws a ClassNotFoundException, parsing will fail.
-	 * 
-	 * The default implementation is simply
-	 * 
-	 * <pre>
-	 *  {@code Class.forName(tag, true, classLoader);}
-	 * </pre>
-	 * 
-	 * and never returns null.
-	 * 
-	 * You can override this to handle cases where you do not want to respect the type tags found in a document - e.g., if they
-	 * were output by another program using classes that do not exist on your classpath. */
+	 * <p>
+	 * The default implementation is simply {@code
+	 * Class.forName(tag, true, classLoader);
+	 * } and never returns null.
+	 * <p>
+	 * You can override this to handle cases where you do not want to respect the type tags found in a document, eg if they were
+	 * output by another program using classes that do not exist on your classpath. */
 	protected Class<?> findTagClass (String tag, ClassLoader classLoader) throws ClassNotFoundException {
 		return Class.forName(tag, true, classLoader);
 	}
