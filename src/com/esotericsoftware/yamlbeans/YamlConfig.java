@@ -142,7 +142,7 @@ public class YamlConfig {
 		WriteClassName writeClassName = WriteClassName.AUTO;
 		Quote quote = Quote.NONE;
 		Version version;
-		Map<String,String> tags;
+		Map<String, String> tags;
 		boolean flowStyle;
 		EmitterConfig emitterConfig = new EmitterConfig();
 
@@ -201,7 +201,7 @@ public class YamlConfig {
 		}
 
 		/** Sets the YAML tags to output. */
-		public void setTags(Map<String, String> tags) {
+		public void setTags (Map<String, String> tags) {
 			this.tags = tags;
 		}
 
@@ -240,21 +240,21 @@ public class YamlConfig {
 			this.quote = quote;
 		}
 
-		public Quote getQuote() {
+		public Quote getQuote () {
 			return quote;
 		}
 
 		/** If true, the YAML output will be flow. Default is false. */
-		public void setFlowStyle(boolean flowStyle) {
+		public void setFlowStyle (boolean flowStyle) {
 			this.flowStyle = flowStyle;
 		}
 
-		public boolean isFlowStyle() {
+		public boolean isFlowStyle () {
 			return flowStyle;
 		}
 
 		/** If true, the YAML output will be pretty flow. Default is false. */
-		public void setPrettyFlow(boolean prettyFlow) {
+		public void setPrettyFlow (boolean prettyFlow) {
 			emitterConfig.setPrettyFlow(prettyFlow);
 		}
 	}
@@ -310,6 +310,11 @@ public class YamlConfig {
 			this.classTags = classTags;
 		}
 
+		/** When false, the merge key (<<) is not used to merge values into the current map. Default is true. */
+		public void setAutoMerge (boolean autoMerge) {
+			this.autoMerge = autoMerge;
+		}
+
 		/** When true, if the type for a scalar value is unknown and it looks like a number, it is read as a double or long. When
 		 * false, if the type for a scalar value is unknown it is always read a string. Default is true. */
 		public void setGuessNumberTypes (boolean guessNumberTypes) {
@@ -335,7 +340,7 @@ public class YamlConfig {
 			this.c = c;
 		}
 
-		public char getStyle() {
+		public char getStyle () {
 			return c;
 		}
 	}
