@@ -33,11 +33,17 @@ public class SafeYamlConfig extends YamlConfig {
         }
 
         @Override
-        public void setClassTags(boolean anchors) {
+        public void setClassTags(boolean classTags) {
+            if(classTags) {
+                throw new IllegalArgumentException("Class Tags cannot be enabled in SafeYamlConfig.");
+            }
         }
 
         @Override
         public void setAnchors(boolean anchors) {
+            if(anchors) {
+                throw new IllegalArgumentException("Anchors cannot be enabled in SafeYamlConfig.");
+            }
         }
     }
 
