@@ -78,12 +78,9 @@ public class YamlReader implements AutoCloseable {
 		return anchors.get(alias);
 	}
 
-	private void addAnchor(String key, Object value) {
-		if(config.readConfig.anchors) {
-			anchors.put(key, value);
-		}
+	private void addAnchor (String key, Object value) {
+		if (config.readConfig.anchors) anchors.put(key, value);
 	}
-
 
 	public void close () throws IOException {
 		parser.close();
@@ -164,7 +161,7 @@ public class YamlReader implements AutoCloseable {
 			parser.getNextEvent();
 			anchor = ((AliasEvent)event).anchor;
 			Object value = anchors.get(anchor);
-			if (value == null&&config.readConfig.anchors) throw new YamlReaderException("Unknown anchor: " + anchor);
+			if (value == null && config.readConfig.anchors) throw new YamlReaderException("Unknown anchor: " + anchor);
 			return value;
 		case MAPPING_START:
 		case SEQUENCE_START:
@@ -244,9 +241,7 @@ public class YamlReader implements AutoCloseable {
 					if (value != null) {
 						Number number = valueConvertedNumber(value);
 						if (number != null) {
-							if (anchor != null) {
-								addAnchor(anchor, number);
-							}
+							if (anchor != null) addAnchor(anchor, number);
 							parser.getNextEvent();
 							return number;
 						}
@@ -291,9 +286,7 @@ public class YamlReader implements AutoCloseable {
 					convertedValue = Byte.decode(value);
 				} else
 					throw new YamlException("Unknown field type.");
-				if (anchor != null) {
-					addAnchor(anchor, convertedValue);
-				}
+				if (anchor != null) addAnchor(anchor, convertedValue);
 				return convertedValue;
 			} catch (Exception ex) {
 				throw new YamlReaderException("Unable to convert value to required type \"" + type + "\": " + value, ex);

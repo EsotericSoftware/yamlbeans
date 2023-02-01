@@ -267,9 +267,6 @@ public class YamlConfig {
 		boolean autoMerge = true;
 		boolean classTags = true;
 		boolean guessNumberTypes;
-
-
-
 		boolean anchors = true;
 
 		ReadConfig () {
@@ -325,10 +322,10 @@ public class YamlConfig {
 			this.guessNumberTypes = guessNumberTypes;
 		}
 
-		public void setAnchors(boolean anchors) {
+		/** When false, anchors in the YAML are ignored. Default is true. */
+		public void setAnchors (boolean anchors) {
 			this.anchors = anchors;
 		}
-
 	}
 
 	static class ConstructorParameters {
