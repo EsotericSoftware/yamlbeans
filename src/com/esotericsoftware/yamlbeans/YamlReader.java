@@ -78,6 +78,13 @@ public class YamlReader implements AutoCloseable {
 		return anchors.get(alias);
 	}
 
+	private void addAnchor(String key, Object value) {
+		if(config.readConfig.anchors) {
+			anchors.put(key, value);
+		}
+	}
+
+
 	public void close () throws IOException {
 		parser.close();
 		anchors.clear();
@@ -157,7 +164,7 @@ public class YamlReader implements AutoCloseable {
 			parser.getNextEvent();
 			anchor = ((AliasEvent)event).anchor;
 			Object value = anchors.get(anchor);
-			if (value == null) throw new YamlReaderException("Unknown anchor: " + anchor);
+			if (value == null&&config.readConfig.anchors) throw new YamlReaderException("Unknown anchor: " + anchor);
 			return value;
 		case MAPPING_START:
 		case SEQUENCE_START:
@@ -238,7 +245,7 @@ public class YamlReader implements AutoCloseable {
 						Number number = valueConvertedNumber(value);
 						if (number != null) {
 							if (anchor != null) {
-								anchors.put(anchor, number);
+								addAnchor(anchor, number);
 							}
 							parser.getNextEvent();
 							return number;
@@ -284,7 +291,9 @@ public class YamlReader implements AutoCloseable {
 					convertedValue = Byte.decode(value);
 				} else
 					throw new YamlException("Unknown field type.");
-				if (anchor != null) anchors.put(anchor, convertedValue);
+				if (anchor != null) {
+					addAnchor(anchor, convertedValue);
+				}
 				return convertedValue;
 			} catch (Exception ex) {
 				throw new YamlReaderException("Unable to convert value to required type \"" + type + "\": " + value, ex);
@@ -298,7 +307,7 @@ public class YamlReader implements AutoCloseable {
 				if (event.type != SCALAR) throw new YamlReaderException("Expected scalar for type '" + type
 					+ "' to be deserialized by scalar serializer '" + serializer.getClass().getName() + "' but found: " + event.type);
 				Object value = serializer.read(((ScalarEvent)event).value);
-				if (anchor != null) anchors.put(anchor, value);
+				if (anchor != null) addAnchor(anchor, value);
 				return value;
 			}
 		}
@@ -326,7 +335,7 @@ public class YamlReader implements AutoCloseable {
 			} catch (InvocationTargetException ex) {
 				throw new YamlReaderException("Error creating object.", ex);
 			}
-			if (anchor != null) anchors.put(anchor, object);
+			if (anchor != null) addAnchor(anchor, object);
 			ArrayList keys = new ArrayList();
 			while (true) {
 				if (parser.peekNextEvent().type == MAPPING_END) {
@@ -404,7 +413,7 @@ public class YamlReader implements AutoCloseable {
 			if (object instanceof DeferredConstruction) {
 				try {
 					object = ((DeferredConstruction)object).construct();
-					if (anchor != null) anchors.put(anchor, object); // Update anchor with real object.
+					if (anchor != null) addAnchor(anchor, object); // Update anchor with real object.
 				} catch (InvocationTargetException ex) {
 					throw new YamlReaderException("Error creating object.", ex);
 				}
@@ -426,7 +435,7 @@ public class YamlReader implements AutoCloseable {
 				elementType = type.getComponentType();
 			} else
 				throw new YamlReaderException("A sequence is not a valid value for the type: " + type.getName());
-			if (!type.isArray() && anchor != null) anchors.put(anchor, collection);
+			if (!type.isArray() && anchor != null) addAnchor(anchor, collection);
 			while (true) {
 				event = parser.peekNextEvent();
 				if (event.type == SEQUENCE_END) {
@@ -440,7 +449,7 @@ public class YamlReader implements AutoCloseable {
 			int i = 0;
 			for (Object object : collection)
 				Array.set(array, i++, object);
-			if (anchor != null) anchors.put(anchor, array);
+			if (anchor != null) addAnchor(anchor, array);
 			return array;
 		}
 		default:
