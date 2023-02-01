@@ -37,7 +37,7 @@ public class YamlConfig {
 	public final WriteConfig writeConfig = new WriteConfig();
 
 	/** Configuration for reading YAML. */
-	public final ReadConfig readConfig = new ReadConfig();
+	public ReadConfig readConfig = new ReadConfig();
 
 	final Map<String, String> classNameToTag = new HashMap();
 	final Map<String, Class> tagToClass = new HashMap();
@@ -268,6 +268,10 @@ public class YamlConfig {
 		boolean classTags = true;
 		boolean guessNumberTypes;
 
+
+
+		boolean anchors = true;
+
 		ReadConfig () {
 		}
 
@@ -315,6 +319,11 @@ public class YamlConfig {
 		public void setGuessNumberTypes (boolean guessNumberTypes) {
 			this.guessNumberTypes = guessNumberTypes;
 		}
+
+		public void setAnchors(boolean anchors) {
+			this.anchors = anchors;
+		}
+
 	}
 
 	static class ConstructorParameters {
