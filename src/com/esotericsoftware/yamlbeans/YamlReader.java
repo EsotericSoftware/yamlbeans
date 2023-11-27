@@ -190,7 +190,7 @@ public class YamlReader implements AutoCloseable {
 			try {
 				Class<?> loadedFromTag = findTagClass(tag, classLoader);
 				if (loadedFromTag != null) {
-					if (!providedType.isAssignableFrom(loadedFromTag)) {
+					if (providedType != null && !providedType.isAssignableFrom(loadedFromTag)) {
 						throw new YamlReaderException("Class specified by tag is incompatible with expected type: "
 							+ loadedFromTag.getName() + " (expected " + providedType.getName() + ")");
 					}
