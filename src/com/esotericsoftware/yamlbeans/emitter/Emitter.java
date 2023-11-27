@@ -18,20 +18,18 @@ package com.esotericsoftware.yamlbeans.emitter;
 
 import static com.esotericsoftware.yamlbeans.parser.EventType.*;
 
+import com.esotericsoftware.yamlbeans.Version;
 import com.esotericsoftware.yamlbeans.parser.CollectionStartEvent;
 import com.esotericsoftware.yamlbeans.parser.DocumentEndEvent;
 import com.esotericsoftware.yamlbeans.parser.DocumentStartEvent;
 import com.esotericsoftware.yamlbeans.parser.Event;
 import com.esotericsoftware.yamlbeans.parser.MappingStartEvent;
 import com.esotericsoftware.yamlbeans.parser.NodeEvent;
-import com.esotericsoftware.yamlbeans.parser.Parser;
 import com.esotericsoftware.yamlbeans.parser.ScalarEvent;
 import com.esotericsoftware.yamlbeans.parser.SequenceStartEvent;
 
 import java.io.BufferedWriter;
-import java.io.FileReader;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -140,11 +138,11 @@ public class Emitter {
 				if (event.type == DOCUMENT_START) {
 					DocumentStartEvent documentStartEvent = (DocumentStartEvent)event;
 					if (documentStartEvent.version != null) {
-						if (documentStartEvent.version.major != 1)
+						if (documentStartEvent.version.getMajor() != 1)
 							throw new EmitterException("Unsupported YAML version: " + documentStartEvent.version);
 						writer.writeVersionDirective(documentStartEvent.version.toString());
 					}
-					if ((documentStartEvent.version != null && documentStartEvent.version.equals(1, 0)) || config.version.equals(1, 0)) {
+					if ((documentStartEvent.version == Version.V1_0)) {
 						isVersion10 = true;
 						tagPrefixes = new HashMap(DEFAULT_TAG_PREFIXES_1_0);
 					} else
@@ -204,6 +202,9 @@ public class Emitter {
 					writer.writeIndicator("]", false, false, false);
 					state = states.remove(0);
 				} else {
+					if (config.prettyFlow) {
+						writer.writeIndent(flowLevel * config.indentSize);
+					}
 					if (config.canonical || writer.column > config.wrapColumn) writer.writeIndent(indent);
 					states.add(0, S_FLOW_SEQUENCE_ITEM);
 					expectNode(false, true, false, false);
@@ -215,14 +216,19 @@ public class Emitter {
 				if (event.type == SEQUENCE_END) {
 					indent = indents.remove(0);
 					flowLevel--;
+					if (config.prettyFlow) {
+						writer.writeIndent(flowLevel * config.indentSize);
+					}
 					if (config.canonical) {
-						writer.writeIndicator(",", false, false, false);
 						writer.writeIndent(indent);
 					}
 					writer.writeIndicator("]", false, false, false);
 					state = states.remove(0);
 				} else {
 					writer.writeIndicator(",", false, false, false);
+					if (config.prettyFlow) {
+						writer.writeIndent(flowLevel * config.indentSize);
+					}
 					if (config.canonical || writer.column > config.wrapColumn) writer.writeIndent(indent);
 					states.add(0, S_FLOW_SEQUENCE_ITEM);
 					expectNode(false, true, false, false);
@@ -237,6 +243,9 @@ public class Emitter {
 					writer.writeIndicator("}", false, false, false);
 					state = states.remove(0);
 				} else {
+					if (config.prettyFlow) {
+						writer.writeIndent(flowLevel * config.indentSize);
+					}
 					if (config.canonical || writer.column > config.wrapColumn) writer.writeIndent(indent);
 					if (!config.canonical && checkSimpleKey()) {
 						states.add(0, S_FLOW_MAPPING_SIMPLE_VALUE);
@@ -269,14 +278,19 @@ public class Emitter {
 				if (event.type == MAPPING_END) {
 					indent = indents.remove(0);
 					flowLevel--;
+					if (config.prettyFlow) {
+						writer.writeIndent(flowLevel * config.indentSize);
+					}
 					if (config.canonical) {
-						writer.writeIndicator(",", false, false, false);
 						writer.writeIndent(indent);
 					}
 					writer.writeIndicator("}", false, false, false);
 					state = states.remove(0);
 				} else {
 					writer.writeIndicator(",", false, false, false);
+					if (config.prettyFlow) {
+						writer.writeIndent(flowLevel * config.indentSize);
+					}
 					if (config.canonical || writer.column > config.wrapColumn) writer.writeIndent(indent);
 					if (!config.canonical && checkSimpleKey()) {
 						states.add(0, S_FLOW_MAPPING_SIMPLE_VALUE);
@@ -526,14 +540,20 @@ public class Emitter {
 		ScalarEvent ev = (ScalarEvent)event;
 		if (analysis == null) analysis = ScalarAnalysis.analyze(ev.value, config.escapeUnicode);
 		if (ev.style == '"' || config.canonical) return '"';
-		if (ev.style == 0 && !(simpleKeyContext && (analysis.empty || analysis.multiline))
-			&& (flowLevel != 0 && analysis.allowFlowPlain || flowLevel == 0 && analysis.allowBlockPlain)) return 0;
-		if (ev.style == 0 && ev.implicit[0] && !(simpleKeyContext && (analysis.empty || analysis.multiline))
-			&& (flowLevel != 0 && analysis.allowFlowPlain || flowLevel == 0 && analysis.allowBlockPlain)) return 0;
-		if ((ev.style == '|' || ev.style == '>') && flowLevel == 0 && analysis.allowBlock) return '\'';
-		if ((ev.style == 0 || ev.style == '\'') && analysis.allowSingleQuoted && !(simpleKeyContext && analysis.multiline))
+		if ((ev.style == 0 || ev.style == '|' || ev.style == '>')
+				&& !(simpleKeyContext && (analysis.empty || analysis.multiline))
+				&& ((flowLevel != 0 && analysis.allowFlowPlain) || (flowLevel == 0 && analysis.allowBlockPlain))) {
+			return 0;
+		}
+		if ((ev.style == 0 || ev.style == '\'') && analysis.allowSingleQuoted
+				&& !(simpleKeyContext && analysis.multiline)) {
 			return '\'';
-		if (ev.style == 0 && analysis.multiline && flowLevel == 0 && analysis.allowBlock) return '|';
+		}
+		if ((ev.style == 0 || ev.style == '|' || ev.style == '>') && analysis.multiline && flowLevel == 0
+				&& analysis.allowBlock) {
+			return ev.style == 0 ? '|' : ev.style;
+		}
+
 		return '"';
 	}
 
@@ -639,15 +659,5 @@ public class Emitter {
 
 		DEFAULT_TAG_PREFIXES_1_1.put("!", "!");
 		DEFAULT_TAG_PREFIXES_1_1.put("tag:yaml.org,2002:", "!!");
-	}
-
-	public static void main (String[] args) throws IOException {
-		Parser parser = new Parser(new FileReader("test/test.yml"));
-		Emitter emitter = new Emitter(new OutputStreamWriter(System.out));
-		while (true) {
-			Event event = parser.getNextEvent();
-			if (event == null) break;
-			emitter.emit(event);
-		}
 	}
 }

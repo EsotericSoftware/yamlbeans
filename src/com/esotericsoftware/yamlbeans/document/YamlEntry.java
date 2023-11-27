@@ -57,7 +57,7 @@ public class YamlEntry {
 	public void emitEvent(Emitter emitter, WriteConfig config) throws EmitterException, IOException {
 		key.emitEvent(emitter, config);
 		if(value==null)
-			emitter.emit(new ScalarEvent(null, null, new boolean[] {true, true}, null, (char)0));
+			emitter.emit(new ScalarEvent(null, null, new boolean[] {true, true}, null, config.getQuote().getStyle()));
 		else
 			value.emitEvent(emitter, config);
 	}

@@ -12,15 +12,15 @@
 	<name>YamlBeans</name>
 	<groupId>com.esotericsoftware.yamlbeans</groupId>
 	<artifactId>yamlbeans</artifactId>
-	<version>1.13</version>
+	<version>1.18-SNAPSHOT</version>
 
 	<description>Java object graphs, to and from YAML</description>
 	<url>https://github.com/EsotericSoftware/yamlbeans</url>
 
 	<licenses>
 		<license>
-			<name>New BSD License</name>
-			<url>http://www.opensource.org/licenses/bsd-license.php</url>
+			<name>MIT License</name>
+			<url>https://opensource.org/licenses/MIT</url>
 			<distribution>repo</distribution>
 		</license>
 	</licenses>
@@ -144,49 +144,65 @@
 	</contributors>
 
 	<profiles>
-		<profile>
-			<id>release-sign-artifacts</id>
-			<activation>
-				<property>
-					<name>performRelease</name>
-					<value>true</value>
-				</property>
-			</activation>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.nuiton</groupId>
-						<artifactId>helper-maven-plugin</artifactId>
-						<executions>
-							<execution>
-								<id>get-pgp-passphrase</id>
-								<goals>
-									<goal>share-server-secret</goal>
-								</goals>
-								<phase>verify</phase>
-								<configuration>
-									<serverId>${gpg.serverId}</serverId>
-									<usernameOut>gpg.keyname</usernameOut>
-									<passwordOut>gpg.passphrase</passwordOut>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-					<plugin>
-						<artifactId>maven-gpg-plugin</artifactId>
-						<executions>
-							<execution>
-								<id>sign-artifacts</id>
-								<phase>verify</phase>
-								<goals>
-									<goal>sign</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
+	    <profile>
+	        <id>release-sign-artifacts</id>
+	        <distributionManagement>
+	            <snapshotRepository>
+	                <id>nexus-release</id>
+	                <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+	            </snapshotRepository>
+	            <repository>
+	                <id>nexus-release</id>
+	                <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+	            </repository>
+	        </distributionManagement>
+	        <build>
+	            <plugins>
+	                <!-- Source -->
+	                <plugin>
+	                    <groupId>org.apache.maven.plugins</groupId>
+	                    <artifactId>maven-source-plugin</artifactId>
+	                    <version>2.2.1</version>
+	                    <executions>
+	                        <execution>
+	                            <phase>package</phase>
+	                            <goals>
+	                                <goal>jar-no-fork</goal>
+	                            </goals>
+	                        </execution>
+	                    </executions>
+	                </plugin>
+	                <!-- Javadoc -->
+	                <plugin>
+	                    <groupId>org.apache.maven.plugins</groupId>
+	                    <artifactId>maven-javadoc-plugin</artifactId>
+	                    <version>2.9.1</version>
+	                    <executions>
+	                        <execution>
+	                            <phase>package</phase>
+	                            <goals>
+	                                <goal>jar</goal>
+	                            </goals>
+	                        </execution>
+	                    </executions>
+	                </plugin>
+	                <plugin>
+	                    <groupId>org.apache.maven.plugins</groupId>
+	                    <artifactId>maven-gpg-plugin</artifactId>
+	                    <version>1.5</version>
+	                    <executions>
+	                        <execution>
+	                            <id>sign-artifacts</id>
+	                            <phase>verify</phase>
+	                            <goals>
+	                                <goal>sign</goal>
+	                            </goals>
+	                        </execution>
+	                    </executions>
+	                </plugin>
+	            </plugins>
+	        </build>
+	    </profile>
 	</profiles>
 
 </project>

@@ -16,10 +16,15 @@
 
 package com.esotericsoftware.yamlbeans;
 
-import java.io.StringReader;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
+
+import com.esotericsoftware.yamlbeans.YamlReader.YamlReaderException;
 
 import junit.framework.TestCase;
 
@@ -30,7 +35,7 @@ public class YamlReaderTest extends TestCase {
 		"stringValue: moo\ufec9moo\n" + //
 			"intValue: !!int 123\n" + //
 			"floatValue: 0.3\n" + //
-			"doubleValue: 0.0002\n" + //
+			"doubleValue: 0.0002 # comment\n" + //
 			"longValue: 999999\n" + //
 			"shortValue: 125\n" + //
 			"charValue: j\n" + //
@@ -337,7 +342,23 @@ public class YamlReaderTest extends TestCase {
 			fail("Unknown properties were supposed to be allowed.");
 		}
 	}
-	
+
+	public void testIgnoreUnknownPropertiesSprcialType() throws Exception {
+		String input = "a: 1\nb: 2\nc: 3\n" + "sequence: \n" + "  - 1\n" + "  - 2\n" + "mapping: \n  key: value\n"
+				+ "stream: {a: 7}\ndocument: ---\na: 9\n...\n";
+
+		YamlConfig config = new YamlConfig();
+		config.readConfig.setIgnoreUnknownProperties(true);
+		try {
+			ACD pojo = new YamlReader(input, config).read(ACD.class);
+			assertEquals(1, pojo.a);
+			assertEquals(3, pojo.c);
+			assertEquals(4, pojo.d);
+		} catch (YamlException e) {
+			fail("Unknown properties were supposed to be allowed.");
+		}
+	}
+
 	public void testDuplicateKeysAreNotAllowedIfAllowDuplicateIsSetSo () {
 		String inputWithDuplicates = "a: 1\na: 2\nc: 3";
 		YamlConfig yamlConfig = new YamlConfig();
@@ -446,5 +467,350 @@ public class YamlReaderTest extends TestCase {
 		assertEquals("Superior", lake.name);
 		assertEquals(1, lake.fish.size());
 		assertEquals("Walleye", lake.fish.get(0).species);
+	}
+
+	/**
+	 * issue #105
+	 *
+	 * @throws YamlException
+	 */
+	public void testGuessNumberTypes() throws YamlException {
+
+		long invoice = 3484312312313131l;
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("invoice", invoice);
+		map.put("date", "2001-01-23");
+
+		YamlConfig config = new YamlConfig();
+		config.readConfig.setGuessNumberTypes(true);
+		StringWriter sw = new StringWriter();
+		YamlWriter writer = new YamlWriter(sw, config);
+		writer.write(map);
+		writer.close();
+		YamlReader reader = new YamlReader(sw.toString(), config);
+		Map<String, Object> result = (Map<String, Object>) reader.read();
+		long invoiceValue = (Long) result.get("invoice");
+		assertEquals(invoice, invoiceValue);
+
+		Double money = 123.456;
+		map.put("money", money);
+
+		writer = new YamlWriter(sw, config);
+		writer.write(map);
+		writer.close();
+
+		reader = new YamlReader(sw.toString(), config);
+		result = (Map<String, Object>) reader.read();
+		double moneyValue = (Double) result.get("money");
+		assertEquals(money, moneyValue);
+	}
+
+    public void testGuessOctNumberAndHexNumber() throws YamlException {
+
+        // Octal number string
+        String str = "{octNumber: 011}";
+        YamlConfig config = new YamlConfig();
+        config.readConfig.guessNumberTypes = true;
+        YamlReader reader = new YamlReader(str, config);
+        int octNumber = ((Map<String, Long>) reader.read()).get("octNumber").intValue();
+        assertEquals(9, octNumber);
+
+        // Hex number string
+        str = "{hexNumber: 0x11}";
+        reader = new YamlReader(str, config);
+        int hexNumber = ((Map<String, Long>) reader.read()).get("hexNumber").intValue();
+        assertEquals(17, hexNumber);
+    }
+
+    /**
+     * issue #34
+     *
+     * @throws YamlException
+     */
+    public void testWhiteSpaceCharacters() throws YamlException {
+
+        String stringWithSpace = "test test";
+        YamlReader reader = new YamlReader(stringWithSpace);
+        assertEquals(stringWithSpace, reader.read(String.class));
+
+        String stringWithTab = "test\ttesttest";
+        reader = new YamlReader(stringWithTab);
+        assertEquals(stringWithTab, reader.read(String.class));
+
+        String stringWithSpaceAndTab = "test test\ttest \ttest";
+        reader = new YamlReader(stringWithSpaceAndTab);
+        assertEquals(stringWithSpaceAndTab, reader.read(String.class));
+    }
+
+	/**
+	 * Test multiple documents, the document is a scalar, followed by "---" or
+	 * "...", the test read is normal.
+	 *
+	 * @throws YamlException
+	 */
+	public void testReadMultiTpyeDocuments() throws YamlException {
+		String yaml = "scalar\n---\nkey: value\n---\nscalar\n...\n";
+		YamlReader reader = new YamlReader(yaml);
+		String str = reader.read(String.class);
+		assertEquals("scalar", str);
+
+		Map<String, String> map = (Map<String, String>) reader.read(HashMap.class);
+		assertEquals("value", map.get("key"));
+
+		str = reader.read(String.class);
+		assertEquals("scalar", str);
+	}
+
+	public void testRead() throws YamlException {
+		String yaml = "test";
+		YamlReader reader = new YamlReader(yaml);
+		assertEquals("test", reader.read(String.class));
+		assertEquals(null, reader.read());
+		assertEquals(null, reader.read());
+	}
+
+	public void testReadAll() throws YamlException {
+
+		StringBuilder sb = new StringBuilder();
+		sb.append("- 1").append("\n");
+		sb.append("- 2").append("\n");
+		sb.append("- 3").append("\n");
+		sb.append("---\n").append("key: value").append("\n");
+		sb.append("--- !com.esotericsoftware.yamlbeans.YamlReaderTest$Test\n");
+		sb.append("stringValue: test\n");
+		YamlReader reader = new YamlReader(sb.toString());
+		Iterator<Object> iterator = reader.readAll(Object.class);
+		List<Object> list = new ArrayList<Object>();
+		while (iterator.hasNext()) {
+			list.add(iterator.next());
+		}
+		assertEquals(3, list.size());
+		assertEquals("test", ((Test) list.get(2)).stringValue);
+	}
+
+	public void testReadAllCallingNextExpectThrowsRuntimeException() {
+		String yaml = "\ttest";
+		YamlReader reader = new YamlReader(yaml);
+		Iterator<Object> iterator = reader.readAll(Object.class);
+		try {
+			iterator.next();
+			fail();
+		} catch (RuntimeException e) {
+		}
+	}
+
+	public void testReadAllCallingRemoveExpectThrowsUnsupportedOperationException() {
+		String yaml = "test";
+		YamlReader reader = new YamlReader(yaml);
+		Iterator<Object> iterator = reader.readAll(Object.class);
+		try {
+			iterator.remove();
+			fail();
+		} catch (Exception e) {
+		}
+	}
+
+	public void testGetAnchor() throws YamlException {
+		String yaml = "&1 test\n---\naaa: &2 111\nbbb: &1 222";
+		YamlReader reader = new YamlReader(yaml);
+		assertEquals(null, reader.get("1"));
+		reader.read();
+		assertEquals("test", reader.get("1"));
+
+		reader.read();
+		assertEquals("222", reader.get("1"));
+		assertEquals("111", reader.get("2"));
+	}
+
+	public void testGetAnchorsUseGuessNumberTypes() throws YamlException {
+		String yaml = "number: &1 123";
+		YamlReader reader = new YamlReader(yaml);
+		reader.read();
+		assertEquals("123", reader.get("1"));
+
+		YamlConfig yamlConfig = new YamlConfig();
+		yamlConfig.readConfig.guessNumberTypes = true;
+		reader = new YamlReader(yaml, yamlConfig);
+		reader.read();
+		assertEquals(123, ((Long) reader.get("1")).intValue());
+	}
+
+	public void testAnchorAndAlias() throws YamlException {
+		String yaml = "key: &1 value\nkey1: *1\n---\nkey: *1";
+		YamlReader reader = new YamlReader(yaml);
+		assertEquals("value", ((Map<String, String>) reader.read()).get("key1"));
+		assertEquals("value", reader.get("1"));
+
+		try {
+			reader.read();
+		} catch (YamlReaderException e) {
+			assertTrue(e.getMessage().contains("Unknown anchor: "));
+		}
+	}
+
+	public void testReadExpectExpectThrowsParserException() {
+		String yaml = "[1,2,3";
+		YamlReader reader = new YamlReader(yaml);
+		try {
+			reader.read();
+			fail("Expect to throw ParserException.");
+		} catch (YamlException e) {
+		}
+	}
+
+	public void testYamlConfigReadConfigClassLoader() throws YamlException {
+		StringBuilder sb = new StringBuilder();
+		sb.append("--- !com.esotericsoftware.yamlbeans.YamlReaderTest$Test\n");
+		sb.append("stringValue: test\n");
+		YamlConfig yamlConfig = new YamlConfig();
+		yamlConfig.readConfig.classLoader = this.getClass().getClassLoader();
+		YamlReader reader = new YamlReader(sb.toString(), yamlConfig);
+		assertEquals("test", reader.read(Test.class).stringValue);
+	}
+
+	public void testYamlConfigReadConfigClassTags() throws YamlException {
+		StringBuilder sb = new StringBuilder();
+		sb.append("--- !com.esotericsoftware.yamlbeans.YamlReaderTest$Test\n");
+		sb.append("stringValue: test\n");
+		YamlConfig yamlConfig = new YamlConfig();
+		yamlConfig.readConfig.setClassTags(false);
+		yamlConfig.setPropertyDefaultType(Test.class, "stringValue", String.class);
+		YamlReader reader = new YamlReader(sb.toString(), yamlConfig);
+		assertEquals("test", reader.read(Test.class).stringValue);
+	}
+
+	public void testReadScalarTypeIsNull() throws YamlException {
+		String yaml = "key: ";
+		YamlReader reader = new YamlReader(yaml);
+		assertEquals(null, ((Map) reader.read()).get("key"));
+	}
+
+	public void testReadScalarTypeIsString() throws YamlException {
+		String yaml = "String";
+		YamlReader reader = new YamlReader(yaml);
+		assertEquals("String", reader.read(String.class));
+	}
+
+	public void testReadScalarTypeIsInteger() throws YamlException {
+		String yaml = "123";
+		YamlReader reader = new YamlReader(yaml);
+		assertEquals(123, (int) reader.read(Integer.class));
+
+		reader = new YamlReader(yaml);
+		assertEquals(123, (int) reader.read(int.class));
+	}
+
+	public void testReadScalarTypeIsBoolean() throws YamlException {
+		String yaml = "true";
+		YamlReader reader = new YamlReader(yaml);
+		assertEquals(true, (boolean) reader.read(Boolean.class));
+
+		reader = new YamlReader(yaml);
+		assertEquals(true, (boolean) reader.read(boolean.class));
+	}
+
+	public void testReadScalarTypeIsFloat() throws YamlException {
+		String yaml = "1.23";
+		YamlReader reader = new YamlReader(yaml);
+		assertEquals(1.23f, reader.read(Float.class));
+
+		reader = new YamlReader(yaml);
+		assertEquals(1.23f, reader.read(float.class));
+	}
+
+	public void testReadScalarTypeIsDouble() throws YamlException {
+		String yaml = "1.23";
+		YamlReader reader = new YamlReader(yaml);
+		assertEquals(1.23, reader.read(Double.class));
+
+		reader = new YamlReader(yaml);
+		assertEquals(1.23, reader.read(double.class));
+	}
+
+	public void testReadScalarTypeIsLong() throws YamlException {
+		String yaml = "100";
+		YamlReader reader = new YamlReader(yaml);
+		assertEquals(100, (long) reader.read(Long.class));
+
+		reader = new YamlReader(yaml);
+		assertEquals(100, (long) reader.read(long.class));
+	}
+
+	public void testReadScalarTypeIsShort() throws YamlException {
+		String yaml = "100";
+		YamlReader reader = new YamlReader(yaml);
+		assertEquals(100, (short) reader.read(Short.class));
+
+		reader = new YamlReader(yaml);
+		assertEquals(100, (short) reader.read(short.class));
+	}
+
+	public void testReadScalarTypeIsCharacter() throws YamlException {
+		String yaml = "A";
+		YamlReader reader = new YamlReader(yaml);
+		assertEquals('A', (char) reader.read(Character.class));
+
+		reader = new YamlReader(yaml);
+		assertEquals('A', (char) reader.read(char.class));
+	}
+
+	public void testReadScalarTypeIsByte() throws YamlException {
+		String yaml = "1";
+		YamlReader reader = new YamlReader(yaml);
+		assertEquals(1, (byte) reader.read(Byte.class));
+
+		reader = new YamlReader(yaml);
+		assertEquals(1, (byte) reader.read(byte.class));
+	}
+
+	public void testReadEnumExpectThrowsYamlReaderException() throws YamlException {
+		StringBuilder sb = new StringBuilder();
+		sb.append("--- !com.esotericsoftware.yamlbeans.YamlReaderTest$Test\n");
+		sb.append("testEnum: d\n");
+		YamlReader reader = new YamlReader(sb.toString());
+		try {
+			reader.read();
+			fail("Unable to find enum value");
+		} catch (YamlReaderException e) {
+		}
+	}
+
+	public void testReadExplicitKey() throws YamlException {
+		String yaml = "? key: value";
+		YamlReader reader = new YamlReader(yaml);
+		assertEquals("value", ((Map) reader.read()).get("key"));
+	}
+
+	public void testReadYamlConfigTagSuffix() throws YamlException {
+		String yaml = "key: !!str 123456";
+		YamlConfig yamlConfig = new YamlConfig();
+		yamlConfig.tagSuffix = "-test";
+		YamlReader reader = new YamlReader(yaml, yamlConfig);
+		Map map = (Map) reader.read();
+		assertEquals("tag:yaml.org,2002:str", map.get("key-test"));
+
+		yaml = "info: !!map\n  !!str key: !!str 123456";
+		reader = new YamlReader(yaml, yamlConfig);
+		map = (Map) reader.read();
+		assertEquals("tag:yaml.org,2002:map", map.get("info-test"));
+	}
+
+	public void testReadYamlConfigAllowDuplicates() throws YamlException {
+		StringBuilder sb = new StringBuilder();
+		sb.append("--- !com.esotericsoftware.yamlbeans.YamlReaderTest$Test\n");
+		sb.append("stringValue: test\n");
+		sb.append("stringValue: test\n");
+		YamlConfig yamlConfig = new YamlConfig();
+		yamlConfig.allowDuplicates = true;
+		YamlReader reader = new YamlReader(sb.toString(), yamlConfig);
+		reader.read();
+
+		yamlConfig.allowDuplicates = false;
+		reader = new YamlReader(sb.toString(), yamlConfig);
+		try {
+			reader.read();
+			fail("must be throws YamlReaderException");
+		} catch (YamlReaderException e) {
+		}
 	}
 }

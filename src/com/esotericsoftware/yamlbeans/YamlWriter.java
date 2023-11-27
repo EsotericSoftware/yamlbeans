@@ -47,7 +47,7 @@ import com.esotericsoftware.yamlbeans.scalar.ScalarSerializer;
 
 /** Serializes Java objects as YAML.
  * @author <a href="mailto:misc@n4te.com">Nathan Sweet</a> */
-public class YamlWriter {
+public class YamlWriter implements AutoCloseable {
 	private final YamlConfig config;
 	private final Emitter emitter;
 	private boolean started;
@@ -92,7 +92,8 @@ public class YamlWriter {
 				emitter.emit(Event.STREAM_START);
 				started = true;
 			}
-			emitter.emit(new DocumentStartEvent(config.writeConfig.explicitFirstDocument, null, null));
+			emitter.emit(new DocumentStartEvent(config.writeConfig.explicitFirstDocument, config.writeConfig.version,
+					config.writeConfig.tags));
 			isRoot = true;
 			writeValue(object, config.writeConfig.writeRootTags ? null : object.getClass(), null, null);
 			emitter.emit(new DocumentEndEvent(config.writeConfig.explicitEndDocument));
@@ -101,11 +102,6 @@ public class YamlWriter {
 		} catch (IOException ex) {
 			throw new YamlException("Error writing YAML.", ex);
 		}
-	}
-
-	/** Returns the YAML emitter, which allows the YAML output to be configured. */
-	public Emitter getEmitter () {
-		return emitter;
 	}
 
 	/** Writes any buffered objects, then resets the list of anchored objects.
@@ -142,7 +138,8 @@ public class YamlWriter {
 			((YamlElement)object).emitEvent(emitter, config.writeConfig);
 			return;
 		} else if (object == null) {
-			emitter.emit(new ScalarEvent(null, null, new boolean[] {true, true}, null, (char)0));
+			emitter.emit(
+					new ScalarEvent(null, null, new boolean[] { true, true }, null, this.config.writeConfig.quote.c));
 			return;
 		}
 
@@ -150,18 +147,13 @@ public class YamlWriter {
 		boolean unknownType = fieldClass == null;
 		if (unknownType) fieldClass = valueClass;
 
-		if (object instanceof Enum) {
-			emitter.emit(new ScalarEvent(null, null, new boolean[] {true, true}, ((Enum)object).name(), (char)0));
-			return;
-		}
-
 		String anchor = null;
-		if (!Beans.isScalar(valueClass)) {
+		if (!Beans.isScalar(valueClass) && !(object instanceof Enum)) {
 			anchor = anchoredObjects.get(object);
 			if (config.writeConfig.autoAnchor) {
 				Integer count = referenceCount.get(object);
 				if (count == null) {
-					emitter.emit(new AliasEvent(anchoredObjects.get(object)));
+					emitter.emit(new AliasEvent(anchor));
 					return;
 				}
 				if (count > 1) {
@@ -192,27 +184,27 @@ public class YamlWriter {
 		for (Entry<Class, ScalarSerializer> entry : config.scalarSerializers.entrySet()) {
 			if (entry.getKey().isAssignableFrom(valueClass)) {
 				ScalarSerializer serializer = entry.getValue();
-				emitter.emit(new ScalarEvent(null, tag, new boolean[] {tag == null, tag == null}, serializer.write(object), (char)0));
+				emitter.emit(new ScalarEvent(null, tag, new boolean[] { tag == null, tag == null },
+						serializer.write(object), this.config.writeConfig.quote.c));
 				return;
 			}
 		}
 
 		if (Beans.isScalar(valueClass)) {
-			char style = 0;
-			String string = String.valueOf(object);
-			if (valueClass == String.class) {
-				try {
-					Float.parseFloat(string);
-					style = '\'';
-				} catch (NumberFormatException ignored) {
-				}
-			}
-			emitter.emit(new ScalarEvent(null, tag, new boolean[] {true, true}, string, style));
+			emitter.emit(new ScalarEvent(null, tag, new boolean[] { true, true }, String.valueOf(object),
+					this.config.writeConfig.quote.c));
+			return;
+		}
+
+		if (object instanceof Enum) {
+			emitter.emit(new ScalarEvent(null, object.getClass().getName(),
+					new boolean[] { object.getClass().equals(fieldClass), object.getClass().equals(fieldClass) },
+					((Enum) object).name(), this.config.writeConfig.quote.c));
 			return;
 		}
 
 		if (object instanceof Collection) {
-			emitter.emit(new SequenceStartEvent(anchor, tag, !showTag, false));
+			emitter.emit(new SequenceStartEvent(anchor, tag, !showTag, config.writeConfig.isFlowStyle()));
 			for (Object item : (Collection)object) {
 				if (isRoot && !config.writeConfig.writeRootElementTags) elementType = item.getClass();
 				writeValue(item, elementType, null, null);
@@ -222,7 +214,7 @@ public class YamlWriter {
 		}
 
 		if (object instanceof Map) {
-			emitter.emit(new MappingStartEvent(anchor, tag, !showTag, false));
+			emitter.emit(new MappingStartEvent(anchor, tag, !showTag, config.writeConfig.isFlowStyle()));
 			Map map = (Map)object;
 			for (Object item : map.entrySet()) {
 				Entry entry = (Entry)item;
@@ -236,15 +228,9 @@ public class YamlWriter {
 					if (value instanceof String) {
 						Object valueTag = map.get(key + config.tagSuffix);
 						if (valueTag instanceof String) {
-							String string = (String)value;
-							char style = 0;
-							try {
-								Float.parseFloat(string);
-								style = '\'';
-							} catch (NumberFormatException ignored) {
-							}
 							writeValue(key, null, null, null);
-							emitter.emit(new ScalarEvent(null, (String)valueTag, new boolean[] {false, false}, string, style));
+							emitter.emit(new ScalarEvent(null, (String) valueTag, new boolean[] { false, false },
+									(String) value, this.config.writeConfig.quote.c));
 							continue;
 						}
 					}
@@ -258,7 +244,7 @@ public class YamlWriter {
 
 		if (fieldClass.isArray()) {
 			elementType = fieldClass.getComponentType();
-			emitter.emit(new SequenceStartEvent(anchor, null, true, false));
+			emitter.emit(new SequenceStartEvent(anchor, null, true, config.writeConfig.isFlowStyle()));
 			for (int i = 0, n = Array.getLength(object); i < n; i++)
 				writeValue(Array.get(object, i), elementType, null, null);
 			emitter.emit(Event.SEQUENCE_END);
@@ -281,7 +267,7 @@ public class YamlWriter {
 		}
 
 		Set<Property> properties = Beans.getProperties(valueClass, config.beanProperties, config.privateFields, config);
-		emitter.emit(new MappingStartEvent(anchor, tag, !showTag, false));
+		emitter.emit(new MappingStartEvent(anchor, tag, !showTag, config.writeConfig.isFlowStyle()));
 		for (Property property : properties) {
 			try {
 				Object propertyValue = property.get(object);
@@ -291,7 +277,8 @@ public class YamlWriter {
 					if (propertyValue == null && prototypeValue == null) continue;
 					if (propertyValue != null && prototypeValue != null && prototypeValue.equals(propertyValue)) continue;
 				}
-				emitter.emit(new ScalarEvent(null, null, new boolean[] {true, true}, property.getName(), (char)0));
+				emitter.emit(
+					new ScalarEvent(null, null, new boolean[] {true, true}, property.getName(), this.config.writeConfig.quote.c));
 				Class propertyElementType = config.propertyToElementType.get(property);
 				Class propertyDefaultType = config.propertyToDefaultType.get(property);
 				writeValue(propertyValue, property.getType(), propertyElementType, propertyDefaultType);

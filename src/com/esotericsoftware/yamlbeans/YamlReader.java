@@ -22,11 +22,13 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
+import java.io.StringWriter;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -35,6 +37,7 @@ import com.esotericsoftware.yamlbeans.Beans.Property;
 import com.esotericsoftware.yamlbeans.parser.AliasEvent;
 import com.esotericsoftware.yamlbeans.parser.CollectionStartEvent;
 import com.esotericsoftware.yamlbeans.parser.Event;
+import com.esotericsoftware.yamlbeans.parser.EventType;
 import com.esotericsoftware.yamlbeans.parser.Parser;
 import com.esotericsoftware.yamlbeans.parser.Parser.ParserException;
 import com.esotericsoftware.yamlbeans.parser.ScalarEvent;
@@ -43,7 +46,7 @@ import com.esotericsoftware.yamlbeans.tokenizer.Tokenizer.TokenizerException;
 
 /** Deserializes Java objects from YAML.
  * @author <a href="mailto:misc@n4te.com">Nathan Sweet</a> */
-public class YamlReader {
+public class YamlReader implements AutoCloseable {
 	private final YamlConfig config;
 	Parser parser;
 	private final Map<String, Object> anchors = new HashMap();
@@ -75,26 +78,36 @@ public class YamlReader {
 		return anchors.get(alias);
 	}
 
+	private void addAnchor (String key, Object value) {
+		if (config.readConfig.anchors) anchors.put(key, value);
+	}
+
 	public void close () throws IOException {
 		parser.close();
 		anchors.clear();
 	}
 
 	/** Reads the next YAML document and deserializes it into an object. The type of object is defined by the YAML tag. If there is
-	 * no YAML tag, the object will be an {@link ArrayList}, {@link HashMap}, or String. */
+	 * no YAML tag, the object will be an {@link ArrayList}, {@link HashMap}, or String.
+	 * <p>
+	 * This method creates and configures an instance of a class specified by the YAML data, so should be used only with YAML data
+	 * from a trusted source. */
 	public Object read () throws YamlException {
 		return read(null);
 	}
 
 	/** Reads an object of the specified type from YAML.
-	 * @param type The type of object to read. If null, behaves the same as {{@link #read()}. */
+	 * @param type The type of object to read. If null, behaves the same as {{@link #read()}.
+	 * @throws YamlReaderException if the YAML data specifies a type that is incompatible with the specified type. */
 	public <T> T read (Class<T> type) throws YamlException {
 		return read(type, null);
 	}
 
 	/** Reads an array, Map, List, or Collection object of the specified type from YAML, using the specified element type.
-	 * @param type The type of object to read. If null, behaves the same as {{@link #read()}. */
+	 * @param type The type of object to read. If null, behaves the same as {{@link #read()}.
+	 * @throws YamlReaderException if the YAML data specifies a type that is incompatible with the specified type. */
 	public <T> T read (Class<T> type, Class elementType) throws YamlException {
+		anchors.clear();
 		try {
 			while (true) {
 				Event event = parser.getNextEvent();
@@ -102,7 +115,9 @@ public class YamlReader {
 				if (event.type == STREAM_END) return null;
 				if (event.type == DOCUMENT_START) break;
 			}
-			return (T)readValue(type, elementType, null);
+			Object object = readValue(type, elementType, null);
+			parser.getNextEvent(); // consume it(DOCUMENT_END)
+			return (T)object;
 		} catch (ParserException ex) {
 			throw new YamlException("Error parsing YAML.", ex);
 		} catch (TokenizerException ex) {
@@ -110,7 +125,32 @@ public class YamlReader {
 		}
 	}
 
-	/** Reads an object from the YAML. Can be overidden to take some action for any of the objects returned. */
+	/** Returns an iterator that reads all documents from YAML into objects.
+	 * @param type The type of object to read. If null, behaves the same as {{@link #read()}. */
+	public <T> Iterator<T> readAll (final Class<T> type) {
+		return new Iterator<T>() {
+			public boolean hasNext () {
+				Event event = parser.peekNextEvent();
+				return event != null && event.type != STREAM_END;
+			}
+
+			public T next () {
+				try {
+					return read(type);
+				} catch (YamlException ex) {
+					throw new RuntimeException("Error reading YAML document for iterator.", ex);
+				}
+			}
+
+			public void remove () {
+				throw new UnsupportedOperationException();
+			}
+		};
+	}
+
+	/** Reads an object from the YAML. Can be overidden to take some action for any of the objects returned.
+	 * @param type May be null.
+	 * @throws YamlReaderException if the YAML data specifies a type that is incompatible with the specified type. */
 	protected Object readValue (Class type, Class elementType, Class defaultType)
 		throws YamlException, ParserException, TokenizerException {
 		String tag = null, anchor = null;
@@ -121,7 +161,7 @@ public class YamlReader {
 			parser.getNextEvent();
 			anchor = ((AliasEvent)event).anchor;
 			Object value = anchors.get(anchor);
-			if (value == null) throw new YamlReaderException("Unknown anchor: " + anchor);
+			if (value == null && config.readConfig.anchors) throw new YamlReaderException("Unknown anchor: " + anchor);
 			return value;
 		case MAPPING_START:
 		case SEQUENCE_START:
@@ -141,16 +181,19 @@ public class YamlReader {
 	private Class<?> chooseType (String tag, Class<?> defaultType, Class<?> providedType) throws YamlReaderException {
 		if (tag != null && config.readConfig.classTags) {
 			Class<?> userConfiguredByTag = config.tagToClass.get(tag);
-			if (userConfiguredByTag != null) {
-				return userConfiguredByTag;
-			}
+			if (userConfiguredByTag != null) return userConfiguredByTag;
 
 			ClassLoader classLoader = (config.readConfig.classLoader == null ? this.getClass().getClassLoader()
 				: config.readConfig.classLoader);
 
+			tag = tag.replace("!", "");
 			try {
 				Class<?> loadedFromTag = findTagClass(tag, classLoader);
 				if (loadedFromTag != null) {
+					if (!providedType.isAssignableFrom(loadedFromTag)) {
+						throw new YamlReaderException("Class specified by tag is incompatible with expected type: "
+							+ loadedFromTag.getName() + " (expected " + providedType.getName() + ")");
+					}
 					return loadedFromTag;
 				}
 			} catch (ClassNotFoundException e) {
@@ -158,35 +201,28 @@ public class YamlReader {
 			}
 		}
 
-		if (defaultType != null) {
-			return defaultType;
-		}
+		if (defaultType != null) return defaultType;
 
-		// This may be null.
-		return providedType;
+		return providedType; // May be null.
 	}
 
 	/** Used during reading when a tag is present, and {@link YamlConfig#setClassTag(String, Class)} was not used for that tag.
 	 * Attempts to load the class corresponding to that tag.
-	 * 
+	 * <p>
 	 * If this returns a non-null Class, that will be used as the deserialization type regardless of whether a type was explicitly
 	 * asked for or if a default type exists.
-	 * 
+	 * <p>
 	 * If this returns null, no guidance will be provided by the tag and we will fall back to the default type or a requested
 	 * target type, if any exist.
-	 * 
+	 * <p>
 	 * If this throws a ClassNotFoundException, parsing will fail.
-	 * 
-	 * The default implementation is simply
-	 * 
-	 * <pre>
-	 *  {@code Class.forName(tag, true, classLoader);}
-	 * </pre>
-	 * 
-	 * and never returns null.
-	 * 
-	 * You can override this to handle cases where you do not want to respect the type tags found in a document - e.g., if they
-	 * were output by another program using classes that do not exist on your classpath. */
+	 * <p>
+	 * The default implementation is simply {@code
+	 * Class.forName(tag, true, classLoader);
+	 * } and never returns null.
+	 * <p>
+	 * You can override this to handle cases where you do not want to respect the type tags found in a document, eg if they were
+	 * output by another program using classes that do not exist on your classpath. */
 	protected Class<?> findTagClass (String tag, ClassLoader classLoader) throws ClassNotFoundException {
 		return Class.forName(tag, true, classLoader);
 	}
@@ -203,19 +239,11 @@ public class YamlReader {
 				if (config.readConfig.guessNumberTypes) {
 					String value = ((ScalarEvent)event).value;
 					if (value != null) {
-						try {
-							Integer convertedValue = Integer.decode(value);
-							if (anchor != null) anchors.put(anchor, convertedValue);
+						Number number = valueConvertedNumber(value);
+						if (number != null) {
+							if (anchor != null) addAnchor(anchor, number);
 							parser.getNextEvent();
-							return convertedValue;
-						} catch (NumberFormatException ex) {
-						}
-						try {
-							Float convertedValue = Float.valueOf(value);
-							if (anchor != null) anchors.put(anchor, convertedValue);
-							parser.getNextEvent();
-							return convertedValue;
-						} catch (NumberFormatException ex) {
+							return number;
 						}
 					}
 				}
@@ -229,14 +257,6 @@ public class YamlReader {
 			}
 		}
 
-		if (type == String.class) {
-			Event event = parser.getNextEvent();
-			if (event.type != SCALAR) throw new YamlReaderException("Expected scalar for String type but found: " + event.type);
-			String value = ((ScalarEvent)event).value;
-			if (anchor != null) anchors.put(anchor, value);
-			return value;
-		}
-
 		if (Beans.isScalar(type)) {
 			Event event = parser.getNextEvent();
 			if (event.type != SCALAR) throw new YamlReaderException(
@@ -244,58 +264,32 @@ public class YamlReader {
 			String value = ((ScalarEvent)event).value;
 			try {
 				Object convertedValue;
-				if (type == String.class) {
+				if (value == null) {
+					convertedValue = null;
+				} else if (type == String.class) {
 					convertedValue = value;
-				} else if (type == Integer.TYPE) {
-					convertedValue = value.length() == 0 ? 0 : Integer.decode(value);
-				} else if (type == Integer.class) {
-					convertedValue = value.length() == 0 ? null : Integer.decode(value);
-				} else if (type == Boolean.TYPE) {
-					convertedValue = value.length() == 0 ? false : Boolean.valueOf(value);
-				} else if (type == Boolean.class) {
-					convertedValue = value.length() == 0 ? null : Boolean.valueOf(value);
-				} else if (type == Float.TYPE) {
-					convertedValue = value.length() == 0 ? 0 : Float.valueOf(value);
-				} else if (type == Float.class) {
-					convertedValue = value.length() == 0 ? null : Float.valueOf(value);
-				} else if (type == Double.TYPE) {
-					convertedValue = value.length() == 0 ? 0 : Double.valueOf(value);
-				} else if (type == Double.class) {
-					convertedValue = value.length() == 0 ? null : Double.valueOf(value);
-				} else if (type == Long.TYPE) {
-					convertedValue = value.length() == 0 ? 0 : Long.decode(value);
-				} else if (type == Long.class) {
-					convertedValue = value.length() == 0 ? null : Long.decode(value);
-				} else if (type == Short.TYPE) {
-					convertedValue = value.length() == 0 ? 0 : Short.decode(value);
-				} else if (type == Short.class) {
-					convertedValue = value.length() == 0 ? null : Short.decode(value);
-				} else if (type == Character.TYPE) {
-					convertedValue = value.length() == 0 ? 0 : value.charAt(0);
-				} else if (type == Character.class) {
-					convertedValue = value.length() == 0 ? null : value.charAt(0);
-				} else if (type == Byte.TYPE) {
-					convertedValue = value.length() == 0 ? 0 : Byte.decode(value);
-				} else if (type == Byte.class) {
-					convertedValue = value.length() == 0 ? null : Byte.decode(value);
+				} else if (type == Integer.TYPE || type == Integer.class) {
+					convertedValue = Integer.decode(value);
+				} else if (type == Boolean.TYPE || type == Boolean.class) {
+					convertedValue = Boolean.valueOf(value);
+				} else if (type == Float.TYPE || type == Float.class) {
+					convertedValue = Float.valueOf(value);
+				} else if (type == Double.TYPE || type == Double.class) {
+					convertedValue = Double.valueOf(value);
+				} else if (type == Long.TYPE || type == Long.class) {
+					convertedValue = Long.decode(value);
+				} else if (type == Short.TYPE || type == Short.class) {
+					convertedValue = Short.decode(value);
+				} else if (type == Character.TYPE || type == Character.class) {
+					convertedValue = value.charAt(0);
+				} else if (type == Byte.TYPE || type == Byte.class) {
+					convertedValue = Byte.decode(value);
 				} else
 					throw new YamlException("Unknown field type.");
-				if (anchor != null) anchors.put(anchor, convertedValue);
+				if (anchor != null) addAnchor(anchor, convertedValue);
 				return convertedValue;
 			} catch (Exception ex) {
 				throw new YamlReaderException("Unable to convert value to required type \"" + type + "\": " + value, ex);
-			}
-		}
-
-		if (Enum.class.isAssignableFrom(type)) {
-			Event event = parser.getNextEvent();
-			if (event.type != SCALAR) throw new YamlReaderException("Expected scalar for enum type but found: " + event.type);
-			String enumValueName = ((ScalarEvent)event).value;
-			if (enumValueName.length() == 0) return null;
-			try {
-				return Enum.valueOf(type, enumValueName);
-			} catch (Exception ex) {
-				throw new YamlReaderException("Unable to find enum value '" + enumValueName + "' for enum class: " + type.getName());
 			}
 		}
 
@@ -306,8 +300,20 @@ public class YamlReader {
 				if (event.type != SCALAR) throw new YamlReaderException("Expected scalar for type '" + type
 					+ "' to be deserialized by scalar serializer '" + serializer.getClass().getName() + "' but found: " + event.type);
 				Object value = serializer.read(((ScalarEvent)event).value);
-				if (anchor != null) anchors.put(anchor, value);
+				if (anchor != null) addAnchor(anchor, value);
 				return value;
+			}
+		}
+
+		if (Enum.class.isAssignableFrom(type)) {
+			Event event = parser.getNextEvent();
+			if (event.type != SCALAR) throw new YamlReaderException("Expected scalar for enum type but found: " + event.type);
+			String enumValueName = ((ScalarEvent)event).value;
+			if (enumValueName == null) return null;
+			try {
+				return Enum.valueOf(type, enumValueName);
+			} catch (Exception ex) {
+				throw new YamlReaderException("Unable to find enum value '" + enumValueName + "' for enum class: " + type.getName());
 			}
 		}
 
@@ -322,7 +328,7 @@ public class YamlReader {
 			} catch (InvocationTargetException ex) {
 				throw new YamlReaderException("Error creating object.", ex);
 			}
-			if (anchor != null) anchors.put(anchor, object);
+			if (anchor != null) addAnchor(anchor, object);
 			ArrayList keys = new ArrayList();
 			while (true) {
 				if (parser.peekNextEvent().type == MAPPING_END) {
@@ -370,7 +376,20 @@ public class YamlReader {
 
 						Property property = Beans.getProperty(type, (String)key, config.beanProperties, config.privateFields, config);
 						if (property == null) {
-							if (config.readConfig.ignoreUnknownProperties) continue;
+							if (config.readConfig.ignoreUnknownProperties) {
+								// if next event is sequence, mapping... start, go though all of it until
+								// corresponding sequence, mapping... end
+								Event nextEvent = parser.peekNextEvent();
+								EventType nextType = nextEvent.type;
+								if (nextType == SEQUENCE_START || nextType == MAPPING_START) {
+									skipRange();
+								} else {
+									// go though the next event, because this is a value of missing property
+									parser.getNextEvent();
+								}
+
+								continue;
+							}
 							throw new YamlReaderException("Unable to find property '" + key + "' on class: " + type.getName());
 						}
 						Class propertyElementType = config.propertyToElementType.get(property);
@@ -387,7 +406,7 @@ public class YamlReader {
 			if (object instanceof DeferredConstruction) {
 				try {
 					object = ((DeferredConstruction)object).construct();
-					if (anchor != null) anchors.put(anchor, object); // Update anchor with real object.
+					if (anchor != null) addAnchor(anchor, object); // Update anchor with real object.
 				} catch (InvocationTargetException ex) {
 					throw new YamlReaderException("Error creating object.", ex);
 				}
@@ -409,7 +428,7 @@ public class YamlReader {
 				elementType = type.getComponentType();
 			} else
 				throw new YamlReaderException("A sequence is not a valid value for the type: " + type.getName());
-			if (!type.isArray() && anchor != null) anchors.put(anchor, collection);
+			if (!type.isArray() && anchor != null) addAnchor(anchor, collection);
 			while (true) {
 				event = parser.peekNextEvent();
 				if (event.type == SEQUENCE_END) {
@@ -423,16 +442,9 @@ public class YamlReader {
 			int i = 0;
 			for (Object object : collection)
 				Array.set(array, i++, object);
-			if (anchor != null) anchors.put(anchor, array);
+			if (anchor != null) addAnchor(anchor, array);
 			return array;
 		}
-		case SCALAR:
-			// Interpret an empty scalar as null.
-			if (((ScalarEvent)event).value.length() == 0) {
-				event = parser.getNextEvent();
-				return null;
-			}
-			// Fall through.
 		default:
 			throw new YamlReaderException("Expected data for a " + type.getName() + " field but found: " + event.type);
 		}
@@ -474,8 +486,54 @@ public class YamlReader {
 		}
 	}
 
+	private Number valueConvertedNumber (String value) {
+		Number number = null;
+		try {
+			number = Long.decode(value);
+		} catch (NumberFormatException e) {
+		}
+		if (number == null) {
+			try {
+				number = Double.parseDouble(value);
+			} catch (NumberFormatException e) {
+			}
+		}
+		return number;
+	}
+
+	private void skipRange () {
+		Event nextEvent;
+		int depth = 0;
+		do {
+			nextEvent = parser.getNextEvent();
+			switch (nextEvent.type) {
+			case SEQUENCE_START:
+				depth++;
+				break;
+			case MAPPING_START:
+				depth++;
+				break;
+			case SEQUENCE_END:
+				depth--;
+				break;
+			case MAPPING_END:
+				depth--;
+				break;
+			default:
+				// ignore
+				break;
+			}
+		} while (depth > 0);
+	}
+
 	public static void main (String[] args) throws Exception {
 		YamlReader reader = new YamlReader(new FileReader("test/test.yml"));
-		System.out.println(reader.read());
+		Object object = reader.read();
+		System.out.println(object);
+		StringWriter string = new StringWriter();
+		YamlWriter writer = new YamlWriter(string);
+		writer.write(object);
+		writer.close();
+		System.out.println(string);
 	}
 }

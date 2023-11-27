@@ -16,22 +16,14 @@
 
 package com.esotericsoftware.yamlbeans.emitter;
 
-import com.esotericsoftware.yamlbeans.Version;
-
 /** @author <a href="mailto:misc@n4te.com">Nathan Sweet</a> */
 public class EmitterConfig {
-	Version version = new Version(1, 1);
 	boolean canonical;
 	boolean useVerbatimTags = true;
 	int indentSize = 3;
 	int wrapColumn = 100;
 	boolean escapeUnicode = true;
-
-	/** Sets the YAML version to output. Default is 1.1. */
-	public void setVersion (Version version) {
-		if (version == null) throw new IllegalArgumentException("version cannot be null.");
-		this.version = version;
-	}
+	boolean prettyFlow;
 
 	/** If true, the YAML output will be canonical. Default is false. */
 	public void setCanonical (boolean canonical) {
@@ -50,7 +42,7 @@ public class EmitterConfig {
 		this.wrapColumn = wrapColumn;
 	}
 
-	/** If false, tags will never be surrounded by angle brackets (eg, "!<java.util.LinkedList>"). Default is true. */
+	/** If false, tags will never be surrounded by angle brackets (eg, "!&lt;java.util.LinkedList&gt;"). Default is true. */
 	public void setUseVerbatimTags (boolean useVerbatimTags) {
 		this.useVerbatimTags = useVerbatimTags;
 	}
@@ -58,5 +50,10 @@ public class EmitterConfig {
 	/** If false, UTF-8 unicode characters will be output instead of the escaped unicode character code. */
 	public void setEscapeUnicode (boolean escapeUnicode) {
 		this.escapeUnicode = escapeUnicode;
+	}
+
+	/** If true, the YAML output will be pretty flow. Default is false. */
+	public void setPrettyFlow(boolean prettyFlow) {
+		this.prettyFlow = prettyFlow;
 	}
 }

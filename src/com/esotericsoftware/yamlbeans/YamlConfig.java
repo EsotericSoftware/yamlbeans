@@ -37,7 +37,7 @@ public class YamlConfig {
 	public final WriteConfig writeConfig = new WriteConfig();
 
 	/** Configuration for reading YAML. */
-	public final ReadConfig readConfig = new ReadConfig();
+	public ReadConfig readConfig = new ReadConfig();
 
 	final Map<String, String> classNameToTag = new HashMap();
 	final Map<String, Class> tagToClass = new HashMap();
@@ -69,6 +69,7 @@ public class YamlConfig {
 	public void setClassTag (String tag, Class type) {
 		if (tag == null) throw new IllegalArgumentException("tag cannot be null.");
 		if (type == null) throw new IllegalArgumentException("type cannot be null.");
+		if (!tag.startsWith("!")) tag = "!" + tag;
 		classNameToTag.put(type.getName(), tag);
 		tagToClass.put(tag, type);
 	}
@@ -139,6 +140,10 @@ public class YamlConfig {
 		boolean autoAnchor = true;
 		boolean keepBeanPropertyOrder = false;
 		WriteClassName writeClassName = WriteClassName.AUTO;
+		Quote quote = Quote.NONE;
+		Version version;
+		Map<String, String> tags;
+		boolean flowStyle;
 		EmitterConfig emitterConfig = new EmitterConfig();
 
 		WriteConfig () {
@@ -192,7 +197,12 @@ public class YamlConfig {
 
 		/** Sets the YAML version to output. Default is 1.1. */
 		public void setVersion (Version version) {
-			emitterConfig.setVersion(version);
+			this.version = version;
+		}
+
+		/** Sets the YAML tags to output. */
+		public void setTags (Map<String, String> tags) {
+			this.tags = tags;
 		}
 
 		/** If true, the YAML output will be canonical. Default is false. */
@@ -210,7 +220,7 @@ public class YamlConfig {
 			emitterConfig.setWrapColumn(wrapColumn);
 		}
 
-		/** If false, tags will never be surrounded by angle brackets (eg, "!<java.util.LinkedList>"). Default is false. */
+		/** If false, tags will never be surrounded by angle brackets (eg, "!&lt;java.util.LinkedList&gt;"). Default is false. */
 		public void setUseVerbatimTags (boolean useVerbatimTags) {
 			emitterConfig.setUseVerbatimTags(useVerbatimTags);
 		}
@@ -220,20 +230,44 @@ public class YamlConfig {
 			emitterConfig.setEscapeUnicode(escapeUnicode);
 		}
 
-		/** If true, class name tags will always be output. */
+		/** Determines when class name tags are output. */
 		public void setWriteClassname (WriteClassName write) {
 			writeClassName = write;
+		}
+
+		/** The type of quotes to use when writing YAML output. */
+		public void setQuoteChar (Quote quote) {
+			this.quote = quote;
+		}
+
+		public Quote getQuote () {
+			return quote;
+		}
+
+		/** If true, the YAML output will be flow. Default is false. */
+		public void setFlowStyle (boolean flowStyle) {
+			this.flowStyle = flowStyle;
+		}
+
+		public boolean isFlowStyle () {
+			return flowStyle;
+		}
+
+		/** If true, the YAML output will be pretty flow. Default is false. */
+		public void setPrettyFlow (boolean prettyFlow) {
+			emitterConfig.setPrettyFlow(prettyFlow);
 		}
 	}
 
 	static public class ReadConfig {
-		Version defaultVersion = new Version(1, 1);
+		Version defaultVersion = Version.DEFAULT_VERSION;
 		ClassLoader classLoader;
 		final Map<Class, ConstructorParameters> constructorParameters = new IdentityHashMap();
 		boolean ignoreUnknownProperties;
 		boolean autoMerge = true;
 		boolean classTags = true;
 		boolean guessNumberTypes;
+		boolean anchors = true;
 
 		ReadConfig () {
 		}
@@ -277,10 +311,20 @@ public class YamlConfig {
 			this.classTags = classTags;
 		}
 
-		/** When true, if the type for a scalar value is unknown and it looks like a number, it is read as an integer or float. When
+		/** When false, the merge key (<<) is not used to merge values into the current map. Default is true. */
+		public void setAutoMerge (boolean autoMerge) {
+			this.autoMerge = autoMerge;
+		}
+
+		/** When true, if the type for a scalar value is unknown and it looks like a number, it is read as a double or long. When
 		 * false, if the type for a scalar value is unknown it is always read a string. Default is true. */
 		public void setGuessNumberTypes (boolean guessNumberTypes) {
 			this.guessNumberTypes = guessNumberTypes;
+		}
+
+		/** When false, anchors in the YAML are ignored. Default is true. */
+		public void setAnchors (boolean anchors) {
+			this.anchors = anchors;
 		}
 	}
 
@@ -291,5 +335,19 @@ public class YamlConfig {
 
 	public static enum WriteClassName {
 		ALWAYS, NEVER, AUTO
+	}
+
+	public static enum Quote {
+		NONE('\0'), SINGLE('\''), DOUBLE('"'), LITERAL('|'), FOLDED('>');
+
+		char c;
+
+		Quote (char c) {
+			this.c = c;
+		}
+
+		public char getStyle () {
+			return c;
+		}
 	}
 }

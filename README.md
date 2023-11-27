@@ -1,6 +1,5 @@
 ## YamlBeans
 
-![License](https://img.shields.io/badge/License-BSD%202--Clause-orange.svg)
 ![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.esotericsoftware.yamlbeans/yamlbeans/badge.svg)
 
 Please use the [YamlBeans discussion group](http://groups.google.com/group/yamlbeans-users) for support.
@@ -12,7 +11,7 @@ Chinese document [中文翻译文档](CN_README.md) .
 YamlBeans makes it easy to serialize and deserialize Java object graphs to and from YAML, a human-friendly data format. Replace XML and properties files with YAML for more expressive power (lists, maps, anchors, etc) and easier hand-editing.
 
 Maven Central:
-http://repo1.maven.org/maven2/com/esotericsoftware/yamlbeans/yamlbeans/
+https://repo1.maven.org/maven2/com/esotericsoftware/yamlbeans/yamlbeans/
 
 ## Basic deserialization
 

@@ -42,7 +42,7 @@ public class Tokenizer {
 	private final static String BLANK_OR_LINEBR = " \r\n\u0085";
 	private final static String S4 = "\0 \t\r\n\u0028[]{}";
 	private final static String ALPHA = "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-_";
-	private final static String STRANGE_CHAR = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789][-';/?:@&=+$,.!~*()%";
+	private final static String STRANGE_CHAR = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-#;/?:@&=+$,_.!~*'()[]";
 	private final static String RN = "\r\n";
 	private final static String BLANK_T = " \t";
 	private final static String SPACES_AND_STUFF = "'\"\\\0 \t\r\n\u0085";
@@ -51,7 +51,7 @@ public class Tokenizer {
 	private final static Pattern NON_PRINTABLE = Pattern.compile("[^\u0009\n\r\u0020-\u007E\u0085\u00A0-\u00FF]");
 	private final static Pattern NOT_HEXA = Pattern.compile("[^0-9A-Fa-f]");
 	private final static Pattern NON_ALPHA = Pattern.compile("[^-0-9A-Za-z_]");
-	private final static Pattern R_FLOWZERO = Pattern.compile("[\0 \t\r\n\u0085]|(:[\0 \t\r\n\u0028])");
+	private final static Pattern R_FLOWZERO = Pattern.compile("[\0 \t\r\n\u0085]|(:[\0 \t\r\n\u0085])");
 	private final static Pattern R_FLOWNONZERO = Pattern.compile("[\0 \t\r\n\u0085\\[\\]{},:?]");
 	private final static Pattern END_OR_START = Pattern.compile("^(---|\\.\\.\\.)[\0 \t\r\n\u0085]$");
 	private final static Pattern ENDING = Pattern.compile("^---[\0 \t\r\n\u0085]$");
@@ -310,8 +310,8 @@ public class Tokenizer {
 		}
 		if (BEG.matcher(prefix(2)).find()) return fetchPlain();
 		if (ch == '\t') throw new TokenizerException("Tabs cannot be used for indentation.");
-		throw new TokenizerException("While scanning for the next token, a character that cannot begin a token was found: "
-			+ ch(ch));
+		throw new TokenizerException(
+			"While scanning for the next token, a character that cannot begin a token was found: " + ch(ch));
 	}
 
 	private int nextPossibleSimpleKey () {
@@ -568,14 +568,12 @@ public class Tokenizer {
 			length++;
 			ch = peek(length);
 		}
-		if (zlen)
-			throw new TokenizerException("While scanning for a directive name, expected an alpha or numeric character but found: "
-				+ ch(ch));
+		if (zlen) throw new TokenizerException(
+			"While scanning for a directive name, expected an alpha or numeric character but found: " + ch(ch));
 		String value = prefixForward(length);
 		// forward(length);
-		if (NULL_BL_LINEBR.indexOf(peek()) == -1)
-			throw new TokenizerException("While scanning for a directive name, expected an alpha or numeric character but found: "
-				+ ch(ch));
+		if (NULL_BL_LINEBR.indexOf(peek()) == -1) throw new TokenizerException(
+			"While scanning for a directive name, expected an alpha or numeric character but found: " + ch(ch));
 		return value;
 	}
 
@@ -656,9 +654,8 @@ public class Tokenizer {
 			throw new TokenizerException("While scanning an " + name + ", a non-alpha, non-numeric character was found.");
 		String value = prefixForward(length);
 		// forward(length);
-		if (NON_ALPHA_OR_NUM.indexOf(peek()) == -1)
-			throw new TokenizerException("While scanning an " + name + ", expected an alpha or numeric character but found: "
-				+ ch(peek()));
+		if (NON_ALPHA_OR_NUM.indexOf(peek()) == -1) throw new TokenizerException(
+			"While scanning an " + name + ", expected an alpha or numeric character but found: " + ch(peek()));
 		if (tok instanceof AnchorToken)
 			((AnchorToken)tok).setInstanceName(value);
 		else
@@ -708,7 +705,7 @@ public class Tokenizer {
 		StringBuilder chunks = new StringBuilder();
 		forward();
 		Object[] chompi = scanBlockScalarIndicators();
-		boolean chomping = ((Boolean)chompi[0]).booleanValue();
+		int chomping = ((Integer)chompi[0]).intValue();
 		int increment = ((Integer)chompi[1]).intValue();
 		scanBlockScalarIgnoredLine();
 		int minIndent = indent + 1;
@@ -749,7 +746,9 @@ public class Tokenizer {
 				break;
 		}
 
-		if (chomping) {
+		if (chomping == 0) {
+			chunks.append(lineBreak);
+		} else if (chomping == 2) {
 			chunks.append(lineBreak);
 			chunks.append(breaks);
 		}
@@ -758,36 +757,33 @@ public class Tokenizer {
 	}
 
 	private Object[] scanBlockScalarIndicators () {
-		boolean chomping = false;
+		int chomping = 0;  // 0 = clip, 1 = strip, 2 = keep
 		int increment = -1;
 		char ch = peek();
 		if (ch == '-' || ch == '+') {
-			chomping = ch == '+';
+			chomping = ch == '-' ? 1 : 2;
 			forward();
 			ch = peek();
 			if (Character.isDigit(ch)) {
 				increment = Integer.parseInt(("" + ch));
-				if (increment == 0)
-					throw new TokenizerException(
-						"While scanning a black scaler, expected indentation indicator between 1 and 9 but found: 0");
+				if (increment == 0) throw new TokenizerException(
+					"While scanning a black scaler, expected indentation indicator between 1 and 9 but found: 0");
 				forward();
 			}
 		} else if (Character.isDigit(ch)) {
 			increment = Integer.parseInt(("" + ch));
-			if (increment == 0)
-				throw new TokenizerException(
-					"While scanning a black scaler, expected indentation indicator between 1 and 9 but found: 0");
+			if (increment == 0) throw new TokenizerException(
+				"While scanning a black scaler, expected indentation indicator between 1 and 9 but found: 0");
 			forward();
 			ch = peek();
 			if (ch == '-' || ch == '+') {
-				chomping = ch == '+';
+				chomping = ch == '-' ? 1 : 2;
 				forward();
 			}
 		}
-		if (NULL_BL_LINEBR.indexOf(peek()) == -1)
-			throw new TokenizerException("While scanning a block scalar, expected chomping or indentation indicators but found: "
-				+ ch(peek()));
-		return new Object[] {Boolean.valueOf(chomping), increment};
+		if (NULL_BL_LINEBR.indexOf(peek()) == -1) throw new TokenizerException(
+			"While scanning a block scalar, expected chomping or indentation indicators but found: " + ch(peek()));
+		return new Object[] {Integer.valueOf(chomping), increment};
 	}
 
 	private String scanBlockScalarIgnoredLine () {
@@ -951,7 +947,7 @@ public class Tokenizer {
 			chunks.append(prefixForward(length));
 			// forward(length);
 			spaces = scanPlainSpaces();
-			if (spaces == null || flowLevel == 0 && column < ind) break;
+			if (spaces.length() == 0 || flowLevel == 0 && column < ind) break;
 		}
 		return new ScalarToken(chunks.toString(), true);
 	}
@@ -959,7 +955,8 @@ public class Tokenizer {
 	private String scanPlainSpaces () {
 		StringBuilder chunks = new StringBuilder();
 		int length = 0;
-		while (peek(length) == ' ')
+        // YAML recognizes two white space characters: space and tab.
+        while (peek(length) == ' ' || peek(length) == '\t')
 			length++;
 		String whitespaces = prefixForward(length);
 		// forward(length);
@@ -1033,7 +1030,7 @@ public class Tokenizer {
 		while (peek() == '%') {
 			forward();
 			try {
-				bytes.append(Integer.parseInt(prefix(2), 16));
+				bytes.append(Character.toChars(Integer.parseInt(prefix(2), 16)));
 			} catch (NumberFormatException nfe) {
 				throw new TokenizerException("While scanning a " + name
 					+ ", expected a URI escape sequence of 2 hexadecimal numbers but found: " + ch(peek(1)) + " and " + ch(peek(2)));
