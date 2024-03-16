@@ -127,15 +127,24 @@ public class Parser {
 		};
 		table[P_IMPLICIT_DOCUMENT] = new Production() {
 			public Event produce () {
-				TokenType type = tokenizer.peekNextTokenType();
-				if (!(type == DIRECTIVE || type == DOCUMENT_START || type == STREAM_END)) {
-					parseStack.add(0, table[P_DOCUMENT_END]);
-					parseStack.add(0, table[P_BLOCK_NODE]);
-					parseStack.add(0, table[P_DOCUMENT_START_IMPLICIT]);
+				if (isNextTokenImplicitDocument()) {
+					parseImplicitDocument();
 				}
 				return null;
 			}
+
+			private boolean isNextTokenImplicitDocument() {
+				TokenType type = tokenizer.peekNextTokenType();
+				return type != DIRECTIVE && type != DOCUMENT_START && type != STREAM_END;
+			}
+
+			private void parseImplicitDocument() {
+				parseStack.add(0, table[P_DOCUMENT_END]);
+				parseStack.add(0, table[P_BLOCK_NODE]);
+				parseStack.add(0, table[P_DOCUMENT_START_IMPLICIT]);
+			}
 		};
+
 		table[P_EXPLICIT_DOCUMENT] = new Production() {
 			public Event produce () {
 				if (tokenizer.peekNextTokenType() != STREAM_END) {
