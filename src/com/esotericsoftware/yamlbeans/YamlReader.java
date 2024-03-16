@@ -227,6 +227,55 @@ public class YamlReader implements AutoCloseable {
 		return Class.forName(tag, true, classLoader);
 	}
 
+	/**
+	 * Reads a scalar value from the parser and converts it to the specified type.
+	 * @param type The type to convert the scalar to.
+	 * @param anchor The anchor of the scalar, or null.
+	 * @return The converted scalar value.
+	 * @throws YamlException
+	 * @throws ParserException
+	 */
+	private Object readScalarValue(Class<?> type, String anchor) throws YamlException, ParserException {
+		Event event = parser.getNextEvent();
+		if (event.type != SCALAR) {
+			throw new YamlReaderException("Expected scalar for primitive type '" + type.getClass() + "' but found: " + event.type);
+		}
+
+		String value = ((ScalarEvent) event).value;
+		try {
+			Object convertedValue;
+			if (value == null) {
+				convertedValue = null;
+			} else if (type == String.class) {
+				convertedValue = value;
+			} else if (type == Integer.TYPE || type == Integer.class) {
+				convertedValue = Integer.decode(value);
+			} else if (type == Boolean.TYPE || type == Boolean.class) {
+				convertedValue = Boolean.valueOf(value);
+			} else if (type == Float.TYPE || type == Float.class) {
+				convertedValue = Float.valueOf(value);
+			} else if (type == Double.TYPE || type == Double.class) {
+				convertedValue = Double.valueOf(value);
+			} else if (type == Long.TYPE || type == Long.class) {
+				convertedValue = Long.decode(value);
+			} else if (type == Short.TYPE || type == Short.class) {
+				convertedValue = Short.decode(value);
+			} else if (type == Character.TYPE || type == Character.class) {
+				convertedValue = value.charAt(0);
+			} else if (type == Byte.TYPE || type == Byte.class) {
+				convertedValue = Byte.decode(value);
+			} else {
+				throw new YamlException("Unknown field type.");
+			}
+			if (anchor != null) {
+				addAnchor(anchor, convertedValue);
+			}
+			return convertedValue;
+		} catch (Exception ex) {
+			throw new YamlReaderException("Unable to convert value to required type \"" + type + "\": " + value, ex);
+		}
+	}
+
 	private Object readValueInternal (Class type, Class elementType, String anchor)
 		throws YamlException, ParserException, TokenizerException {
 		if (type == null || type == Object.class) {
@@ -258,39 +307,7 @@ public class YamlReader implements AutoCloseable {
 		}
 
 		if (Beans.isScalar(type)) {
-			Event event = parser.getNextEvent();
-			if (event.type != SCALAR) throw new YamlReaderException(
-				"Expected scalar for primitive type '" + type.getClass() + "' but found: " + event.type);
-			String value = ((ScalarEvent)event).value;
-			try {
-				Object convertedValue;
-				if (value == null) {
-					convertedValue = null;
-				} else if (type == String.class) {
-					convertedValue = value;
-				} else if (type == Integer.TYPE || type == Integer.class) {
-					convertedValue = Integer.decode(value);
-				} else if (type == Boolean.TYPE || type == Boolean.class) {
-					convertedValue = Boolean.valueOf(value);
-				} else if (type == Float.TYPE || type == Float.class) {
-					convertedValue = Float.valueOf(value);
-				} else if (type == Double.TYPE || type == Double.class) {
-					convertedValue = Double.valueOf(value);
-				} else if (type == Long.TYPE || type == Long.class) {
-					convertedValue = Long.decode(value);
-				} else if (type == Short.TYPE || type == Short.class) {
-					convertedValue = Short.decode(value);
-				} else if (type == Character.TYPE || type == Character.class) {
-					convertedValue = value.charAt(0);
-				} else if (type == Byte.TYPE || type == Byte.class) {
-					convertedValue = Byte.decode(value);
-				} else
-					throw new YamlException("Unknown field type.");
-				if (anchor != null) addAnchor(anchor, convertedValue);
-				return convertedValue;
-			} catch (Exception ex) {
-				throw new YamlReaderException("Unable to convert value to required type \"" + type + "\": " + value, ex);
-			}
+			return readScalarValue(type, anchor);
 		}
 
 		for (Entry<Class, ScalarSerializer> entry : config.scalarSerializers.entrySet()) {
