@@ -49,7 +49,7 @@ import com.esotericsoftware.yamlbeans.tokenizer.Tokenizer.TokenizerException;
 public class YamlReader implements AutoCloseable {
 	private final YamlConfig config;
 	Parser parser;
-	private final Map<String, Object> anchors = new HashMap();
+	private final Map<String, Object> anchorMap = new HashMap();
 
 	public YamlReader (Reader reader) {
 		this(reader, new YamlConfig());
@@ -75,16 +75,16 @@ public class YamlReader implements AutoCloseable {
 	/** Return the object with the given alias, or null. This is only valid after objects have been read and before
 	 * {@link #close()} */
 	public Object get (String alias) {
-		return anchors.get(alias);
+		return anchorMap.get(alias);
 	}
 
 	private void addAnchor (String key, Object value) {
-		if (config.readConfig.anchors) anchors.put(key, value);
+		if (config.readConfig.anchors) anchorMap.put(key, value);
 	}
 
 	public void close () throws IOException {
 		parser.close();
-		anchors.clear();
+		anchorMap.clear();
 	}
 
 	/** Reads the next YAML document and deserializes it into an object. The type of object is defined by the YAML tag. If there is
@@ -107,7 +107,7 @@ public class YamlReader implements AutoCloseable {
 	 * @param type The type of object to read. If null, behaves the same as {{@link #read()}.
 	 * @throws YamlReaderException if the YAML data specifies a type that is incompatible with the specified type. */
 	public <T> T read (Class<T> type, Class elementType) throws YamlException {
-		anchors.clear();
+		anchorMap.clear();
 		try {
 			while (true) {
 				Event event = parser.getNextEvent();
@@ -160,7 +160,7 @@ public class YamlReader implements AutoCloseable {
 		case ALIAS:
 			parser.getNextEvent();
 			anchor = ((AliasEvent)event).anchor;
-			Object value = anchors.get(anchor);
+			Object value = anchorMap.get(anchor);
 			if (value == null && config.readConfig.anchors) throw new YamlReaderException("Unknown anchor: " + anchor);
 			return value;
 		case MAPPING_START:
