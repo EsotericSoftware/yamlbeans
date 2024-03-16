@@ -288,7 +288,7 @@ public class YamlReader implements AutoCloseable {
 				if (config.readConfig.guessNumberTypes) {
 					String value = ((ScalarEvent)event).value;
 					if (value != null) {
-						Number number = valueConvertedNumber(value);
+						Number number = parseNumber(value);
 						if (number != null) {
 							if (anchor != null) addAnchor(anchor, number);
 							parser.getNextEvent();
@@ -503,7 +503,7 @@ public class YamlReader implements AutoCloseable {
 		}
 	}
 
-	private Number valueConvertedNumber (String value) {
+	private Number parseNumber(String value) {
 		Number number = null;
 		try {
 			number = Long.decode(value);
