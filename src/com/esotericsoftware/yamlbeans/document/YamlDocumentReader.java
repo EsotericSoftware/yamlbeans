@@ -177,21 +177,6 @@ public class YamlDocumentReader {
         }
     }
 
-    private class SequenceReader implements YamlElementReader {
-        @Override
-        public YamlElement read(Parser parser) {
-            Event event = parser.getNextEvent();
-            if(event.type!=SEQUENCE_START)
-                throw new IllegalStateException();
-            YamlSequence element = new YamlSequence();
-            SequenceStartEvent sequence = (SequenceStartEvent)event;
-            element.setTag(sequence.tag);
-            element.setAnchor(sequence.anchor);
-            readSequenceElements(element);
-            return element;
-        }
-    }
-
     private class AliasReader implements YamlElementReader {
         @Override
         public YamlElement read(Parser parser) {
@@ -220,15 +205,30 @@ public class YamlDocumentReader {
         }
     }
 
-	private void readSequenceElements(YamlSequence sequence) {
-		while(true) {
-			Event event = parser.peekNextEvent();
-			if(event.type==SEQUENCE_END) {
-				parser.getNextEvent(); // consume it
-				return;
-			} else {
-				YamlElement element = readValue();
-				sequence.addElement(element);
+	private class SequenceReader implements YamlElementReader {
+		@Override
+		public YamlElement read(Parser parser) {
+			Event event = parser.getNextEvent();
+			if(event.type!=SEQUENCE_START)
+				throw new IllegalStateException();
+			YamlSequence element = new YamlSequence();
+			SequenceStartEvent sequence = (SequenceStartEvent)event;
+			element.setTag(sequence.tag);
+			element.setAnchor(sequence.anchor);
+			readSequenceElements(element);
+			return element;
+		}
+
+		private void readSequenceElements(YamlSequence sequence) {
+			while(true) {
+				Event event = parser.peekNextEvent();
+				if(event.type==SEQUENCE_END) {
+					parser.getNextEvent(); // consume it
+					return;
+				} else {
+					YamlElement element = readValue();
+					sequence.addElement(element);
+				}
 			}
 		}
 	}
